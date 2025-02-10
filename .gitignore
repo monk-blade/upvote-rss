@@ -1,0 +1,22 @@
+#------------------------
+#  Main ignored files
+#------------------------
+/.env
+/.vscode
+/cache
+/node_modules
+/package-lock.json
+/views/test.php
+
+
+#------------------------
+#  OS files
+#------------------------
+*.db
+*.log
+*.Trashes
+._*
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes

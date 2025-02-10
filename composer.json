@@ -1,0 +1,12 @@
+{
+    "config": {
+        "platform": {
+            "php": "7.4.0"
+         }
+    },
+    "require": {
+        "erusev/parsedown": "^1.7",
+        "fivefilters/readability.php": "^3.1",
+        "predis/predis": "^2.2"
+    }
+}
