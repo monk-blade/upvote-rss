@@ -2,11 +2,11 @@ FROM dunglas/frankenphp:1.4.2-php8.4.3-alpine
 
 # Install required utilities and PHP extensions
 RUN apk add --no-cache su-exec && \
-    apk add --no-cache --virtual .build-deps build-base && \
-    install-php-extensions gd opcache && \
-    addgroup -g ${GROUP_ID:-1000} upvote-rss && \
-    adduser -D -u ${USER_ID:-1000} -G upvote-rss upvote-rss && \
-    apk del .build-deps && \
+    apk add --no-cache --virtual .build-deps build-base
+RUN install-php-extensions gd opcache
+RUN addgroup -g ${GROUP_ID:-1000} upvote-rss && \
+    adduser -S -u ${USER_ID:-1000} -G upvote-rss upvote-rss
+RUN apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
 # Copy the application files and set the correct permissions
