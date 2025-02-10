@@ -1,7 +1,7 @@
 FROM dunglas/frankenphp:1.4.2-php8.4.3-alpine
 
 # Install required utilities and PHP extensions
-RUN apk add --no-cache su-exec && \
+RUN apk add --no-cache su-exec freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev && \
     apk add --no-cache --virtual .build-deps build-base
 RUN install-php-extensions gd opcache
 RUN addgroup -g ${GROUP_ID:-1000} upvote-rss && \
