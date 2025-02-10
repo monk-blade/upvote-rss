@@ -1,11 +1,11 @@
 FROM dunglas/frankenphp:1.4.2-php8.4.3-alpine
 
-# Install the required PHP extensions and su-exec
-RUN apk add --no-cache shadow su-exec && \
+# Install required utilities and PHP extensions
+RUN apk add --no-cache su-exec && \
     apk add --no-cache --virtual .build-deps build-base && \
     install-php-extensions gd opcache && \
-    groupadd -g ${GROUP_ID:-1000} upvote-rss && \
-    useradd -u ${USER_ID:-1000} -g upvote-rss -s /bin/sh -m upvote-rss && \
+    addgroup -g ${GROUP_ID:-1000} upvote-rss && \
+    adduser -D -u ${USER_ID:-1000} -G upvote-rss upvote-rss && \
     apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
