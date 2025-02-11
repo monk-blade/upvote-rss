@@ -270,7 +270,11 @@
 								<p class="description" :class="{ skeleton: loading }" v-html="community_description"></p>
 							</div>
 						</a>
-						<button v-if="community_url" class="button copy-rss-url" :disabled="error || loading" @click="copyRSSurl($event)">
+						<div class="rss-url" v-if="!loading && community_url && showRssURL">
+							<h3>RSS Feed URL</h3>
+							<p v-html="rssURL"></p>
+						</div>
+						<button v-else-if="!loading && community_url && !showRssURL" class="button copy-rss-url" :disabled="error || loading" @click="copyRSSurl($event)">
 							<template v-if="copied">
 								<svg class="icon icon-clipboard-copied">
 									<use xlink:href="#icon-clipboard-copied"></use>

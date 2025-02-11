@@ -849,6 +849,26 @@ header {
 				}
 			}
 		}
+		.rss-url {
+			margin-block: 0;
+			padding: 1rem;
+			background-color: light-dark(white, var(--color__blue_900));
+			border-radius: 8px;
+			border: 2px solid light-dark(var(--color__orange_200), var(--color__blue_700));
+			+ button.clear-cache {
+				margin-block-start: 1rem;
+			}
+			h3 {
+				margin: 0;
+				font-size: 1rem;
+				font-weight: bold;
+			}
+			p {
+				margin: 0.25rem 0 0;
+				padding: 0;
+				word-break: break-all;
+			}
+		}
 		button.copy-rss-url {
 			appearance: none;
 			position: relative;

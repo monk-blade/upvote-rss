@@ -50,7 +50,9 @@ createApp({
       postCutoffDays: postCutoffDays || 0,
       message: null,
       cacheSize: cacheSize,
+      rssURL: '',
       copied: false,
+      showRssURL: false,
       progressRadius: 80,
       progressStroke: 10,
       progressNormalizedRadius: 0,
@@ -127,6 +129,7 @@ createApp({
       }
       url = newURL.toString().replace(/=&/g, '&').replace(/=$/g, '');
       history.replaceState(null, null, url);
+      this.rssURL = url + '&view=rss';
     },
     async getPosts() {
       setTimeout(() => {
@@ -313,6 +316,7 @@ createApp({
     this.progressNormalizedRadius = this.progressRadius - this.progressStroke * 2;
     this.progressCircumference = this.progressNormalizedRadius * 2 * Math.PI;
     this.darkMode = sessionStorage.getItem('darkMode') || 'auto';
+    this.showRssURL = navigator.clipboard ? false : true;
   },
   watch: {
     loading() {
