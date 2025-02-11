@@ -119,7 +119,7 @@ Due to Reddit's updated API policies it is required to first set up an app in yo
 1. You can leave `description` and `about url` fields blank.
 1. Enter in any valid URI in the `redirect uri` field. I've used `http://upvote-rss.test`.
 1. Click the `create app` button when you’re done.
-1. Your app’s client ID and client secret will be displayed. You'll need to add these to either your `.env` or Docker environment variables.
+1. Your app’s client ID and client secret will be displayed. You'll need to add these and your Reddit username to either your `.env` or Docker environment variables see [Environment variables](#environment-variables) below.
 
 ### Caching
 
