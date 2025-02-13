@@ -182,7 +182,7 @@ SUMMARY_SYSTEM_PROMPT="As GLaDOS, provide a concise and analytical summary of th
 # Redis host
 # Redis instance IP address or domain used for API and webpage caching which will override the default filesystem caching method
 # Default value: (empty)
-REDIS_HOST=127.0.0.1
+REDIS_HOST=192.168.1.123
 
 # Redis port
 # Specify an optional Redis port if the REDIS_HOST variable is set and a non-standard port is used
@@ -192,7 +192,7 @@ REDIS_PORT=6379
 # Browserless URL
 # The URL to a Browserless instance. Useful for getting article content for stubborn webpages that require JS for articles to load, among other things.
 # Default value: (empty)
-BROWSERLESS_URL=http://127.0.0.1:3000
+BROWSERLESS_URL=http://192.168.1.123:3000
 
 # Browserless token
 # The token to your Browserless instance if the BROWSERLESS_URL variable is set
@@ -202,12 +202,12 @@ BROWSERLESS_TOKEN=your_browserless_token
 # Readability JS server URL
 # The URL to a Readability JS server instance. Can provide better article parsing than the built-in Readability.php parser.
 # Default value: (empty)
-READABILITY_JS_URL=http://127.0.0.1:3000
+READABILITY_JS_URL=http://192.168.1.123:3000
 
 # Mercury Parser server URL
 # The URL to a Mercury Parser server instance. Can provide better article parsing than the built-in Readability.php parser.
 # Default value: (empty)
-MERCURY_URL=http://127.0.0.1:3000
+MERCURY_URL=http://192.168.1.123:3000
 
 # Clear webpages with cache
 # When set to false, this prevents cached webpage content from being deleted when the "Refresh cache" link is clicked
