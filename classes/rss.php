@@ -40,8 +40,7 @@ class RSS {
 	}
 
 	private function setHeaders() {
-		header("Content-Type: application/rss+xml");
-		header('Content-Disposition: attachment; filename=' . $this->request_uri);
+		header("Content-Type: text/xml; charset=utf-8");
 	}
 
 	private function checkCache() {
