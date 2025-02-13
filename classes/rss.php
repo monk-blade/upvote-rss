@@ -148,6 +148,12 @@ class RSS {
 				continue;
 			}
 
+			// Set permalink
+			$permalink = $post->permalink;
+			if(REDDIT_DEFAULT_DOMAIN !== REDDIT_DOMAIN) {
+				$permalink = str_replace(REDDIT_DEFAULT_DOMAIN, REDDIT_DOMAIN, $permalink);
+			}
+
 			// Custom Reddit domain
 			if(REDDIT_DEFAULT_DOMAIN !== REDDIT_DOMAIN && !strpos($link, "www.reddit.com/gallery/")) {
 				$link = str_replace(REDDIT_DEFAULT_DOMAIN, REDDIT_DOMAIN, $link);
@@ -168,13 +174,13 @@ class RSS {
 			if (strpos($link, "http") !== false) {
 				$guid_is_permalink = "true";
 			}
-			$guid_link = $this->xml->createElement("guid", $post->permalink);
+			$guid_link = $this->xml->createElement("guid", $permalink);
 			$guid_link->setAttribute("isPermaLink", $guid_is_permalink);
 			$item_node->appendChild($guid_link);
 
 			// Comments node
 			if (strpos($post->domain, "self.") == false) {
-				$item_node->appendChild($this->xml->createElement("comments", $post->permalink));
+				$item_node->appendChild($this->xml->createElement("comments", $permalink));
 			}
 
 			// Description node
