@@ -155,8 +155,12 @@ class RSS {
 			}
 
 			// Custom Reddit domain
-			if(REDDIT_DEFAULT_DOMAIN !== REDDIT_DOMAIN && !strpos($link, "www.reddit.com/gallery/")) {
-				$link = str_replace(REDDIT_DEFAULT_DOMAIN, REDDIT_DOMAIN, $link);
+			if(REDDIT_DEFAULT_DOMAIN !== REDDIT_DOMAIN) {
+				if(strpos($link, "www.reddit.com/gallery/")) {
+					$link = $permalink;
+				} else {
+					$link = str_replace(REDDIT_DEFAULT_DOMAIN, REDDIT_DOMAIN, $link);
+				}
 			}
 
 			// Create a new node called "item"
