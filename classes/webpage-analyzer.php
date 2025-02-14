@@ -31,6 +31,7 @@ class WebpageAnalyzer {
   private int     $parser_unix_time             = 0;
   private float   $parser_total_time            = 0;
   private bool    $summary_error                = false;
+  private int     $summary_tries                = 0;
   public  string  $summary                      = '';
   public  string  $summary_provider             = '';
   public  string  $summary_model                = '';
@@ -82,6 +83,7 @@ class WebpageAnalyzer {
       $this->parser_unix_time             = $properties['parser_unix_time'] ?? 0;
       $this->parser_total_time            = $properties['parser_total_time'] ?? 0;
       $this->summary_error                = $properties['summary_error'] ?? false;
+      $this->summary_tries                = $properties['summary_tries'] ?? 0;
       $this->summary                      = $properties['summary'] ?? '';
       $this->summary_provider             = $properties['summary_provider'] ?? '';
       $this->summary_model                = $properties['summary_model'] ?? '';
@@ -119,6 +121,7 @@ class WebpageAnalyzer {
       'parser_unix_time'             => $this->parser_unix_time,
       'parser_total_time'            => $this->parser_total_time,
       'summary_error'                => $this->summary_error,
+      'summary_tries'                => $this->summary_tries,
       'summary'                      => $this->summary,
       'summary_provider'             => $this->summary_provider,
       'summary_model'                => $this->summary_model,
@@ -421,9 +424,14 @@ class WebpageAnalyzer {
     if ($this->summary) {
       return $this->summary;
     }
-    if ($this->parser_error || $this->summary_error) {
+    if (
+      $this->parser_error ||
+      ($this->summary_error && $this->summary_tries > 2)
+    ) {
       return '';
     }
+    $this->summary_tries++;
+    $this->savePropertiesToCache();
     $this->getParsedData();
     $fetch_summary = true;
     if(!INCLUDE_SUMMARY) {
@@ -452,30 +460,53 @@ class WebpageAnalyzer {
       !empty(OLLAMA_URL) &&
       !empty(OLLAMA_MODEL)
     ) {
-      $ollama_api_url = OLLAMA_URL . '/api/generate';
+      $model_is_available = false;
+      $ollama_tags_url = OLLAMA_URL . '/api/tags';
       $curl_options = array(
-        CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS => json_encode(array(
-          'model'       => OLLAMA_MODEL,
-          'stream'      => false,
-          'temperature' => 0.4,
-          'system'      => SUMMARY_SYSTEM_PROMPT,
-          'prompt'      => $parsed_content
-        )),
+        CURLOPT_CUSTOMREQUEST => 'GET',
         CURLOPT_HTTPHEADER => array(
           'Content-Type: application/json'
         )
       );
-      $curl_options[CURLOPT_TIMEOUT] = 60;
-      $curl_response = curlURL($ollama_api_url, $curl_options) ?? '';
-      if (!$curl_response) {
-        $summary = '';
-      }
-      $response = json_decode($curl_response, true);
-      if (!empty($response['response']) && strlen($response['response']) > 100) {
-        $summary          = $response['response'];
-        $summary_provider = 'ollama';
-        $summary_model    = OLLAMA_MODEL;
+      $curl_options[CURLOPT_TIMEOUT] = 2;
+      $curl_response = curlURL($ollama_tags_url, $curl_options) ?? '';
+      if ($curl_response) {
+        $response = json_decode($curl_response, true);
+        if (!empty($response['models'])) {
+          foreach ($response['models'] as $model) {
+            if (in_array($model['name'], [OLLAMA_MODEL, OLLAMA_MODEL . ':latest'])) {
+              $model_is_available = true;
+              break;
+            }
+          }
+        }
+        if ($model_is_available) {
+          $ollama_api_url = OLLAMA_URL . '/api/generate';
+          $curl_options = array(
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode(array(
+              'model'       => OLLAMA_MODEL,
+              'stream'      => false,
+              'temperature' => SUMMARY_TEMPERATURE,
+              'system'      => SUMMARY_SYSTEM_PROMPT,
+              'prompt'      => $parsed_content
+            )),
+            CURLOPT_HTTPHEADER => array(
+              'Content-Type: application/json'
+            )
+          );
+          $curl_options[CURLOPT_TIMEOUT] = MAX_EXECUTION_TIME;
+          $curl_response = curlURL($ollama_api_url, $curl_options) ?? '';
+          if (!$curl_response) {
+            $summary = '';
+          }
+          $response = json_decode($curl_response, true);
+          if (!empty($response['response']) && strlen($response['response']) > 100) {
+            $summary          = $response['response'];
+            $summary_provider = 'ollama';
+            $summary_model    = OLLAMA_MODEL;
+          }
+        }
       }
     }
     if(!$summary && !empty(OPENAI_API_KEY)) {
@@ -485,9 +516,7 @@ class WebpageAnalyzer {
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => json_encode(array(
           'max_tokens' => 150,
-          'temperature' => 0.4,
-          // 'top_p' => 0.1,
-          // 'stop' => ['\n', '"'],
+          'temperature' => SUMMARY_TEMPERATURE,
           'model' => $openai_model,
           'messages' => [
             array(
@@ -521,6 +550,7 @@ class WebpageAnalyzer {
       $this->savePropertiesToCache();
       return '';
     }
+    $this->summary_error      = false;
     $Parsedown                = new \Parsedown();
     $Parsedown->setSafeMode(true);
     $summary                  = $Parsedown->text($summary);

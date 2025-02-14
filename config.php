@@ -234,6 +234,11 @@ $summary_system_prompt = $_SERVER["SUMMARY_SYSTEM_PROMPT"] ?? $_ENV["SUMMARY_SYS
 define('SUMMARY_SYSTEM_PROMPT', $summary_system_prompt);
 
 
+// Summary temperature
+$summary_temperature = $_SERVER["SUMMARY_TEMPERATURE"] ?? $_ENV["SUMMARY_TEMPERATURE"] ?? 0.4;
+define('SUMMARY_TEMPERATURE', $summary_temperature);
+
+
 // Comments
 $include_comments = false;
 $comments = 0;
