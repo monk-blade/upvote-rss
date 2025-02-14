@@ -51,6 +51,9 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 		if (!is_dir($cache_directory)) {
 			mkdir($cache_directory, 0755, true);
 		}
+		if (!is_writable($cache_directory)) {
+			return;
+		}
 		$cache_object_value = var_export($cache_object_value, true);
 		$cache_directory = realpath($cache_directory) . '/';
 		file_put_contents($cache_directory . urlencode($cache_object_key), '<?php $val = ' . $cache_object_value . ';', LOCK_SH);
