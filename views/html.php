@@ -21,7 +21,8 @@
 		<a href=".">
 			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
 		</a>
-		<h1><span class="sr-only">Upvote RSS </span>Generate RSS feeds from social aggregation websites.</h1>
+		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from social aggregation websites.</h1>
+		<p v-if="demoMode"><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
 	</header>
 
 	<main id="app" v-cloak>

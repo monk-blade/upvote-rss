@@ -153,7 +153,7 @@ header {
 	@media screen and (min-width: 992px) {
 		margin: clamp(2rem, 6vh, 4rem) 0 clamp(3rem, 7vh, 6rem);
 	}
-	a {
+	> a {
 		display: flex;
 		margin: 0 auto;
 		&:focus-visible {
@@ -175,6 +175,25 @@ header {
 		font-weight: normal;
 		text-align: center;
 		text-wrap: balance;
+	}
+	p {
+		a {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 0.5rem;
+			width: fit-content;
+			margin: 1rem auto 0;
+			font-size: clamp(1rem, 2.5vw, 1.25rem);
+			text-align: center;
+			&:visited {
+				color: var(--text-color);
+			}
+			svg {
+				rotate: -45deg;
+				translate: 0 2px;
+			}
+		}
 	}
 }
 

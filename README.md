@@ -1,6 +1,6 @@
 # Upvote RSS
 
-Generate RSS feeds for popular posts from various social aggregation websites like Reddit, Hacker News, Lemmy, and more.
+Generate rich RSS feeds for popular posts from various social aggregation websites like Reddit, Hacker News, Lemmy, and more.
 
 ![Application Screenshot](img/screenshot.png)
 
