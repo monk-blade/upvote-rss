@@ -27,12 +27,13 @@ if ($debug) {
 
 // Maximum execution time
 $max_execution_time = $_SERVER["MAX_EXECUTION_TIME"] ?? $_ENV["MAX_EXECUTION_TIME"] ?? 60;
+define('MAX_EXECUTION_TIME', $max_execution_time);
 if (
-  !empty($max_execution_time)
-  && is_numeric($max_execution_time)
-  && $max_execution_time > 0
+  !empty(MAX_EXECUTION_TIME)
+  && is_numeric(MAX_EXECUTION_TIME)
+  && MAX_EXECUTION_TIME > 0
 ) {
-  ini_set('max_execution_time', $max_execution_time);
+  ini_set('max_execution_time', MAX_EXECUTION_TIME);
 }
 
 
