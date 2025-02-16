@@ -28,6 +28,7 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chown upvote-rss:upvote-rss /entrypoint.sh
 
 # Create necessary directories and set permissions
+RUN mkdir -p /app/cache && chown -R upvote-rss:upvote-rss /app/cache
 RUN mkdir -p /data/caddy/locks && chown -R upvote-rss:upvote-rss /data
 
 # Run on port 80

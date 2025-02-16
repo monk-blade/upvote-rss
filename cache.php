@@ -38,10 +38,11 @@ foreach (new RecursiveIteratorIterator($cache_directory_iterator) as $item) {
     !empty($item) &&
     is_dir($item) &&
     is_array(scandir($item)) &&
-    count(scandir($item)) == 2
+    count(scandir($item)) == 2 &&
+    $item->getPathname() !== 'cache'
   ) {
     $parent = $item->getPath();
-    while (count(scandir($parent)) == 2) {
+    while (count(scandir($parent)) == 2 && $parent !== 'cache') {
       if (!@rmdir($parent)) {
         // Directory is busy, skip it
         break;

@@ -18,7 +18,7 @@ if [ "$CURRENT_USER_ID" != "$USER_ID" ] || [ "$CURRENT_GROUP_ID" != "$GROUP_ID" 
   addgroup -g $GROUP_ID upvote-rss
   adduser -D -u $USER_ID -G upvote-rss -s /bin/sh upvote-rss
 
-  chown -R upvote-rss:upvote-rss /app/public
+  chown -R upvote-rss:upvote-rss /app/cache
 fi
 
 exec su-exec upvote-rss "$@"
