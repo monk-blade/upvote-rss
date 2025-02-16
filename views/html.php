@@ -21,7 +21,7 @@
 		<a href=".">
 			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
 		</a>
-		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from social aggregation websites.</h1>
+		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, and Hacker News</h1>
 		<p v-if="demoMode"><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
 	</header>
 
@@ -298,7 +298,7 @@
 
 		<!-- Footer -->
 		<footer>
-			<p class="repo-name">Upvote RSS</p>
+			<p class="repo-name">Upvote RSS v<?php echo UPVOTE_RSS_VERSION; ?></p>
 			<p class="repo-link"><a href="https://github.com/johnwarne/upvote-rss/" target="_blank"><svg class="icon icon-github"><use xlink:href="#icon-github"></use></svg>GitHub</a></p>
 			<form class="dark-mode" @submit.prevent>
 				<label for="auto">

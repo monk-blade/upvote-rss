@@ -8,6 +8,7 @@ if (file_exists('.env')) {
 
 
 // Set defaults
+const UPVOTE_RSS_VERSION = '1.0.4';
 const DEFAULT_PLATFORM = 'lemmy';
 const DEFAULT_SUBREDDIT = 'technology';
 const DEFAULT_HACKER_NEWS_INSTANCE = 'news.ycombinator.com';

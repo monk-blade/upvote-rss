@@ -1016,26 +1016,28 @@ header {
 
 /* Footer */
 footer {
-	--gap: clamp(1rem,3vw,5rem);
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	gap: 1rem;
+	@media screen and (min-width: 460px) {
+		flex-direction: row;
+	}
 	@media screen and (min-width: 992px) {
-		display: flex;
-		justify-content: center;
-		align-items: center;
 		position: absolute;
 		bottom: 0;
 		left: 0;
 		right: 0;
 		height: var(--footer-height);
 		margin-block-start: calc(0px - var(--footer-height));
-		margin-inline: calc(25% + var(--gap));
 	}
 	p {
-		margin: 0 1em 0 0;
-		padding-right: 1em;
-		border-right: 1px solid var(--text-color);
+		margin: 0;
+		@media screen and (min-width: 460px) {
+			padding-right: 1em;
+			border-right: 1px solid var(--text-color);
+		}
 	}
 	a {
 		color: var(--text-color);
@@ -1054,6 +1056,9 @@ footer {
 		border: 1px solid light-dark(var(--text-color), var(--color__blue_700));
 		border-radius: 4px;
 		overflow: hidden;
+		@media screen and (max-width: 459px) {
+			margin-block-start: 1rem;
+		}
 		input {
 			position: absolute;
 			opacity: 0;
