@@ -22,15 +22,16 @@
 			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
 		</a>
 		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, and Hacker News</h1>
-		<p v-if="demoMode"><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
+		<?php if(DEMO_MODE) : ?>
+			<p><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
+		<?php endif; ?>
 	</header>
 
 	<main id="app" v-cloak>
 
 		<div class="columns">
 
-			<!-- Step 1 -->
-			<section id="step-1" class="step">
+			<!-- Step 1 -->			<section id="step-1" class="step">
 				<h2>Build your feed</h2>
 				<form class="column-content" @submit.prevent="submitForm">
 					<div class="inner">
@@ -333,15 +334,14 @@
 	<script>
 	const platform = '<?php echo PLATFORM; ?>';
 	const defaultPlatform = '<?php echo DEFAULT_PLATFORM; ?>';
-	const demoMode = <?php echo DEMO_MODE; ?>;
+	const demoMode = <?php echo DEMO_MODE ? 'true' : 'false'; ?>;
 	const redditEnabled = '<?php echo REDDIT_USER && REDDIT_CLIENT_ID && REDDIT_CLIENT_SECRET; ?>';
 	const redditDefaultDomain = '<?php echo REDDIT_DEFAULT_DOMAIN; ?>';
 	const redditDefaultDomainOverride = '<?php echo REDDIT_DEFAULT_DOMAIN_OVERRIDE; ?>';
 	const redditDomain = '<?php echo REDDIT_DOMAIN; ?>';
 	const overrideRedditDomain = <?php echo REDDIT_DEFAULT_DOMAIN === REDDIT_DOMAIN ? "false" : "true"; ?>;
 	const subreddit = '<?php echo SUBREDDIT; ?>';
-	const instance = '<?php echo INSTANCE; ?>';
-	const instanceHackerNewsDefault = '<?php echo DEFAULT_HACKER_NEWS_INSTANCE; ?>';
+	const instance = '<?php echo INSTANCE; ?>';	const instanceHackerNewsDefault = '<?php echo DEFAULT_HACKER_NEWS_INSTANCE; ?>';
 	const instanceLemmyDefault = '<?php echo DEFAULT_LEMMY_INSTANCE; ?>';
 	const instanceMbinDefault = '<?php echo DEFAULT_MBIN_INSTANCE; ?>';
 	const community = '<?php echo COMMUNITY; ?>';

@@ -57,11 +57,11 @@ $filter_value = null;
 
 
 // Demo mode
-$demo_mode = 'false';
-if (isset($_SERVER["DEMO_MODE"]) && $_SERVER["DEMO_MODE"] === 'true') {
-  $demo_mode = 'true';
-} elseif (isset($_ENV["DEMO_MODE"]) && $_ENV["DEMO_MODE"] === 'true') {
-  $demo_mode = 'true';
+$demo_mode = false;
+if (isset($_SERVER["DEMO_MODE"]) && $_SERVER["DEMO_MODE"] == true) {
+  $demo_mode = true;
+} elseif (isset($_ENV["DEMO_MODE"]) && $_ENV["DEMO_MODE"] == true) {
+  $demo_mode = true;
 }
 define('DEMO_MODE', $demo_mode);
 
