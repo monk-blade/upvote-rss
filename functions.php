@@ -52,6 +52,7 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 		if (!is_dir($cache_directory)) {
 			mkdir($cache_directory, 0755, true);
 		}
+		usleep(10000);
 		if (!is_writable($cache_directory)) {
 			$log->error("Cache directory is not writable: $cache_directory");
 			return;
