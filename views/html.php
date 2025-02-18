@@ -13,13 +13,21 @@
 	<link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-touch-icon.png" />
 	<meta name="apple-mobile-web-app-title" content="Upvote RSS" />
 	<link rel="manifest" href="img/favicons/site.webmanifest" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Upvote RSS" />
+	<meta property="og:description" content="Generate rich RSS feeds from Reddit, Lemmy, and Hacker News" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:image" content="img/screenshot.png" />
+	<meta property="og:image:width" content="1400" />
+	<meta property="og:image:height" content="1000" />
 </head>
 
 <body>
 
 	<header>
 		<a href=".">
-			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">		</a>
+			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
+		</a>
 		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, and Hacker News</h1>
 		<?php if(DEMO_MODE) : ?>
 			<p><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
@@ -30,7 +38,8 @@
 
 		<div class="columns">
 
-			<!-- Step 1 -->			<section id="step-1" class="step">
+			<!-- Step 1 -->
+			<section id="step-1" class="step">
 				<h2>Build your feed</h2>
 				<form class="column-content" @submit.prevent="submitForm">
 					<div class="inner">
@@ -340,7 +349,8 @@
 	const redditDomain = '<?php echo REDDIT_DOMAIN; ?>';
 	const overrideRedditDomain = <?php echo REDDIT_DEFAULT_DOMAIN === REDDIT_DOMAIN ? "false" : "true"; ?>;
 	const subreddit = '<?php echo SUBREDDIT; ?>';
-	const instance = '<?php echo INSTANCE; ?>';	const instanceHackerNewsDefault = '<?php echo DEFAULT_HACKER_NEWS_INSTANCE; ?>';
+	const instance = '<?php echo INSTANCE; ?>';
+	const instanceHackerNewsDefault = '<?php echo DEFAULT_HACKER_NEWS_INSTANCE; ?>';
 	const instanceLemmyDefault = '<?php echo DEFAULT_LEMMY_INSTANCE; ?>';
 	const instanceMbinDefault = '<?php echo DEFAULT_MBIN_INSTANCE; ?>';
 	const community = '<?php echo COMMUNITY; ?>';
