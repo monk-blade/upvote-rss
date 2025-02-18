@@ -37,6 +37,7 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 	if (empty($cache_object_key) || empty($cache_object_value)) {
 		return;
 	}
+	$log = new \CustomLogger;
 	// Use Redis if available
 	if (REDIS) {
 		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
@@ -52,11 +53,15 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 			mkdir($cache_directory, 0755, true);
 		}
 		if (!is_writable($cache_directory)) {
+			$log->error("Cache directory is not writable: $cache_directory");
 			return;
 		}
 		$cache_object_value = var_export($cache_object_value, true);
 		$cache_directory = realpath($cache_directory) . '/';
-		file_put_contents($cache_directory . urlencode($cache_object_key), '<?php $val = ' . $cache_object_value . ';', LOCK_SH);
+		$file_path = $cache_directory . urlencode($cache_object_key);
+		if (file_put_contents($file_path, '<?php $val = ' . $cache_object_value . ';', LOCK_SH) === false) {
+			$log->error("Failed to write cache file: $file_path");
+		}
 	}
 }
 
@@ -223,7 +228,7 @@ function curlURL($url, $options = [])
 		}
 	}
 	if (!array_key_exists(CURLOPT_USERAGENT, $options)) {
-		curl_setopt($ch, CURLOPT_USERAGENT, 'UpvoteRSS/1.0 (+https://www.upvote-rss.com)');
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Upvote RSS:' . UPVOTE_RSS_VERSION . ' (+https://www.upvote-rss.com)');
 	}
 	$data = curl_exec($ch);
 	curl_close($ch);
@@ -232,7 +237,6 @@ function curlURL($url, $options = [])
 		strpos($data, 'Access Denied') !== false ||
 		strpos($data, 'Please enable JS and disable any ad blocker') !== false
 	) {
-		if(!empty($_ENV["DEBUG"])) writeLog($data);
 		$user_agents = [
 			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
 			'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:129.0) Gecko/20100101 Firefox/129.0'
@@ -255,44 +259,6 @@ function curlURL($url, $options = [])
 
 
 /**
- * Get the content of a URL using Browserless
- * @param string $url The URL to get the content from
- * @return string The content of the URL
- */
-function getBrowserlessPage($url = '') {
-	if (!BROWSERLESS_URL || !BROWSERLESS_TOKEN || empty($url)) {
-		return;
-	}
-	$curl = curl_init();
-	curl_setopt_array($curl, [
-		CURLOPT_URL            => BROWSERLESS_URL . "/content?token=" . BROWSERLESS_TOKEN,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_ENCODING       => "",
-		CURLOPT_MAXREDIRS      => 10,
-		CURLOPT_TIMEOUT        => 10,
-		CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-		CURLOPT_CUSTOMREQUEST  => "POST",
-		CURLOPT_POSTFIELDS     => "{
-			\"url\": \"" . $url . "\"
-		}",
-		CURLOPT_HTTPHEADER     => [
-			"Content-Type: application/json"
-		],
-	]);
-	$response = curl_exec($curl);
-	$err = curl_error($curl);
-	curl_close($curl);
-	if ($err) {
-		return;
-	}
-	if (strpos($response, 'HTTP ERROR 404') !== false) {
-		return;
-	}
-	return $response;
-}
-
-
-/**
  * Return a resized image URL
  * @param string  $url The URL to get the domain from
  * @param int     $max_width The maximum width of the image
@@ -304,6 +270,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 	if (empty($image_url)) {
 		return [];
 	}
+	$log = new \CustomLogger;
 	// Get the image extension
 	$image_extension = pathinfo($image_url, PATHINFO_EXTENSION);
 	// If the image exists in the cache, return the URL of the cached image file as the first element of the array
@@ -366,6 +333,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 	if (!function_exists('imagecreatefromstring')) {
 		return [$image_url, '', ''];
 	}
+	$log->info("RSS feed channel image is too big: $image_url. Attempting to resize image.");
 	// Get the image data
 	$image_data = file_get_contents($image_url);
 	// Create an image from the image data
@@ -410,7 +378,12 @@ function resizeImage($image_url, $max_width, $max_height) {
 	imagecopyresampled($new_image, $image, 0, 0, 0, 0, $new_width, $new_height, $image_width, $image_height);
 	// Create the cache directory if it does not exist
 	if (!is_dir($cache_directory)) {
-		mkdir($cache_directory, 0755, true);
+		try {
+			mkdir($cache_directory, 0755, true);
+		} catch (\Exception $e) {
+			$log->error("Failed to create cache directory: " . $e->getMessage());
+			return [$image_url, '', ''];
+		}
 	}
 	// Save the new image to the cache
 	if ($image_extension == 'png') {
@@ -426,6 +399,11 @@ function resizeImage($image_url, $max_width, $max_height) {
 	elseif ($image_extension == 'gif') {
 		imagegif($new_image, $cache_file);
 	}
+	// Free up memory
+	imagedestroy($image);
+	imagedestroy($new_image);
+	// Log that the image was resized
+	$log->info("Successfully resized image: $image_url");
 	// Return the URL of the new image
 	return [
 		$url_to_cache_file,

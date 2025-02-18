@@ -39,16 +39,27 @@ class Lemmy extends Community
 
 
   protected function getInstanceInfo() {
+    $log = new \CustomLogger;
     $url = "https://$this->instance/api/v3/site";
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
+    if (empty($curl_data)) {
+      $message = "The Lemmy instance $this->instance is not reachable.";
+      $log->error($message);
+      return ['error' => $message];
+    }
     if (!empty($curl_data['site_view']) && empty($curl_data['error'])) {
       $this->is_instance_valid = true;
+    } elseif (!empty($curl_data['error'])) {
+      $message = "Error retrieving data for the Lemmy instance $this->instance: " . ($curl_data['error'] ?? 'Unknown error');
+      $log->error($message);
+      return ['error' => $message];
     }
   }
 
 
   protected function getCommunityInfo() {
+    $log = new \CustomLogger;
     // Check cache directory first
     $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/$this->instance/$this->slug/about/";
     $info = cacheGet($this->slug, $info_directory);
@@ -69,6 +80,12 @@ class Lemmy extends Community
           cacheSet($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
         } else {
           $this->is_community_valid = false;
+          if (!empty($info['error']) && $info['error'] == 'couldnt_find_community') {
+            $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+          } else {
+            $log->error("Error retrieving data for the requested Lemmy community $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
+          }
+          return;
         }
       }
     }
@@ -103,15 +120,22 @@ class Lemmy extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = null) {
-    if (!$this->is_community_valid)
-      return "This community is not valid.";
-    if (empty($limit) || $limit < $this->max_items_per_request) $limit = $this->max_items_per_request;
+    $log = new \CustomLogger;
+    if (!$this->is_community_valid) {
+      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+      return [];
+    }
+    if (empty($limit) || $limit < $this->max_items_per_request) {
+      $limit = $this->max_items_per_request;
+    }
     $number_of_requests = ceil($limit / $this->max_items_per_request);
     $limit = $number_of_requests * $this->max_items_per_request;
     $cache_object_key = "$this->slug-top";
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/$this->instance/$this->slug/top_posts/";
     $cache_expiration = TOP_DAILY_POSTS_EXPIRATION;
-    if ($period && $period == 'month') $cache_expiration = TOP_MONTHLY_POSTS_EXPIRATION;
+    if ($period && $period == 'month') {
+      $cache_expiration = TOP_MONTHLY_POSTS_EXPIRATION;
+    }
     // Listing types: https://github.com/LemmyNet/lemmy-js-client/blob/main/src/types/ListingType.ts
     // Sort types: https://github.com/LemmyNet/lemmy-js-client/blob/main/src/types/SortType.ts
     $base_url = "https://$this->instance/api/v3/post/list?community_name=$this->slug&limit=$this->max_items_per_request&sort=TopDay&type_=All";
@@ -122,32 +146,37 @@ class Lemmy extends Community
       $base_url = "https://$this->instance/api/v3/post/list?community_name=$this->slug&limit=$this->max_items_per_request&sort=Top$period&type_=All";
     }
     if ($top_posts = cacheGet($cache_object_key, $cache_directory)) {
-      if (count($top_posts) >= $limit)
+      if (count($top_posts) >= $limit) {
         return array_slice($top_posts, 0, $limit);
+      }
     }
     $top_posts = [];
     $progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
     $progress_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/progress/";
-    if (INCLUDE_PROGRESS)
+    if (INCLUDE_PROGRESS) {
       cacheDelete($progress_cache_object_key, $progress_cache_directory);
+    }
     for ($i = 1; $i <= $number_of_requests; $i++) {
       $progress = [
         'current' => $i,
         'total' => $number_of_requests + 1
       ];
-      if (INCLUDE_PROGRESS)
+      if (INCLUDE_PROGRESS) {
         cacheSet($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+      }
       $url = $base_url . "&page=$i";
       $page_cache_object_key = "$this->slug-top-$period-limit-$this->max_items_per_request-page-$i";
-      if (cacheGet($page_cache_object_key, $cache_directory))
+      if (cacheGet($page_cache_object_key, $cache_directory)) {
         $top_posts = array_merge($top_posts, cacheGet($page_cache_object_key, $cache_directory));
-      else {
+      } else {
         $curl_response = curlURL($url);
         $curl_data = json_decode($curl_response, true);
         if (!empty($curl_data['posts'])) {
           $paged_top_posts = [];
           foreach ($curl_data['posts'] as $post) {
-            if (empty($post['post']['id']) || empty($post['counts']['score'])) continue;
+            if (empty($post['post']['id']) || empty($post['counts']['score'])) {
+              continue;
+            }
             $post_min = [
               'id' => $post['post']['id'],
               'score' => $post['counts']['score']
@@ -173,8 +202,11 @@ class Lemmy extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    if (!$this->is_community_valid)
-      return "This community is not valid.";
+    $log = new \CustomLogger;
+    if (!$this->is_community_valid) {
+      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+      return [];
+    }
     $limit = $limit ?? $this->max_items_per_request;
     $cache_object_key = "$this->slug-hot-limit-$limit-min";
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/$this->instance/$this->slug/hot_posts/";
@@ -187,7 +219,9 @@ class Lemmy extends Community
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data) || !empty($curl_data['error'])) {
-      return ['error' => "There was an error communicating with the $this->instance instance."];
+      $message = "Error communicating with the $this->instance instance: " . ($curl_data['error'] ?? 'Unknown error');
+      $log->error($message);
+      return ['error' => $message];
     }
     cacheSet($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
     $hot_posts_min = array();
@@ -202,20 +236,27 @@ class Lemmy extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    if (!$this->is_community_valid)
-      die("This community is not valid.");
+    $log = new \CustomLogger;
+    if (!$this->is_community_valid) {
+      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+      return 0;
+    }
     $cache_object_key = "$this->slug-month-average-top-score";
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/$this->instance/$this->slug/top_posts_month/";
     // Use cached score if present
-    if (cacheGet($cache_object_key, $cache_directory))
+    if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
+    }
     $top_posts = $this->getTopPosts($this->max_items_per_request, 'month');
     $total_score = 0;
     foreach ($top_posts as $post) {
       $total_score += $post['score'];
     }
-    if (count($top_posts) == 0) return 0;
+    if (count($top_posts) == 0) {
+      return 0;
+    }
     $average_score = floor($total_score / count($top_posts));
+    $log->info("Monthly average top score calculated for $this->instance community $this->slug: $average_score");
     cacheSet($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }
@@ -223,17 +264,23 @@ class Lemmy extends Community
 
   // Get comments
   public function getComments($post_id = null, $limit = 5) {
+    $log = new \CustomLogger;
     $cache_object_key = $post_id . "_limit_" . $limit;
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/comments/";
     $url = "https://$this->instance/api/v3/comment/list?post_id=$post_id&max_depth=1&limit=$limit&sort=Top&type_=All";
-    if (cacheGet($cache_object_key, $cache_directory))
+    if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
+    }
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['error']))
-      return ['error' => "There was an error communicating with the Lemmy instance."];
-    if (empty($curl_data["comments"]))
+    if (empty($curl_data) || !empty($curl_data['error'])) {
+      $message = "Error retrieving data for the Lemmy instance $this->instance: " . ($curl_data['error'] ?? 'Unknown error');
+      $log->error($message);
+      return ['error' => $message];
+    }
+    if (empty($curl_data["comments"])) {
       return false;
+    }
     $comments = $curl_data["comments"];
     $comments = array_slice($comments, 0, $limit);
     $comments_min = [];

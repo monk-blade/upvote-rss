@@ -19,6 +19,7 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         ),
         'M' => 
         array (
+            'Monolog\\' => 8,
             'Masterminds\\' => 12,
         ),
         'L' => 
@@ -43,6 +44,10 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         'Predis\\' => 
         array (
             0 => __DIR__ . '/..' . '/predis/predis/src',
+        ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
         'Masterminds\\' => 
         array (

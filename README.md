@@ -61,10 +61,13 @@ services:
       - REDDIT_CLIENT_ID=your_reddit_client_id
       - REDDIT_CLIENT_SECRET=your_reddit_client_secret
     volumes:
-      - ./cache:/app/cache
+      - upvote-rss-cache:/app/cache
     ports:
       - "8675:80"
     restart: unless-stopped
+
+volumes:
+  upvote-rss-cache:
 ```
 
 Build the Docker image yourself instead of using the pre-built one:
@@ -229,6 +232,11 @@ MAX_EXECUTION_TIME=300
 # Default value: 1000
 USER_ID=1000
 GROUP_ID=1000
+
+# Timezone
+# Override the default timezone. Useful for viewing log messages.
+# Default value: Europe/London
+TZ=America/Denver
 ```
 
 ## Disclaimer
@@ -241,7 +249,8 @@ I'm using the following great projects in Upvote RSS:
 - [Vue.js](https://github.com/vuejs/vue/) - [MIT License](https://github.com/vuejs/vue/blob/dev/LICENSE)
 - [Material Symbols / Material Icons](https://github.com/google/material-design-icons/) - [Apache 2 License](https://github.com/google/material-design-icons/blob/master/LICENSE)
 - [Readability.php](https://github.com/fivefilters/readability.php) - [Apache License 2.0](https://github.com/fivefilters/readability.php/blob/master/LICENSE)
-- [Predis](Predis) - [MIT License](https://github.com/predis/predis/blob/v2.x/LICENSE)
+- [Predis](https://github.com/predis/predis/) - [MIT License](https://github.com/predis/predis/blob/v2.x/LICENSE)
+- [Monolog](https://github.com/Seldaek/monolog) - [MIT License](https://github.com/Seldaek/monolog/blob/main/LICENSE)
 
 ## License
 

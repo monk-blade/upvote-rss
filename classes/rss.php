@@ -7,7 +7,9 @@ class RSS {
 	private $feed_title;
 	private $feed_description;
 	private $community;
+	private $start_time;
 	private $xml;
+	private $log;
 
 	public function __construct() {
 		$this->rss_directory    = $_SERVER['DOCUMENT_ROOT'] . "/cache/rss/";
@@ -15,7 +17,9 @@ class RSS {
 		$this->feed_title       = "";
 		$this->feed_description = "";
 		$this->community        = null;
+		$this->start_time       = microtime(true);
 		$this->xml              = new DOMDocument("1.0", "UTF-8");
+		$this->log              = new CustomLogger;
 	}
 
 	public function generateRSS() {
@@ -45,8 +49,11 @@ class RSS {
 
 	private function checkCache() {
 		if ($this->request_uri && cacheGet($this->request_uri, $this->rss_directory)) {
+			$this->log->info("RSS feed served from cache: " . $this->request_uri);
 			echo cacheGet($this->request_uri, $this->rss_directory);
 			exit;
+		} else {
+			$this->log->info("Starting RSS feed generation: $this->request_uri");
 		}
 	}
 
@@ -56,6 +63,8 @@ class RSS {
 			(!COMMUNITY && !SUBREDDIT)
 		) {
 			http_response_code(404);
+			$this->log->error("Community or platform not defined.");
+			exit;
 		}
 
 		$this->community = match (PLATFORM) {
@@ -69,7 +78,18 @@ class RSS {
 			empty($this->community) ||
 			!$this->community->is_community_valid
 		) {
-			http_response_code(404);
+			$error_message = "Community not valid: " . PLATFORM . " | " . COMMUNITY;
+			if (PLATFORM === 'reddit') {
+				$error_message = "The requested subreddit " . $this->community->slug . " does not exist.";
+			}
+			if (PLATFORM === 'lemmy' || PLATFORM === 'mbin') {
+				$error_message = "Community not valid: " . PLATFORM . " | " . INSTANCE . " | " . COMMUNITY;
+			}
+			http_response_code(406);
+			header("Content-Type: text/plain");
+			echo $error_message;
+			$this->log->error("RSS feed generation failed: $this->request_uri");
+			exit;
 		}
 	}
 
@@ -208,6 +228,10 @@ class RSS {
 
 	private function outputXml() {
 		echo $this->xml->saveXML();
+		$end_time = microtime(true);
+		$execution_time = $end_time - $this->start_time;
+		$execution_time = round($execution_time, 1);
+		$this->log->info("RSS feed generated successfully in " . $execution_time . " seconds: " . $this->request_uri);
 		exit;
 	}
 }

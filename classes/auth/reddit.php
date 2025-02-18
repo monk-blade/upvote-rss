@@ -3,24 +3,36 @@
 namespace Auth;
 
 class Reddit extends Auth {
+  private $log;
+
+  public function __construct() {
+    $this->log = new \CustomLogger;
+  }
 
   public function getToken() {
-    if (empty(REDDIT_USER) || empty(REDDIT_CLIENT_ID_ENCRYPTED) || empty(REDDIT_CLIENT_SECRET))
-      die("Please ensure that you have set all Reddit credentials.");
+    if (empty(REDDIT_USER) || empty(REDDIT_CLIENT_ID_ENCRYPTED) || empty(REDDIT_CLIENT_SECRET)) {
+      $this->log->error("Reddit credentials are not fully set.");
+      throw new \Exception("Reddit credentials are not fully set.");
+    }
     $auth_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/auth/reddit/";
     $token = cacheGet(REDDIT_CLIENT_ID_ENCRYPTED, $auth_directory);
-    if ($token)
+    if ($token) {
       return openssl_decrypt($token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
+    }
+    $this->log->info("Requesting new token from Reddit for user " . REDDIT_USER);
     $auth_string = base64_encode(REDDIT_CLIENT_ID . ':' . REDDIT_CLIENT_SECRET);
     $curl_response = curlURL('https://www.reddit.com/api/v1/access_token', [
       CURLOPT_POST => 1,
       CURLOPT_POSTFIELDS => 'grant_type=client_credentials',
-      CURLOPT_USERAGENT => 'web:voterss:1.0 (by /u/' . REDDIT_USER . ')',
+      CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')',
       CURLOPT_HTTPHEADER => array('Authorization: Basic ' . $auth_string)
     ]);
     $curl_data = json_decode($curl_response, true);
-    if (!empty($curl_data['error']))
-      die("There was an error authenticating with Reddit. Please check your username, client ID, and client secret.");
+    if (!empty($curl_data['error'])) {
+      $this->log->error("Reddit authentication failed for user " . REDDIT_USER . ". Response: " . $curl_response);
+      throw new \Exception("Reddit authentication failed for user " . REDDIT_USER . ". Response: " . $curl_response);
+    }
+    $this->log->info("New token received from Reddit for user " . REDDIT_USER);
     $access_token = $curl_data['access_token'];
     $access_token_encrypted = openssl_encrypt($access_token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
     cacheSet(REDDIT_CLIENT_ID_ENCRYPTED, $access_token_encrypted, $auth_directory, AUTH_EXPIRATION);

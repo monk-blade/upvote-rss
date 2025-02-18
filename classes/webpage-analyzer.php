@@ -37,9 +37,11 @@ class WebpageAnalyzer {
   public  string  $summary_model                = '';
   private int     $summary_unix_time            = 0;
   private float   $summary_total_time           = 0;
+  private $log;
 
   // Constructor
   public function __construct($url) {
+    $this->log = new \CustomLogger;
     $this->url = cleanURL($url) ?? '';
     $this->getCacheObjectKey();
     $this->getPropertiesFromCache();
@@ -129,6 +131,7 @@ class WebpageAnalyzer {
       'summary_total_time'           => $this->summary_total_time
     ];
     cacheSet($this->cache_object_key, $properties, $this->cache_directory, WEBPAGE_EXPIRATION);
+    $this->log->info('Webpage cache updated for ' . $this->url);
   }
 
   // Get domain from URL
@@ -148,6 +151,9 @@ class WebpageAnalyzer {
     $status = $this->status;
     if (empty($status)) {
       $status = getHttpStatus($this->url) ?? 0;
+      if ($status < 200 || $status >= 300) {
+        $this->log->log('WebpageAnalyzer: ' . $this->url . ' returned status ' . $status);
+      }
     }
     if($status != $this->status) {
       $this->status = $status;
@@ -172,22 +178,27 @@ class WebpageAnalyzer {
     $content_extractor = '';
     $parsed_webpage = [];
     // Try Mercury first
-    if (
-      !empty(MERCURY_URL) &&
-      remote_file_exists(MERCURY_URL)
-    ) {
-      $parser = new \Parser\Mercury($this->url);
-      $parsed_webpage = $parser->getParsedWebpage() ?? [];
-      $content_extractor = 'mercury';
+    if (!empty(MERCURY_URL)) {
+      if (!remote_file_exists(MERCURY_URL)) {
+        $this->log->error('Mercury URL ' . MERCURY_URL . ' is not reachable');
+      } else {
+        $parser = new \Parser\Mercury($this->url);
+        $parsed_webpage = $parser->getParsedWebpage() ?? [];
+        $content_extractor = 'mercury';
+      }
     }
     // Try ReadabilityJS next
     if (
       empty($parsed_webpage['content']) &&
       !empty(READABILITY_JS_URL)
     ) {
-      $parser = new \Parser\ReadabilityJS($this->url);
-      $parsed_webpage = $parser->getParsedWebpage();
-      $content_extractor = 'readability_js';
+      if (remote_file_exists(READABILITY_JS_URL) || getHttpStatus(READABILITY_JS_URL) == 400) {
+        $parser = new \Parser\ReadabilityJS($this->url);
+        $parsed_webpage = $parser->getParsedWebpage();
+        $content_extractor = 'readability_js';
+      } else {
+        $this->log->error('ReadabilityJS URL ' . READABILITY_JS_URL . ' is not reachable');
+      }
     }
     // Try ReadabilityPHP last
     if (empty($parsed_webpage['content'])) {
@@ -199,6 +210,7 @@ class WebpageAnalyzer {
     if (empty($parsed_webpage['content'])) {
       $this->parser_error = true;
       $this->savePropertiesToCache();
+      $this->log->warning('Content for the URL ' . $this->url . ' could not be parsed');
       if ($display_errors) {
         ini_set('display_errors', 1);
       }
@@ -454,6 +466,7 @@ class WebpageAnalyzer {
     $parsed_content   = strip_tags($parsed_content);
     $parsed_content   = implode(' ', array_slice(explode(' ', $parsed_content), 0, 1000));
     if (str_word_count($parsed_content) < 200) {
+      $this->log->info('Content for the URL ' . $this->url . ' is too short to generate a summary (' . str_word_count($parsed_content) . ' words)');
       return '';
     }
     if(
@@ -470,17 +483,22 @@ class WebpageAnalyzer {
       );
       $curl_options[CURLOPT_TIMEOUT] = 2;
       $curl_response = curlURL($ollama_tags_url, $curl_options) ?? '';
-      if ($curl_response) {
+      if (!$curl_response) {
+        $this->log->error('Ollama URL ' . OLLAMA_URL . ' is not reachable');
+      } else {
         $response = json_decode($curl_response, true);
-        if (!empty($response['models'])) {
-          foreach ($response['models'] as $model) {
-            if (in_array($model['name'], [OLLAMA_MODEL, OLLAMA_MODEL . ':latest'])) {
-              $model_is_available = true;
-              break;
-            }
+        if (empty($response['models'])) {
+          $this->log->error('No models returned from Ollama URL ' . $ollama_tags_url);
+        }
+        foreach ($response['models'] as $model) {
+          if (in_array($model['name'], [OLLAMA_MODEL, OLLAMA_MODEL . ':latest'])) {
+            $model_is_available = true;
+            break;
           }
         }
-        if ($model_is_available) {
+        if (!$model_is_available) {
+          $this->log->error('Model ' . OLLAMA_MODEL . ' is not available at Ollama URL ' . OLLAMA_URL);
+        } else {
           $ollama_api_url = OLLAMA_URL . '/api/generate';
           $curl_options = array(
             CURLOPT_CUSTOMREQUEST => 'POST',
@@ -498,6 +516,7 @@ class WebpageAnalyzer {
           $curl_options[CURLOPT_TIMEOUT] = MAX_EXECUTION_TIME;
           $curl_response = curlURL($ollama_api_url, $curl_options) ?? '';
           if (!$curl_response) {
+            $this->log->error('Ollama API response is empty or invalid');
             $summary = '';
           }
           $response = json_decode($curl_response, true);
@@ -505,6 +524,7 @@ class WebpageAnalyzer {
             $summary          = $response['response'];
             $summary_provider = 'ollama';
             $summary_model    = OLLAMA_MODEL;
+            $this->log->info("Summary for URL $this->url generated by Ollama model $summary_model");
           }
         }
       }
@@ -536,6 +556,7 @@ class WebpageAnalyzer {
       );
       $curl_response = curlURL($openai_url, $curl_options);
       if (!$curl_response) {
+        $this->log->error('OpenAI API response is empty or invalid');
         $summary = '';
       }
       $response = json_decode($curl_response, true);
@@ -543,10 +564,12 @@ class WebpageAnalyzer {
         $summary          = $response['choices'][0]['message']['content'];
         $summary_provider = 'openai';
         $summary_model    = $openai_model;
+        $this->log->info("Summary for URL $this->url generated by OpenAI model $summary_model");
       }
     }
     if (!$summary) {
       $this->summary_error = true;
+      $this->log->warning('Summary for the URL ' . $this->url . ' could not be generated after ' . $this->summary_tries . ' tries');
       $this->savePropertiesToCache();
       return '';
     }

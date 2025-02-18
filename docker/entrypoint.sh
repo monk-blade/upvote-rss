@@ -19,6 +19,11 @@ if [ "$CURRENT_USER_ID" != "$USER_ID" ] || [ "$CURRENT_GROUP_ID" != "$GROUP_ID" 
   adduser -D -u $USER_ID -G upvote-rss -s /bin/sh upvote-rss
 
   chown -R upvote-rss:upvote-rss /app/cache
+  chown -R upvote-rss:upvote-rss /app/logs
 fi
+
+# Echo the app version to stdout
+APP_VERSION=$(grep "const UPVOTE_RSS_VERSION" /app/config.php | cut -d "'" -f 2)
+echo "Starting Upvote RSS v$APP_VERSION"
 
 exec su-exec upvote-rss "$@"

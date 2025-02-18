@@ -97,8 +97,9 @@ class HackerNews extends Post {
   // Get single comment
   private function getComment($comment_id = null) {
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/comments/";
-		if (cacheGet($comment_id, $cache_directory))
+		if (cacheGet($comment_id, $cache_directory)) {
 			return cacheGet($comment_id, $cache_directory);
+    }
 		$url = "https://hacker-news.firebaseio.com/v0/item/$comment_id.json";
 		$curl_response = curlURL($url);
 		$curl_data = json_decode($curl_response, true);
@@ -108,10 +109,12 @@ class HackerNews extends Post {
 
   // Get comments
 	public function getComments() {
+    $log = new \CustomLogger;
 		$cache_object_key = $this->id . "_limit_" . COMMENTS;
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/comments/";
-		if (cacheGet($cache_object_key, $cache_directory))
+		if (cacheGet($cache_object_key, $cache_directory)) {
 			return cacheGet($cache_object_key, $cache_directory);
+    }
 		$comment_ids = [];
 		$individual_post_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/individual_posts/";
 		if (cacheGet($this->id, $individual_post_cache_directory)) {
@@ -122,17 +125,24 @@ class HackerNews extends Post {
 		} else {
 			$url = "https://hacker-news.firebaseio.com/v0/item/$this->id.json";
 			$curl_response = curlURL($url);
+      if (empty($curl_response)) {
+        $log->error("Failed to get comments for Hacker News post $this->id");
+        return [];
+      }
 			$curl_data = json_decode($curl_response, true);
 			cacheSet($this->id, $curl_data, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
 			$comment_ids = $curl_data['kids'];
 			$comment_ids = array_slice($comment_ids, 0, COMMENTS);
 		}
 		$comment_ids = array_slice($comment_ids, 0, COMMENTS);
-		if (empty($comment_ids)) return [];
+		if (empty($comment_ids)) {
+      return [];
+    }
 		$comments = [];
 		foreach ($comment_ids as $comment_id) {
 			$comment = $this->getComment($comment_id);
 			if (!empty($comment['error'])) {
+        $log->error("Comment $comment_id for Hacker News post $this->id returned an error: " . $comment['error']);
         continue;
       }
       $comment_id          = $comment['id'] ?? '';

@@ -207,7 +207,7 @@ abstract class Post {
         }
         $curl_response = curlURL($url, [
           CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $auth_token),
-          CURLOPT_USERAGENT => 'web:voterss:1.0 (by /u/' . REDDIT_USER . ')'
+          CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')'
         ]);
         $curl_data = json_decode($curl_response, true);
         if (!empty($curl_data['error'])) {

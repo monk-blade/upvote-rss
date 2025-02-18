@@ -4,11 +4,15 @@ namespace Parser;
 
 class ReadabilityJS extends Parser {
 
+  // Properties
+  private $log;
+
   // Constructor
   function __construct(
     $url = null
   ) {
     if (!empty($url)) $this->url = $url;
+    $this->log = new \CustomLogger;
   }
 
   public function getParsedWebpage() {
@@ -23,12 +27,14 @@ class ReadabilityJS extends Parser {
       ])
 		]);
     if (!$curl_response) {
+      $this->log->error("There was an error communicating with the Readability.js parser at " . READABILITY_JS_URL);
       return [
         'parser_error' => true
       ];
     }
     $readability_object = json_decode($curl_response);
     if (empty($readability_object)) {
+      $this->log->error("The response from Readability.js was empty or invalid for URL " . $this->url);
       return [
         'parser_error' => true
       ];
@@ -47,6 +53,11 @@ class ReadabilityJS extends Parser {
       $readability_object->all_images = $readability_php_object['all_images'] ?? [];
       $readability_object->lead_image_url = $readability_php_object['lead_image_url'] ?? '';
     }
+    $this->log->info("Readability.js successfully parsed the webpage for URL " . $this->url);
+    $this->log->debug("Parsed data: ", [
+      'title'          => $readability_object->title ?? '',
+      'word_count'     => $readability_object->word_count ?? 0
+    ]);
     return [
       'parser_error'     => false,
       'parser_unix_time' => time(),

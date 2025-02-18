@@ -12,7 +12,4 @@ localhost {
 	route / {
 		encode zstd
 	}
-	log default {
-		level ERROR
-	}
 }

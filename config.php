@@ -1,14 +1,17 @@
 <?php
 
 // Get environment variables from .env file if it exists
-require __DIR__ . '/vendor/autoload.php';
 if (file_exists('.env')) {
   $_ENV = parse_ini_file('.env');
 }
 
 
+// Prevent PHP warnings and deprecation notices
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+
+
 // Set defaults
-const UPVOTE_RSS_VERSION = '1.0.4';
+const UPVOTE_RSS_VERSION = '1.0.5';
 const DEFAULT_PLATFORM = 'lemmy';
 const DEFAULT_SUBREDDIT = 'technology';
 const DEFAULT_HACKER_NEWS_INSTANCE = 'news.ycombinator.com';
@@ -36,6 +39,11 @@ if (
 ) {
   ini_set('max_execution_time', MAX_EXECUTION_TIME);
 }
+
+
+// Timezone
+$timezone = $_SERVER["TZ"] ?? $_ENV["TZ"] ?? 'Europe/London';
+date_default_timezone_set($timezone);
 
 
 // Variables
@@ -67,8 +75,6 @@ define('PLATFORM', $platform);
 
 // Auth
 $encryption_key = hash('sha256', date('Y-m-d', strtotime('-1 month')));
-// if (!empty($_ENV["ENCRYPTION_KEY"])) $encryption_key = $_ENV["ENCRYPTION_KEY"];
-// elseif (!empty($_GET["key"])) $encryption_key = $_GET["key"];
 define('ENCRYPTION_KEY', $encryption_key);
 define('CIPHERING', "AES-128-CTR");
 define('IV_LENGTH', openssl_cipher_iv_length(CIPHERING));

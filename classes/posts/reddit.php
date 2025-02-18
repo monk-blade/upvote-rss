@@ -253,24 +253,32 @@ class Reddit extends Post {
 
   // Get comments
 	public function getComments() {
+    $log = new \CustomLogger;
     $reddit_auth = new \Auth\Reddit();
-    if(!$reddit_auth->getToken()) {
-      return ['error' => "There was an error communicating with Reddit."];
+    if (!$reddit_auth->getToken()) {
+      $message = "Reddit auth token not found.";
+      $log->error($message);
+      return ['error' => $message];
     }
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/reddit/comments/";
     $url = "https://oauth.reddit.com/comments/$this->id.json?depth=1&showmore=0&limit=" . COMMENTS;
-    if (cacheGet($cache_object_key, $cache_directory))
+    if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
+    }
     $curl_response = curlURL($url, [
       CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $reddit_auth->getToken()),
-      CURLOPT_USERAGENT => 'web:voterss:1.0 (by /u/' . REDDIT_USER . ')'
+      CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')'
     ]);
     $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['error']))
-      return ['error' => "There was an error communicating with Reddit."];
-    if (empty($curl_data[1]["data"]["children"]))
+    if (empty($curl_data) || !empty($curl_data['error'])) {
+      $message = "Error in Reddit comments response: " . json_encode($curl_data['error'] ?? 'Unknown error');
+      $log->error($message);
+      return ['error' => $message];
+    }
+    if (empty($curl_data[1]["data"]["children"])) {
       return false;
+    }
     $comments = $curl_data[1]["data"]["children"];
     $comments_min = [];
     foreach ($comments as $comment) {

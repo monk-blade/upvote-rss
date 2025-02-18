@@ -5,25 +5,25 @@ namespace Community;
 abstract class Community
 {
   // Properties
-  public $platform;
-  public $instance;
-  public $slug;
-  public $name;
-  public $title;
-  public $description;
-  public $url;
-  public $platform_icon;
-  public $icon;
-  public $banner_image;
-  public $created;
-  public $nsfw;
-  public $subscribers;
-  public $max_items_per_request;
-  public $needs_authentication;
-  public $feed_title;
-  public $feed_description;
-  public $is_instance_valid  = false;
-  public $is_community_valid = false;
+  public  $platform;
+  public  $instance;
+  public  $slug;
+  public  $name;
+  public  $title;
+  public  $description;
+  public  $url;
+  public  $platform_icon;
+  public  $icon;
+  public  $banner_image;
+  public  $created;
+  public  $nsfw;
+  public  $subscribers;
+  public  $max_items_per_request;
+  public  $needs_authentication;
+  public  $feed_title;
+  public  $feed_description;
+  public  $is_instance_valid  = false;
+  public  $is_community_valid = false;
 
   // Abstract methods
   abstract protected function getInstanceInfo();
@@ -42,8 +42,18 @@ abstract class Community
     $filter_old_posts = FILTER_OLD_POSTS,
     $post_cutoff_days = POST_CUTOFF_DAYS
   ) {
-
-    if (!$this->is_community_valid) die("This community is not valid.");
+    $log = new \CustomLogger;
+    if (!$this->is_community_valid) {
+      $log_message = $this->slug . " is not a valid community";
+      if (PLATFORM === 'reddit') {
+        $log_message .= ". Please check if the subreddit exists and is public.";
+      }
+      if (PLATFORM === 'lemmy') {
+        $log_message .= " or the instance '" . $this->instance . "' is not reachable.";
+      }
+      $log->error($log_message);
+      throw new \Exception($log_message);
+    }
 
     // Filter by score
     switch ($filter_type) {
@@ -95,7 +105,9 @@ abstract class Community
     if (empty($hot_posts)) {
       return [];
     }
+    $log = new \CustomLogger;
     if (!empty($hot_posts['error'])) {
+      $log->error($hot_posts['error']);
       return $hot_posts;
     }
     $hot_posts_filtered = array();

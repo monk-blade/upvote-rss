@@ -9,6 +9,7 @@ if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQU
 // Setup
 $include_progress = true;
 include 'app.php';
+$log = new \CustomLogger;
 
 // Get $_POST data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -29,6 +30,11 @@ if ($data['clearCache'] ?? false) {
 	}
 	deleteDirectoryContents('cache', $exclude);
 	opcache_reset();
+	$log_message = 'Cache cleared';
+	if (!CLEAR_WEBPAGES_WITH_CACHE) {
+		$log_message .= ' (excluding webpages)';
+	}
+	$log->info($log_message);
 
 	header('Content-Type: application/json');
 	echo json_encode(array(
@@ -77,17 +83,23 @@ if ($data['getSubreddits'] ?? false) {
 		echo json_encode(array(
 			"subreddits" => [],
 		));
+		exit;
 	}
-	$reddit_auth = new \Auth\Reddit();
-	$auth_token = $reddit_auth->getToken() ?? null;
-	if(!$auth_token) {
-		returnJSONerror("Reddit authentication failed.");
+	try {
+		$reddit_auth = new \Auth\Reddit();
+		$auth_token = $reddit_auth->getToken();
+	} catch (\Exception $e) {
+		header('Content-Type: application/json');
+		echo json_encode(array(
+			"error" => $e->getMessage(),
+		));
+		exit;
 	}
 	$curl_response = curlURL(
 		"https://oauth.reddit.com/api/search_subreddits.json?query=$subreddit",
 		[
 			CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $auth_token),
-			CURLOPT_USERAGENT => 'web:voterss:1.0 (by /u/' . REDDIT_USER . ')',
+			CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')',
 			CURLOPT_POST => 1,
 		]
 	);
@@ -145,7 +157,7 @@ if ($data['getPosts'] ?? false) {
 	if (!$community->is_instance_valid) {
 		$message = "Invalid instance.";
 		if ($platform === 'lemmy' || $platform === 'mbin') {
-			$message = "\"$instance\" doesn't appear to be a valid " . ucfirst($platform) . " instance.";
+			$message = "\"$instance\" it either unavailable or doesn't appear to be a valid " . ucfirst($platform) . " instance.";
 		}
 		returnJSONerror($message);
 	}
@@ -162,7 +174,7 @@ if ($data['getPosts'] ?? false) {
 		} elseif (
 			$platform === 'lemmy' || $platform === 'mbin'
 		) {
-			$message = "\"$community->slug\" doesn't appear to be a valid " . ucfirst($platform) . " community.";
+			$message = "\"$community->slug\" doesn't appear to be a valid community at \"$instance\".";
 		}
 		returnJSONerror($message);
 	} else {

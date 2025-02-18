@@ -23,7 +23,7 @@ for ($i = 0; $i < 10; $i++) {
   if (is_dir("cache")) break;
   usleep(100000);
 }
-$cache_directory_iterator = new RecursiveDirectoryIterator("cache");
+$cache_directory_iterator = new RecursiveDirectoryIterator("cache") ?? [];
 foreach (new RecursiveIteratorIterator($cache_directory_iterator) as $item) {
   if (is_file($item)) {
     foreach ($directory_expirations as $search => $expiration) {
@@ -31,8 +31,9 @@ foreach (new RecursiveIteratorIterator($cache_directory_iterator) as $item) {
         is_file($item) &&
         strpos($item->getPathname(), $search) !== false &&
         time() - filemtime($item) >= $expiration
-      )
-      unlink($item->getPathname());
+      ) {
+        unlink($item->getPathname());
+      }
     }
   } elseif (
     !empty($item) &&

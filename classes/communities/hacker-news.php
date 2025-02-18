@@ -37,8 +37,12 @@ class HackerNews extends Community
 
 
 	protected function getCommunityInfo() {
-		if (!in_array($this->slug, ['beststories', 'topstories', 'newstories', 'askstories', 'showstories']))
-			die("This Hacker News category is not valid.");
+		$log = new \CustomLogger;
+		if (!in_array($this->slug, ['beststories', 'topstories', 'newstories', 'askstories', 'showstories'])) {
+			$message = "The requested Hacker News category $this->slug does not exist.";
+			$log->error($message);
+			return ['error' => $message];
+		}
 		$api_slug_map = [
 			'beststories' => ['Best', 'https://news.ycombinator.com/best'],
 			'topstories'  => ['Top', 'https://news.ycombinator.com/'],
@@ -63,25 +67,29 @@ class HackerNews extends Community
 
 
 	public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
+		$log = new \CustomLogger;
 		$limit = $limit ?? $this->max_items_per_request;
 		$cache_object_key = $this->slug . '_limit_' . $limit;
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/top_posts/";
-		if (cacheGet($cache_object_key, $cache_directory))
+		if (cacheGet($cache_object_key, $cache_directory)) {
 			return cacheGet($cache_object_key, $cache_directory);
+		}
 		$progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
 		$progress_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/progress/";
 		$top_post_ids = $this->getTopCategoryPostIDs($this->slug);
 		$top_post_ids = array_slice($top_post_ids, 0, $limit);
 		$posts = [];
-		if (INCLUDE_PROGRESS)
+		if (INCLUDE_PROGRESS) {
 			cacheDelete($progress_cache_object_key, $progress_cache_directory);
+		}
 		foreach ($top_post_ids as $index => $post_id) {
 			$progress = [
 				'current' => $index + 1,
 				'total' => count($top_post_ids) + 1
 			];
-			if (INCLUDE_PROGRESS)
+			if (INCLUDE_PROGRESS) {
 				cacheSet($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+			}
 			$individual_post_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/individual_posts/";
 			if (cacheGet($post_id, $individual_post_cache_directory)) {
 				$posts[] = cacheGet($post_id, $individual_post_cache_directory);
@@ -98,8 +106,9 @@ class HackerNews extends Community
 			}
 		}
 		cacheSet($cache_object_key, $posts, $cache_directory, HOT_POSTS_EXPIRATION);
-		if (INCLUDE_PROGRESS)
+		if (INCLUDE_PROGRESS) {
 			cacheSet($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
+		}
 		return $posts;
 	}
 
@@ -112,14 +121,19 @@ class HackerNews extends Community
 
 
 	private function getTopCategoryPostIDs() {
+		$log = new \CustomLogger;
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/category_post_ids/";
-		if (cacheGet($this->slug, $cache_directory))
+		if (cacheGet($this->slug, $cache_directory)) {
 			return cacheGet($this->slug, $cache_directory);
+		}
 		$url = "https://hacker-news.firebaseio.com/v0/$this->slug.json";
 		$curl_response = curlURL($url);
 		$curl_data = json_decode($curl_response, true);
-		if (empty($curl_data) || !empty($curl_data['error']))
-			return ['error' => 'There was an error communicating with Hacker News.'];
+		if (empty($curl_data) || !empty($curl_data['error'])) {
+			$message = 'There was an error communicating with Hacker News.';
+			$log->error($message);
+			return ['error' => $message];
+		}
 		cacheSet($this->slug, $curl_data, $cache_directory, TOP_POSTS_EXPIRATION);
 		return $curl_data;
 	}
@@ -137,9 +151,13 @@ class HackerNews extends Community
 		$filter_old_posts = FILTER_OLD_POSTS,
 		$post_cutoff_days = POST_CUTOFF_DAYS
 	) {
+		$log = new \CustomLogger;
 
-		if (!$this->is_community_valid)
-		die("This community is not valid.");
+		// Check if community is valid
+		if (!$this->is_community_valid) {
+			$log->error("The requested Hacker News category $this->slug does not exist.");
+			return [];
+		}
 
 		// Filter by score
 		if ($filter_type == 'score') :
@@ -149,7 +167,9 @@ class HackerNews extends Community
 		elseif (
 			$filter_type == 'threshold'
 		) :
-			return ['error' => 'This filter type is not supported for Hacker News.'];
+			$message = 'The filter type "threshold" is not supported for Hacker News.';
+			$log->error($message);
+			return ['error' => $message];
 
 		// Filter by average posts per day
 		elseif (

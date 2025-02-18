@@ -7,6 +7,14 @@
     "require": {
         "erusev/parsedown": "^1.7",
         "fivefilters/readability.php": "^3.1",
-        "predis/predis": "^2.2"
+        "predis/predis": "^2.2",
+        "monolog/monolog": "^2.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Post\\": "classes/posts/",
+            "Auth\\": "classes/auth/",
+            "Log\\": "classes/log/"
+        }
     }
 }

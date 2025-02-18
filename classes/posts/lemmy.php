@@ -30,9 +30,6 @@ class Lemmy extends Post {
     $this->setLocal();
     $this->setEmbedDescription();
     $this->setFeedLink();
-    // $this->post_data = null;
-    // $this->instance = null;
-    // $this->slug = null;
   }
 
   // Enable loading from cache
@@ -185,17 +182,23 @@ class Lemmy extends Post {
 
   // Get comments
 	public function getComments() {
+    $log = new \CustomLogger;
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/comments/";
     $url = "https://$this->instance/api/v3/comment/list?post_id=$this->id&max_depth=1&sort=Top&type_=All&limit=" . COMMENTS;
-    if (cacheGet($cache_object_key, $cache_directory))
+    if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
+    }
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['error']))
-      return ['error' => "There was an error communicating with the Lemmy instance."];
-    if (empty($curl_data["comments"]))
+    if (empty($curl_data) || !empty($curl_data['error'])) {
+      $message = "Failed to get comments for Lemmy post $this->id";
+      $log->error($message);
+      return ['error' => $message];
+    }
+    if (empty($curl_data["comments"])) {
       return false;
+    }
     $comments = $curl_data["comments"];
     $comments = array_slice($comments, 0, COMMENTS);
     $comments_min = [];
