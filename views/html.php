@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Upvote RSS</title>
 	<meta name="description" content="Generate RSS feeds from social aggregation websites." />
-	<link href="styles/style.css?v=<?php echo filemtime($_SERVER["DOCUMENT_ROOT"] . '/styles/style.css'); ?>" rel="stylesheet">
+	<style><?php include 'styles/style.css' ?></style>
 	<link rel="icon" type="image/png" href="img/favicons/favicon-96x96.png" sizes="96x96" />
 	<link rel="icon" type="image/svg+xml" href="img/favicons/favicon.svg" />
 	<link rel="shortcut icon" href="img/favicons/favicon.ico" />
@@ -19,8 +19,7 @@
 
 	<header>
 		<a href=".">
-			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
-		</a>
+			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">		</a>
 		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, and Hacker News</h1>
 		<?php if(DEMO_MODE) : ?>
 			<p><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
@@ -366,10 +365,9 @@
 	const filterOldPosts = <?php echo FILTER_OLD_POSTS ? "true" : "false"; ?>;
 	const postCutoffDays = <?php echo POST_CUTOFF_DAYS; ?>;
 	const cacheSize = '<?php echo getCacheSize(); ?>';
+	<?php include 'js/lib/vue.global.prod.js'; ?>
+	<?php include 'js/script.js'; ?>
 	</script>
-
-	<script src="js/lib/vue.global.prod.js"></script>
-	<script src="js/script.js"></script>
 
 	<!-- SVGs -->
 	<?php include 'inc/svgs.php'; ?>
