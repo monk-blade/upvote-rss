@@ -17,9 +17,10 @@
 	<meta property="og:title" content="Upvote RSS" />
 	<meta property="og:description" content="Generate rich RSS feeds from Reddit, Lemmy, and Hacker News" />
 	<meta property="og:locale" content="en_US" />
-	<meta property="og:image" content="img/screenshot.png" />
+	<meta property="og:image" content="https://www.upvote-rss.com/img/screenshot.png" />
 	<meta property="og:image:width" content="1400" />
 	<meta property="og:image:height" content="1000" />
+	<meta property="og:url" content="https://www.upvote-rss.com/" />
 </head>
 
 <body>
