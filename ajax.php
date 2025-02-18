@@ -153,6 +153,16 @@ if ($data['getPosts'] ?? false) {
 			returnJSONerror('Invalid platform');
 	}
 
+	// Check auth status
+	if ($platform === 'reddit') {
+		try {
+			$reddit_auth = new \Auth\Reddit();
+			$auth_token = $reddit_auth->getToken();
+		} catch (\Exception $e) {
+			returnJSONerror($e->getMessage());
+		}
+	}
+
 	// Check if instance is valid
 	if (!$community->is_instance_valid) {
 		$message = "Invalid instance.";
