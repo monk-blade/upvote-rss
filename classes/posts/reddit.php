@@ -256,7 +256,7 @@ class Reddit extends Post {
     $log = new \CustomLogger;
     $reddit_auth = new \Auth\Reddit();
     if (!$reddit_auth->getToken()) {
-      $message = "Reddit auth token not found.";
+      $message = "Reddit auth token not found";
       $log->error($message);
       return ['error' => $message];
     }

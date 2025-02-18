@@ -63,7 +63,7 @@ class RSS {
 			(!COMMUNITY && !SUBREDDIT)
 		) {
 			http_response_code(404);
-			$this->log->error("Community or platform not defined.");
+			$this->log->error("Community or platform not defined: $this->request_uri");
 			exit;
 		}
 

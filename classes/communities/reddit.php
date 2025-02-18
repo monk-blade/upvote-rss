@@ -82,7 +82,7 @@ class Reddit extends Community
         $info = json_decode($curl_response, true);
         if (isset($info['data'])) {
           if (!empty($info['kind']) && $info['kind'] == 'Listing') {
-            $log->error("The requested subreddit $this->slug does not exist.");
+            $log->error("The requested subreddit $this->slug does not exist");
             return;
           }
           $this->is_community_valid = true;
@@ -92,10 +92,10 @@ class Reddit extends Community
     }
     if (!empty($info['reason']) && $info['reason'] == "private") {
       $this->is_private = true;
-      $log->error("The requested subreddit $this->slug is private.");
+      $log->error("The requested subreddit $this->slug is private");
     }
     if (empty($info['data'])) {
-      $log->error("The requested subreddit $this->slug does not exist.");
+      $log->error("The requested subreddit $this->slug does not exist");
       return;
     }
     $this->is_community_valid = true;
@@ -133,7 +133,7 @@ class Reddit extends Community
   public function getTopPosts($limit, $period = '') {
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
-      $log->error("The requested subreddit $this->slug does not exist.");
+      $log->error("The requested subreddit $this->slug does not exist");
       return [];
     }
     if (empty($limit) || $limit < $this->max_items_per_request) {
@@ -218,7 +218,7 @@ class Reddit extends Community
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
-      $log->error("The requested subreddit $this->slug does not exist.");
+      $log->error("The requested subreddit $this->slug does not exist");
       return [];
     }
     if(
@@ -264,7 +264,7 @@ class Reddit extends Community
   public function getMonthlyAverageTopScore() {
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
-      $log->error("The requested subreddit $this->slug does not exist.");
+      $log->error("The requested subreddit $this->slug does not exist");
       return 0;
     }
     $cache_object_key = "$this->slug-month-average-top-score";

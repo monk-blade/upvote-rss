@@ -39,7 +39,7 @@ class HackerNews extends Community
 	protected function getCommunityInfo() {
 		$log = new \CustomLogger;
 		if (!in_array($this->slug, ['beststories', 'topstories', 'newstories', 'askstories', 'showstories'])) {
-			$message = "The requested Hacker News category $this->slug does not exist.";
+			$message = "The requested Hacker News category $this->slug does not exist";
 			$log->error($message);
 			return ['error' => $message];
 		}
@@ -130,7 +130,7 @@ class HackerNews extends Community
 		$curl_response = curlURL($url);
 		$curl_data = json_decode($curl_response, true);
 		if (empty($curl_data) || !empty($curl_data['error'])) {
-			$message = 'There was an error communicating with Hacker News.';
+			$message = 'There was an error communicating with Hacker News';
 			$log->error($message);
 			return ['error' => $message];
 		}
@@ -155,7 +155,7 @@ class HackerNews extends Community
 
 		// Check if community is valid
 		if (!$this->is_community_valid) {
-			$log->error("The requested Hacker News category $this->slug does not exist.");
+			$log->error("The requested Hacker News category $this->slug does not exist");
 			return [];
 		}
 
@@ -167,7 +167,7 @@ class HackerNews extends Community
 		elseif (
 			$filter_type == 'threshold'
 		) :
-			$message = 'The filter type "threshold" is not supported for Hacker News.';
+			$message = 'The filter type "threshold" is not supported for Hacker News';
 			$log->error($message);
 			return ['error' => $message];
 

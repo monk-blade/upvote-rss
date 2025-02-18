@@ -36,7 +36,7 @@ class ReadabilityPHP extends Parser {
         $curled_content = curlURL($this->url);
       }
       if (!$curled_content) {
-        $this->log->error("There was an error grabbing the webpage content for URL $this->url for the ReadabilityPHP parser.");
+        $this->log->error("There was an error grabbing the webpage content for URL $this->url for the ReadabilityPHP parser");
         return [
           'parser_error' => true
         ];
@@ -56,7 +56,7 @@ class ReadabilityPHP extends Parser {
 			$readability_object->direction      = $readability->getDirection() ?? '';
 			$readability_object->word_count     = $readability->getContent() ? str_word_count($readability->getContent()) : 0;
 		} catch (\Throwable $e) {
-      $this->log->error("There was an error parsing the webpage content for URL $this->url with the ReadabilityPHP parser.");
+      $this->log->error("There was an error parsing the webpage content for URL $this->url with the ReadabilityPHP parser");
       return [
         'parser_error' => true
       ];

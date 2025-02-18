@@ -44,7 +44,7 @@ abstract class Parser {
       return;
     }
     if (empty(BROWSERLESS_TOKEN)) {
-      $log->error("Browserless token is not set.");
+      $log->error("Browserless token is not set");
       return;
     }
     $curl = curl_init();

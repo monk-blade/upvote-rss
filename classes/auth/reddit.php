@@ -11,8 +11,9 @@ class Reddit extends Auth {
 
   public function getToken() {
     if (empty(REDDIT_USER) || empty(REDDIT_CLIENT_ID_ENCRYPTED) || empty(REDDIT_CLIENT_SECRET)) {
-      $this->log->error("Reddit credentials are not fully set.");
-      throw new \Exception("Reddit credentials are not fully set.");
+      $message = "Reddit credentials are not fully set";
+      $this->log->error($message);
+      throw new \Exception($message);
     }
     $auth_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/auth/reddit/";
     $token = cacheGet(REDDIT_CLIENT_ID_ENCRYPTED, $auth_directory);
@@ -29,8 +30,9 @@ class Reddit extends Auth {
     ]);
     $curl_data = json_decode($curl_response, true);
     if (!empty($curl_data['error'])) {
-      $this->log->error("Reddit authentication failed for user " . REDDIT_USER . ". Response: " . $curl_response);
-      throw new \Exception("Reddit authentication failed for user " . REDDIT_USER . ". Response: " . $curl_response);
+      $message = "Reddit authentication failed for user " . REDDIT_USER . ". Response: " . $curl_response;
+      $this->log->error($message);
+      throw new \Exception($message);
     }
     $this->log->info("New token received from Reddit for user " . REDDIT_USER);
     $access_token = $curl_data['access_token'];

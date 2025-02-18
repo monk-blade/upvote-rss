@@ -44,7 +44,7 @@ class Lemmy extends Community
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data)) {
-      $message = "The Lemmy instance $this->instance is not reachable.";
+      $message = "The Lemmy instance $this->instance is not reachable";
       $log->error($message);
       return ['error' => $message];
     }
@@ -81,7 +81,7 @@ class Lemmy extends Community
         } else {
           $this->is_community_valid = false;
           if (!empty($info['error']) && $info['error'] == 'couldnt_find_community') {
-            $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+            $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance");
           } else {
             $log->error("Error retrieving data for the requested Lemmy community $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
           }
@@ -122,7 +122,7 @@ class Lemmy extends Community
   public function getTopPosts($limit, $period = null) {
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
-      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance");
       return [];
     }
     if (empty($limit) || $limit < $this->max_items_per_request) {
@@ -204,7 +204,7 @@ class Lemmy extends Community
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
-      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance");
       return [];
     }
     $limit = $limit ?? $this->max_items_per_request;
@@ -238,7 +238,7 @@ class Lemmy extends Community
   public function getMonthlyAverageTopScore() {
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
-      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance.");
+      $log->error("The requested Lemmy community $this->slug does not exist at the $this->instance instance");
       return 0;
     }
     $cache_object_key = "$this->slug-month-average-top-score";
