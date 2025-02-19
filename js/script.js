@@ -4,7 +4,7 @@ createApp({
   data() {
     return {
       loading: false,
-      progress: 1,
+      progress: 0,
       error: false,
       posts: [],
       platform: platform,
@@ -180,6 +180,7 @@ createApp({
         this.community_nsfw = null;
         this.error = json.error;
         this.loading = false;
+        this.progress = 1;
         console.log(this.error);
         return;
       } else {
@@ -203,7 +204,6 @@ createApp({
         this.cacheSize = json.cacheSize;
         this.loading = false;
         this.progress = 1;
-        this.progressStrokeDashOffset = this.progressCircumference - this.progress / 100 * this.progressCircumference;
         this.updateURL();
         document.querySelector('.post-list').scrollTo(0, 0);
       }
