@@ -50,12 +50,12 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 		return;
 	} else {
 		if (!is_dir($cache_directory)) {
-			mkdir($cache_directory, 0755, true);
-		}
-		usleep(10000);
-		if (!is_writable($cache_directory)) {
-			$log->error("Cache directory is not writable: $cache_directory");
-			return;
+			try {
+				mkdir($cache_directory, 0755, true);
+			} catch (\Exception $e) {
+				$log->error("Failed to create cache directory: " . $e->getMessage());
+				return;
+			}
 		}
 		$cache_object_value = var_export($cache_object_value, true);
 		$cache_directory = realpath($cache_directory) . '/';
