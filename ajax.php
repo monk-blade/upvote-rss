@@ -108,6 +108,12 @@ if ($data['getSubreddits'] ?? false) {
 		returnJSONerror($subreddits['error']);
 	}
 	header('Content-Type: application/json');
+	if (empty($subreddits['subreddits'])) {
+		echo json_encode(array(
+			"subreddits" => [],
+		));
+		exit;
+	}
 	echo json_encode(array(
 		"subreddits" => $subreddits['subreddits'],
 	));
