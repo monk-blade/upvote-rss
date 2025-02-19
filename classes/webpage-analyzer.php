@@ -14,6 +14,7 @@ class WebpageAnalyzer {
   public  string  $excerpt                      = '';
   public  string  $lead_image_url               = '';
   public  array   $all_images                   = [];
+  public  string  $og_image_url                 = '';
   public  bool    $large_intro_image_in_content = false;
   public  string  $author                       = '';
   public  string  $byline                       = '';
@@ -68,6 +69,7 @@ class WebpageAnalyzer {
       $this->excerpt                      = $properties['excerpt'] ?? '';
       $this->lead_image_url               = $properties['lead_image_url'] ?? '';
       $this->all_images                   = $properties['all_images'] ?? [];
+      $this->og_image_url                 = $properties['og_image_url'] ?? '';
       $this->large_intro_image_in_content = $properties['large_intro_image_in_content'] ?? false;
       $this->author                       = $properties['author'] ?? '';
       $this->byline                       = $properties['byline'] ?? '';
@@ -106,6 +108,7 @@ class WebpageAnalyzer {
       'excerpt'                      => $this->excerpt,
       'lead_image_url'               => $this->lead_image_url,
       'all_images'                   => $this->all_images,
+      'og_image_url'                 => $this->og_image_url,
       'large_intro_image_in_content' => $this->large_intro_image_in_content,
       'author'                       => $this->author,
       'byline'                       => $this->byline,
@@ -429,6 +432,37 @@ class WebpageAnalyzer {
   public function getWordCount() {
     $this->getParsedData();
     return $this->word_count;
+  }
+
+  public function getOGImage() {
+    if ($this->og_image_url) {
+      return $this->og_image_url;
+    }
+    $this->log->info('Trying to get OG image from ' . $this->url);
+    $og_image_url = '';
+    $parser = new \Parser\ReadabilityPHP($this->url);
+    $webpage_contents = $parser->getBrowserlessPage($this->url) ?? curlURL($this->url) ?? '';
+    if (!$webpage_contents) {
+      $this->log->info('Curl response is empty or invalid when trying to get OG image from ' . $this->url);
+      return '';
+    }
+    $dom = new DOMDocument;
+    libxml_use_internal_errors(true);
+    $dom->loadHTML(mb_convert_encoding(html_entity_decode($webpage_contents), 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    $xpath = new DOMXPath($dom);
+    $meta_tags = $xpath->query('//meta[@property="og:image"]');
+    foreach ($meta_tags as $meta_tag) {
+      $og_image_url = $meta_tag->getAttribute('content');
+    }
+    if (empty($og_image_url)) {
+      $this->log->info('No OG image found for ' . $this->url);
+      return '';
+    }
+    $this->og_image_url = $og_image_url;
+    $this->log->info("OG image found for $this->url: $og_image_url");
+    $this->savePropertiesToCache();
+    return $og_image_url;
   }
 
   // Get summary

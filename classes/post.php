@@ -395,6 +395,18 @@ abstract class Post {
     }
     $preview_image_html = $this->post_link_image_url ? "<img src='$this->post_link_image_url' />" : $preview_image_html;
     if (
+      !$preview_image_html &&
+      $this->url &&
+      $this->get_parsed_content
+    ) {
+      $webpage = new \WebpageAnalyzer($this->url);
+      $og_image_url = $webpage->getOGImage();
+      if ($og_image_url) {
+        $this->preview_image_url = $og_image_url;
+        $preview_image_html = "<img src='$og_image_url' />";
+      }
+    }
+    if (
       BLUR_NSFW &&
       $this->nsfw &&
       $this->image_obfuscated_html
@@ -427,6 +439,7 @@ abstract class Post {
     }
     if (
       $this->parsed_content &&
+      strpos($this->parsed_content, "<img") !== false &&
       strpos($this->parsed_content, "<img") < 2000
     ) {
       $preview_image_html = '';
