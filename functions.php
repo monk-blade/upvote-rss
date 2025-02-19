@@ -236,7 +236,8 @@ function curlURL($url, $options = [])
 	if (
 		strpos($data, '403 Forbidden') !== false ||
 		strpos($data, 'Access Denied') !== false ||
-		strpos($data, 'Please enable JS and disable any ad blocker') !== false
+		strpos($data, 'Please enable JS and disable any ad blocker') !== false ||
+		strpos($data, 'unsupported-browser') !== false
 	) {
 		$user_agents = [
 			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
