@@ -11,7 +11,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION = '1.0.6';
+const UPVOTE_RSS_VERSION = '1.0.7';
 const DEFAULT_PLATFORM = 'lemmy';
 const DEFAULT_SUBREDDIT = 'technology';
 const DEFAULT_HACKER_NEWS_INSTANCE = 'news.ycombinator.com';
