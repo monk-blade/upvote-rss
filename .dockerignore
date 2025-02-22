@@ -1,5 +1,12 @@
 .git
+.github
 .vscode
+.env
 cache
+composer.json
+composer.lock
+gulpfile.js
 logs
 node_modules
+package-lock.json
+package.json

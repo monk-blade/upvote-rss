@@ -26,18 +26,45 @@ for dir in /app/cache /app/logs; do
     mkdir -p "$dir"
   fi
 
-  # Check and set ownership of directories
-  if [ "$(stat -c %U $dir)" != "upvote-rss" ] || [ "$(stat -c %G $dir)" != "upvote-rss" ]; then
-    echo "Setting ownership of $dir to upvote-rss:upvote-rss"
-    chown -R upvote-rss:upvote-rss $dir
-  fi
-
   # Set permissions of directories
   chmod 755 "$dir"
 done
 
+# Set ownership of the app and data directories
+chown -R upvote-rss:upvote-rss /app /data
+
 # Echo the app version to stdout
 APP_VERSION=$(grep "const UPVOTE_RSS_VERSION" /app/config.php | cut -d "'" -f 2)
-echo "Starting Upvote RSS v$APP_VERSION"
+cat << "EOF"
+
+                        +++++
+                       +++++++
+                      +++++++++
+                    ++++++ ++++++
+                   ++++++   ++++++
+                 ++++++       +++++
+                ++++++         ++++++
+========       ++++++           ++++++
+============  +++++++++++   +++++++++++
+============  +++++++++++   +++++++++++
+      ========       ++++   +++++
+ -----     ========    ++   +++++
+----------   ========       +++++
+------------   =======      +++++
+    ----------  =======     +++++
+        -------  ======     +++++
+-------  -------  ======    +++++
+--------  =-----  ======    +++++
+--------   -----   =====    +++++
+-------    -----   =====    +++++
+EOF
+echo ""
+echo "================================="
+echo ""
+echo "   Starting Upvote RSS v$APP_VERSION"
+echo ""
+echo "================================="
+echo ""
+echo ""
 
 exec su-exec upvote-rss "$@"
