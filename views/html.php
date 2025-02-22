@@ -15,7 +15,7 @@
 	<link rel="manifest" href="img/favicons/site.webmanifest" />
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Upvote RSS" />
-	<meta property="og:description" content="Generate rich RSS feeds from Reddit, Lemmy, and Hacker News" />
+	<meta property="og:description" content="Generate rich RSS feeds from Reddit, Lemmy, Hacker News, and Mbin" />
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:image" content="https://www.upvote-rss.com/img/screenshot.png" />
 	<meta property="og:image:width" content="1400" />
@@ -29,7 +29,7 @@
 		<a href=".">
 			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
 		</a>
-		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, and Hacker News</h1>
+		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, Hacker News, and Mbin</h1>
 		<?php if(DEMO_MODE) : ?>
 			<p><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
 		<?php endif; ?>
@@ -47,6 +47,9 @@
 						<div class="form-group">
 							<label for="platform">Platform</label>
 							<select name="platform" id="platform" v-model="platform">
+								<option value="hacker-news">Hacker News</option>
+								<option value="lemmy">Lemmy</option>
+								<option value="mbin">Mbin</option>
 								<template v-if="demoMode">
 									<option disabled>Reddit (available only self-hosted)</option>
 								</template>
@@ -56,8 +59,6 @@
 								<template v-else>
 									<option value="reddit">Reddit</option>
 								</template>
-								<option value="hacker-news">Hacker News</option>
-								<option value="lemmy">Lemmy</option>
 							</select>
 						</div>
 						<div v-if="platform === 'reddit'" class="form-group">
@@ -78,12 +79,16 @@
 								<option value="showstories">Show</option>
 							</select>
 						</div>
-						<div v-if="platform === 'lemmy'" class="form-group">
+						<div v-if="platform === 'lemmy' || platform === 'mbin'" class="form-group">
 							<label for="instance">Instance</label>
 							<input type="text" id="instance" name="instance" v-model="instance" placeholder="Instance" @input="debouncedSearch($event)" />
 						</div>
 						<div v-if="platform === 'lemmy'" class="form-group">
 							<label for="community">Community</label>
+							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch($event)" />
+						</div>
+						<div v-if="platform === 'mbin'" class="form-group">
+							<label for="community">Magazine</label>
 							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch($event)" />
 						</div>
 						<div class="row filter-type-row">

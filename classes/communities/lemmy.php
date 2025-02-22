@@ -261,43 +261,4 @@ class Lemmy extends Community
     return $average_score;
   }
 
-
-  // Get comments
-  public function getComments($post_id = null, $limit = 5) {
-    $log = new \CustomLogger;
-    $cache_object_key = $post_id . "_limit_" . $limit;
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/comments/";
-    $url = "https://$this->instance/api/v3/comment/list?post_id=$post_id&max_depth=1&limit=$limit&sort=Top&type_=All";
-    if (cacheGet($cache_object_key, $cache_directory)) {
-      return cacheGet($cache_object_key, $cache_directory);
-    }
-    $curl_response = curlURL($url);
-    $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['error'])) {
-      $message = "Error retrieving data for the Lemmy instance $this->instance: " . ($curl_data['error'] ?? 'Unknown error');
-      $log->error($message);
-      return ['error' => $message];
-    }
-    if (empty($curl_data["comments"])) {
-      return false;
-    }
-    $comments = $curl_data["comments"];
-    $comments = array_slice($comments, 0, $limit);
-    $comments_min = [];
-    $Parsedown = new \Parsedown();
-    $Parsedown->setSafeMode(true);
-    foreach ($comments as $comment) {
-      $body = $Parsedown->text($comment['comment']['content']);
-      $body = str_replace('href="/c/', 'href="https://' . $this->instance . '/c/', $body);
-      $comments_min[] = [
-        'id' => $comment['comment']['id'],
-        'author' => $comment['comment']['creator_id'],
-        'body' => $body,
-        'created_utc' => normalizeTimestamp($comment['comment']['published']),
-        'permalink' => "https://$this->instance/comment/" . $comment['comment']['id'],
-      ];
-    }
-    cacheSet($cache_object_key, $comments_min, $cache_directory, COMMENTS_EXPIRATION);
-    return $comments_min;
-  }
 }

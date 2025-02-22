@@ -613,6 +613,7 @@ abstract class Post {
 
 
 // Include platform-specific post classes
-include_once "posts/reddit.php";
 include_once "posts/hacker-news.php";
 include_once "posts/lemmy.php";
+include_once "posts/mbin.php";
+include_once "posts/reddit.php";

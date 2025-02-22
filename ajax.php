@@ -29,7 +29,9 @@ if ($data['clearCache'] ?? false) {
 		$exclude[] = 'webpages';
 	}
 	deleteDirectoryContents('cache', $exclude);
-	opcache_reset();
+	if (function_exists('opcache_reset')) {
+		opcache_reset();
+	}
 	$log_message = 'Cache cleared';
 	if (!CLEAR_WEBPAGES_WITH_CACHE) {
 		$log_message .= ' (excluding webpages)';
@@ -154,6 +156,11 @@ if ($data['getPosts'] ?? false) {
 			$instance  = $data['instance'] ?? DEFAULT_LEMMY_INSTANCE;
 			$community = $data['community'] ?? DEFAULT_LEMMY_COMMUNITY;
 			$community = new Community\Lemmy($community, $instance);
+			break;
+		case 'mbin':
+			$instance  = $data['instance'] ?? DEFAULT_MBIN_INSTANCE;
+			$community = $data['community'] ?? DEFAULT_MBIN_COMMUNITY;
+			$community = new Community\Mbin($community, $instance);
 			break;
 		default:
 			returnJSONerror('Invalid platform');

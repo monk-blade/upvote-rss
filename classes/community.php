@@ -45,11 +45,14 @@ abstract class Community
     $log = new \CustomLogger;
     if (!$this->is_community_valid) {
       $log_message = $this->slug . " is not a valid community";
-      if (PLATFORM === 'reddit') {
-        $log_message .= ". Please check if the subreddit exists and is public.";
-      }
       if (PLATFORM === 'lemmy') {
         $log_message .= " or the instance '" . $this->instance . "' is not reachable.";
+      }
+      if (PLATFORM === 'mbin') {
+        $log_message = $this->slug . " is not a valid community or the instance '" . $this->instance . "' is not reachable.";
+      }
+      if (PLATFORM === 'reddit') {
+        $log_message .= ". Please check if the subreddit exists and is public.";
       }
       $log->error($log_message);
       throw new \Exception($log_message);
@@ -143,7 +146,7 @@ abstract class Community
 
 
 // Communities
-include_once "communities/reddit.php";
 include_once "communities/hacker-news.php";
 include_once "communities/lemmy.php";
-// include_once "communities/mbin.php";
+include_once "communities/mbin.php";
+include_once "communities/reddit.php";

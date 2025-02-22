@@ -11,7 +11,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION = '1.0.7';
+const UPVOTE_RSS_VERSION = '1.1.0';
 const DEFAULT_PLATFORM = 'lemmy';
 const DEFAULT_SUBREDDIT = 'technology';
 const DEFAULT_HACKER_NEWS_INSTANCE = 'news.ycombinator.com';
@@ -19,7 +19,7 @@ const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
 const DEFAULT_LEMMY_INSTANCE = 'lemmy.world';
 const DEFAULT_LEMMY_COMMUNITY = 'Technology';
 const DEFAULT_MBIN_INSTANCE = 'fedia.io';
-const DEFAULT_MBIN_COMMUNITY = 'random';
+const DEFAULT_MBIN_COMMUNITY = 'photography';
 
 
 // Debug
