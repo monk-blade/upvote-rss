@@ -60,8 +60,12 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 		$cache_object_value = var_export($cache_object_value, true);
 		$cache_directory = realpath($cache_directory) . '/';
 		$file_path = $cache_directory . urlencode($cache_object_key);
-		if (file_put_contents($file_path, '<?php $val = ' . $cache_object_value . ';', LOCK_SH) === false) {
-			$log->error("Failed to write cache file: $file_path");
+		try {
+			if (file_put_contents($file_path, '<?php $val = ' . $cache_object_value . ';', LOCK_SH) === false) {
+				throw new \Exception("Failed to write cache file: $file_path");
+			}
+		} catch (\Exception $e) {
+			$log->error($e->getMessage());
 		}
 	}
 }
