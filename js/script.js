@@ -22,8 +22,12 @@ createApp({
       instanceLemmyDefault: instanceLemmyDefault,
       instanceMbinDefault: instanceMbinDefault,
       community: community,
+      communityType: communityType,
       communityHackerNewsDefault: communityHackerNewsDefault,
       communityLemmyDefault: communityLemmyDefault,
+      communityLobstersDefault: communityLobstersDefault,
+      communityLobstersDefaultCategory: communityLobstersDefaultCategory,
+      communityLobstersDefaultTag: communityLobstersDefaultTag,
       communityMbinDefault: communityMbinDefault,
       community_icon: null,
       community_url: null,
@@ -98,6 +102,10 @@ createApp({
         newURL.searchParams.set('instance', this.instance);
         newURL.searchParams.set('community', this.community);
       }
+      if(this.platform == 'lobsters') {
+        newURL.searchParams.set('community', this.community);
+        newURL.searchParams.set('type', this.communityType);
+      }
       if(this.filterType == 'score') {
         newURL.searchParams.set('score', this.score);
       } else if(this.filterType == 'threshold') {
@@ -158,6 +166,7 @@ createApp({
           subreddit: this.subreddit,
           instance: this.instance,
           community: this.community,
+          communityType: this.communityType,
           filterType: this.filterType,
           score: this.score,
           threshold: this.threshold,
@@ -374,6 +383,10 @@ createApp({
         this.instance = this.instanceLemmyDefault;
         this.community = this.communityLemmyDefault;
       }
+      if(this.platform == 'lobsters') {
+        this.community = this.communityLobstersDefault;
+        this.communityType = this.communityLobstersDefault;
+      }
       if(this.platform == 'mbin') {
         this.instance = this.instanceMbinDefault;
         this.community = this.communityMbinDefault;
@@ -383,6 +396,20 @@ createApp({
         setTimeout(function(){
           document.getElementById('subreddit').focus();
         }, 1);
+      }
+    },
+    communityType() {
+      if(this.platform == 'lobsters' && this.communityType == 'all') {
+        this.community = this.communityLobstersDefault;
+        this.getPosts();
+      }
+      if(this.platform == 'lobsters' && this.communityType == 'category') {
+        this.community = this.communityLobstersDefaultCategory;
+        this.getPosts();
+      }
+      if(this.platform == 'lobsters' && this.communityType == 'tag') {
+        this.community = this.communityLobstersDefaultTag;
+        this.getPosts();
       }
     },
     overrideRedditDomain() {

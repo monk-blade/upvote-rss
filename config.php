@@ -11,15 +11,19 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION = '1.1.0';
-const DEFAULT_PLATFORM = 'lemmy';
-const DEFAULT_SUBREDDIT = 'technology';
-const DEFAULT_HACKER_NEWS_INSTANCE = 'news.ycombinator.com';
+const UPVOTE_RSS_VERSION            = '1.2.0';
+const DEFAULT_PLATFORM              = 'lemmy';
+const DEFAULT_SUBREDDIT             = 'technology';
+const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
-const DEFAULT_LEMMY_INSTANCE = 'lemmy.world';
-const DEFAULT_LEMMY_COMMUNITY = 'Technology';
-const DEFAULT_MBIN_INSTANCE = 'fedia.io';
-const DEFAULT_MBIN_COMMUNITY = 'photography';
+const DEFAULT_LEMMY_INSTANCE        = 'lemmy.world';
+const DEFAULT_LEMMY_COMMUNITY       = 'Technology';
+const DEFAULT_LOBSTERS_INSTANCE     = 'lobste.rs';
+const DEFAULT_LOBSTERS_COMMUNITY    = 'all';
+const DEFAULT_LOBSTERS_CATEGORY     = 'compsci';
+const DEFAULT_LOBSTERS_TAG          = 'programming';
+const DEFAULT_MBIN_INSTANCE         = 'fedia.io';
+const DEFAULT_MBIN_COMMUNITY        = 'photography';
 
 
 // Debug
@@ -49,6 +53,7 @@ date_default_timezone_set($timezone);
 // Variables
 $instance = null;
 $community = !empty($_GET["community"]) ? strip_tags(trim($_GET["community"])) : null;
+$community_type = !empty($_GET["type"]) ? strip_tags(trim($_GET["type"])) : null;
 $score_filter_available = true;
 $threshold_filter_available = true;
 $average_posts_per_day_filter_available = true;
@@ -135,6 +140,17 @@ if (PLATFORM == 'lemmy') {
 }
 
 
+// Lobsters
+if (PLATFORM == 'lobsters') {
+  $instance = !empty($_GET["instance"]) ? strip_tags(trim($_GET["instance"])) : DEFAULT_LOBSTERS_INSTANCE;
+  $community_type = $community_type ?? DEFAULT_LOBSTERS_COMMUNITY;
+  if (empty($community) || $community_type == DEFAULT_LOBSTERS_COMMUNITY) {
+    $community = DEFAULT_LOBSTERS_COMMUNITY;
+    $community_type = DEFAULT_LOBSTERS_COMMUNITY;
+  }
+}
+
+
 // Mbin
 if (PLATFORM == 'mbin') {
   $instance = !empty($_GET["instance"]) ? strip_tags(trim($_GET["instance"])) : DEFAULT_MBIN_INSTANCE;
@@ -148,6 +164,34 @@ define('INSTANCE', $instance);
 
 // Community
 define('COMMUNITY', $community);
+
+
+// Community type
+define('COMMUNITY_TYPE', $community_type);
+
+
+// Category
+$category = null;
+if (!empty($_GET["category"])) {
+  $category = strip_tags(trim($_GET["category"]));
+}
+define('CATEGORY', $category);
+
+
+// Tag
+$tag = null;
+if (!empty($_GET["tag"])) {
+  $tag = strip_tags(trim($_GET["tag"]));
+}
+define('TAG', $tag);
+
+
+// Query
+$query = null;
+if (!empty($_GET["query"])) {
+  $query = strip_tags(trim($_GET["query"]));
+}
+define('QUERY', $query);
 
 
 // Filters Available

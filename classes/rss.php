@@ -70,6 +70,7 @@ class RSS {
 		$this->community = match (PLATFORM) {
 			'hacker-news' => new Community\HackerNews(COMMUNITY),
 			'lemmy'       => new Community\Lemmy(COMMUNITY, INSTANCE, FILTER_NSFW, BLUR_NSFW),
+			'lobsters'    => new Community\Lobsters(COMMUNITY, COMMUNITY_TYPE),
 			'mbin'        => new Community\Mbin(COMMUNITY, INSTANCE, FILTER_NSFW, BLUR_NSFW),
 			'reddit'      => new Community\Reddit(SUBREDDIT, FILTER_NSFW, BLUR_NSFW),
 			default       => null,

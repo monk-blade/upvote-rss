@@ -128,6 +128,7 @@ if ($data['getPosts'] ?? false) {
 	$subreddit             = $data['subreddit'] ?? null;
 	$instance              = $data['instance'] ?? null;
 	$community             = $data['community'] ?? null;
+	$community_type        = $data['communityType'] ?? null;
 	$filter_nsfw           = $data['filterNSFW'] ?? false;
 	$blur_nsfw             = $data['blurNSFW'] ?? false;
 	$filter_old_posts 		 = $data['filterOldPosts'] ?? false;
@@ -156,6 +157,10 @@ if ($data['getPosts'] ?? false) {
 			$instance  = $data['instance'] ?? DEFAULT_LEMMY_INSTANCE;
 			$community = $data['community'] ?? DEFAULT_LEMMY_COMMUNITY;
 			$community = new Community\Lemmy($community, $instance);
+			break;
+		case 'lobsters':
+			$community = new Community\Lobsters($community, $community_type);
+			$instance  = 'lobste.rs';
 			break;
 		case 'mbin':
 			$instance  = $data['instance'] ?? DEFAULT_MBIN_INSTANCE;
@@ -194,6 +199,12 @@ if ($data['getPosts'] ?? false) {
 		$message = "Invalid $platform community.";
 		if ($platform === 'reddit') {
 			$message = "\"$community->slug\" doesn't appear to be a valid subreddit.";
+		} elseif ($platform === 'lobsters' && $community_type === 'tag') {
+			$message = "\"$community->slug\" doesn't appear to be a valid Lobsters tag.";
+		} elseif ($platform === 'lobsters' && $community_type === 'category') {
+			$message = "\"$community->slug\" doesn't appear to be a valid Lobsters category.";
+		} elseif ($platform === 'lobsters' && $community_type === 'all') {
+			$message = "\"$community->slug\" doesn't appear to be a valid Lobsters community.";
 		} elseif (
 			$platform === 'lemmy' || $platform === 'mbin'
 		) {
