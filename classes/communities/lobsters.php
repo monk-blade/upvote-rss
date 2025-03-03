@@ -9,7 +9,7 @@ class Lobsters extends Community
 	public $platform = 'lobsters';
 	public $instance = 'lobste.rs';
 	public $is_instance_valid = true;
-	public $platform_icon = 'https://lobste.rs/touch-icon-144.png';
+	public $platform_icon = 'https://lobste.rs/touch-icon-192.png';
   public $community_type = '';
 	public $slug_title;
 	public $max_items_per_request = 25;
