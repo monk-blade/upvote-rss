@@ -229,9 +229,13 @@ abstract class Post {
       if (!empty($media_ids)) {
         foreach ($media_ids as $media_id) {
           if (BLUR_NSFW && $this->nsfw) {
-            $gallery_content .= '<p><img src="' . $gallery['media_metadata'][$media_id]['o'][0]['u'] . '" height="' . $gallery['media_metadata'][$media_id]['o'][0]['y'] . '" width="' . $gallery['media_metadata'][$media_id]['o'][0]['x'] . '" /></p>';
+            if (is_array($gallery['media_metadata'][$media_id]['o'][0])) {
+              $gallery_content .= '<p><img src="' . $gallery['media_metadata'][$media_id]['o'][0]['u'] . '" height="' . $gallery['media_metadata'][$media_id]['o'][0]['y'] . '" width="' . $gallery['media_metadata'][$media_id]['o'][0]['x'] . '" /></p>';
+            }
           } else {
-            $gallery_content .= '<p><img src="' . $gallery['media_metadata'][$media_id]['s']['u'] . '" height="' . $gallery['media_metadata'][$media_id]['s']['y'] . '" width="' . $gallery['media_metadata'][$media_id]['s']['x'] . '" /></p>';
+            if (is_array($gallery['media_metadata'][$media_id]['s'])) {
+              $gallery_content .= '<p><img src="' . $gallery['media_metadata'][$media_id]['s']['u'] . '" height="' . $gallery['media_metadata'][$media_id]['s']['y'] . '" width="' . $gallery['media_metadata'][$media_id]['s']['x'] . '" /></p>';
+            }
           }
         }
       }
