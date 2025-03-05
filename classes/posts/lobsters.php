@@ -149,7 +149,11 @@ class Lobsters extends Post {
       if (!empty($comment['parent_comment'])) {
         continue;
       }
-      $body = $Parsedown->text($comment['comment']);
+      $body = !empty($comment['comment_plain']) ? $Parsedown->text($comment['comment_plain']) : '';
+      if (empty($body) && !empty($comment['comment'])) {
+        $body = $Parsedown->text($comment['comment']);
+      }
+      $body = trim($body);
       $date = $comment['created_at'] ? strtotime($comment['created_at']) : null;
       $comments_min[] = [
         'id'          => $comment['short_id'],
