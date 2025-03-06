@@ -386,9 +386,9 @@
 	const communityLobstersDefaultCategory = '<?php echo DEFAULT_LOBSTERS_CATEGORY; ?>';
 	const communityLobstersDefaultTag = '<?php echo DEFAULT_LOBSTERS_TAG; ?>';
 	const communityMbinDefault = '<?php echo DEFAULT_MBIN_COMMUNITY; ?>';
-	const scoreFilterAvailable = '<?php echo SCORE_FILTER_AVAILABLE; ?>';
-	const thresholdFilterAvailable = '<?php echo THRESHOLD_FILTER_AVAILABLE; ?>';
-	const averagePostsPerDayFilterAvailable = '<?php echo AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE; ?>';
+	const scoreFilterAvailablePlatforms = <?php echo json_encode(SCORE_FILTER_AVAILABLE_PLATFORMS); ?>;
+	const thresholdFilterAvailablePlatforms = <?php echo json_encode(THRESHOLD_FILTER_AVAILABLE_PLATFORMS); ?>;
+	const averagePostsPerDayFilterAvailablePlatforms = <?php echo json_encode(AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS); ?>;
 	const filterType = '<?php echo FILTER_TYPE; ?>';
 	const score = <?php echo SCORE; ?>;
 	const scoreDefaultLemmy = '<?php echo DEFAULT_LEMMY_SCORE; ?>';

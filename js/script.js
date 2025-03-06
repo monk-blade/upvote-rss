@@ -36,10 +36,15 @@ createApp({
       community_nsfw: null,
       platform_icon: null,
       filterType: filterType || 'score',
-      scoreFilterAvailable: scoreFilterAvailable,
-      thresholdFilterAvailable: thresholdFilterAvailable,
-      averagePostsPerDayFilterAvailable: averagePostsPerDayFilterAvailable,
+      scoreFilterAvailablePlatforms: scoreFilterAvailablePlatforms,
+      thresholdFilterAvailablePlatforms: thresholdFilterAvailablePlatforms,
+      averagePostsPerDayFilterAvailablePlatforms: averagePostsPerDayFilterAvailablePlatforms,
       score: score || 1000,
+      scoreDefaultHackerNews: scoreDefaultHackerNews,
+      scoreDefaultLemmy: scoreDefaultLemmy,
+      scoreDefaultLobsters: scoreDefaultLobsters,
+      scoreDefaultMbin: scoreDefaultMbin,
+      scoreDefaultReddit: scoreDefaultReddit,
       threshold: percentage || 100,
       averagePostsPerDay: averagePostsPerDay || 3,
       showScore: showScore || false,
@@ -320,6 +325,17 @@ createApp({
       }, 1500);
     },
   },
+  computed: {
+    scoreFilterAvailable() {
+      return this.scoreFilterAvailablePlatforms.includes(this.platform);
+    },
+    thresholdFilterAvailable() {
+      return this.thresholdFilterAvailablePlatforms.includes(this.platform);
+    },
+    averagePostsPerDayFilterAvailable() {
+      return this.averagePostsPerDayFilterAvailablePlatforms.includes(this.platform);
+    }
+  },
   created() {
     this.getPosts();
     this.progressNormalizedRadius = this.progressRadius - this.progressStroke * 2;
@@ -368,13 +384,10 @@ createApp({
       }
     },
     platform() {
-      this.scoreFilterAvailable = true;
-      this.thresholdFilterAvailable = true;
-      this.averagePostsPerDayFilterAvailable = true;
       if(this.platform == 'hacker-news') {
         this.instance = this.instanceHackerNewsDefault;
         this.community = this.communityHackerNewsDefault;
-        this.thresholdFilterAvailable = false;
+        this.filterType = 'averagePostsPerDay';
         this.score = this.scoreDefaultHackerNews;
         if(this.filterType == 'threshold') {
           this.filterType = 'score';
@@ -388,6 +401,7 @@ createApp({
       if(this.platform == 'lobsters') {
         this.community = this.communityLobstersDefault;
         this.communityType = this.communityLobstersDefault;
+        this.filterType = 'score';
         this.score = this.scoreDefaultLobsters;
       }
       if(this.platform == 'mbin') {

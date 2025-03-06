@@ -64,16 +64,28 @@ abstract class Community
     // Filter by score
     switch ($filter_type) {
       case 'score':
+        if (!in_array(PLATFORM, SCORE_FILTER_AVAILABLE_PLATFORMS)) {
+          $log->error("Score filter is not available for " . PLATFORM . " community " . $this->slug);
+          return [];
+        }
         return $this->getHotPostsByScore($filter_type, $filter_value, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
         break;
 
       case 'threshold':
+        if (!in_array(PLATFORM, THRESHOLD_FILTER_AVAILABLE_PLATFORMS)) {
+          $log->error("Threshold filter is not available for " . PLATFORM . " community " . $this->slug);
+          return [];
+        }
         $monthly_average_top_score = $this->getMonthlyAverageTopScore(0);
         $threshold_score = $monthly_average_top_score * $filter_value / 100;
         return $this->getHotPostsByScore($filter_type, $threshold_score, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
         break;
 
       case 'averagePostsPerDay':
+        if (!in_array(PLATFORM, AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS)) {
+          $log->error("Average posts per day filter is not available for " . PLATFORM . " community " . $this->slug);
+          return [];
+        }
         $threshold_score = 0;
         $average_posts_per_day = $filter_value;
         $average_posts_per_month = $average_posts_per_day * 30;

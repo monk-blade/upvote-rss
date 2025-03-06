@@ -59,9 +59,6 @@ date_default_timezone_set($timezone);
 $instance = null;
 $community = !empty($_GET["community"]) ? strip_tags(trim($_GET["community"])) : null;
 $community_type = !empty($_GET["type"]) ? strip_tags(trim($_GET["type"])) : null;
-$score_filter_available = true;
-$threshold_filter_available = true;
-$average_posts_per_day_filter_available = true;
 $filter_type = 'averagePostsPerDay';
 $filter_value = null;
 $score = 100;
@@ -134,7 +131,6 @@ define('SUBREDDIT', $subreddit);
 // Hacker News
 if (PLATFORM == 'hacker-news') {
   $instance = DEFAULT_HACKER_NEWS_INSTANCE;
-  $threshold_filter_available = false;
   $score = DEFAULT_HACKER_NEWS_SCORE;
   if (empty($community)) {
     if (!empty($_GET["type"])) $community = strip_tags(trim($_GET["type"]));
@@ -208,9 +204,9 @@ define('QUERY', $query);
 
 
 // Filters Available
-define('SCORE_FILTER_AVAILABLE', $score_filter_available);
-define('THRESHOLD_FILTER_AVAILABLE', $threshold_filter_available);
-define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE', $average_posts_per_day_filter_available);
+define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'reddit']);
+define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['lemmy', 'mbin', 'reddit']);
+define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'reddit']);
 
 
 // Score
