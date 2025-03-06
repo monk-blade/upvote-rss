@@ -11,9 +11,8 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION            = '1.2.0';
+const UPVOTE_RSS_VERSION            = '1.2.2';
 const DEFAULT_PLATFORM              = 'lemmy';
-const DEFAULT_SUBREDDIT             = 'technology';
 const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
 const DEFAULT_HACKER_NEWS_SCORE     = 100;
@@ -28,6 +27,7 @@ const DEFAULT_LOBSTERS_SCORE        = 50;
 const DEFAULT_MBIN_INSTANCE         = 'fedia.io';
 const DEFAULT_MBIN_COMMUNITY        = 'photography';
 const DEFAULT_MBIN_SCORE            = 10;
+const DEFAULT_SUBREDDIT             = 'technology';
 const DEFAULT_REDDIT_SCORE          = 100;
 
 
