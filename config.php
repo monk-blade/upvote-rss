@@ -16,14 +16,19 @@ const DEFAULT_PLATFORM              = 'lemmy';
 const DEFAULT_SUBREDDIT             = 'technology';
 const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
+const DEFAULT_HACKER_NEWS_SCORE     = 100;
 const DEFAULT_LEMMY_INSTANCE        = 'lemmy.world';
 const DEFAULT_LEMMY_COMMUNITY       = 'Technology';
+const DEFAULT_LEMMY_SCORE           = 100;
 const DEFAULT_LOBSTERS_INSTANCE     = 'lobste.rs';
 const DEFAULT_LOBSTERS_COMMUNITY    = 'all';
 const DEFAULT_LOBSTERS_CATEGORY     = 'compsci';
 const DEFAULT_LOBSTERS_TAG          = 'programming';
+const DEFAULT_LOBSTERS_SCORE        = 50;
 const DEFAULT_MBIN_INSTANCE         = 'fedia.io';
 const DEFAULT_MBIN_COMMUNITY        = 'photography';
+const DEFAULT_MBIN_SCORE            = 10;
+const DEFAULT_REDDIT_SCORE          = 100;
 
 
 // Debug
@@ -59,6 +64,7 @@ $threshold_filter_available = true;
 $average_posts_per_day_filter_available = true;
 $filter_type = 'averagePostsPerDay';
 $filter_value = null;
+$score = 100;
 
 
 // Demo mode
@@ -89,6 +95,9 @@ define('ENCRYPTION_OPTIONS', 0);
 
 
 // Reddit
+if (PLATFORM == 'reddit') {
+  $score = DEFAULT_REDDIT_SCORE;
+}
 // Username
 $reddit_user = $_SERVER["REDDIT_USER"] ?? $_ENV["REDDIT_USER"] ?? null;
 $reddit_user = !empty($_GET["reddit_user"]) ? strip_tags(trim($_GET["reddit_user"])) : $reddit_user;
@@ -126,6 +135,7 @@ define('SUBREDDIT', $subreddit);
 if (PLATFORM == 'hacker-news') {
   $instance = DEFAULT_HACKER_NEWS_INSTANCE;
   $threshold_filter_available = false;
+  $score = DEFAULT_HACKER_NEWS_SCORE;
   if (empty($community)) {
     if (!empty($_GET["type"])) $community = strip_tags(trim($_GET["type"]));
     else $community = DEFAULT_HACKER_NEWS_COMMUNITY;
@@ -137,6 +147,7 @@ if (PLATFORM == 'hacker-news') {
 if (PLATFORM == 'lemmy') {
   $instance = !empty($_GET["instance"]) ? strip_tags(trim($_GET["instance"])) : DEFAULT_LEMMY_INSTANCE;
   $community = !empty($_GET["community"]) ? strip_tags(trim($_GET["community"])) : DEFAULT_LEMMY_COMMUNITY;
+  $score = DEFAULT_LEMMY_SCORE;
 }
 
 
@@ -148,6 +159,7 @@ if (PLATFORM == 'lobsters') {
     $community = DEFAULT_LOBSTERS_COMMUNITY;
     $community_type = DEFAULT_LOBSTERS_COMMUNITY;
   }
+  $score = DEFAULT_LOBSTERS_SCORE;
 }
 
 
@@ -155,6 +167,7 @@ if (PLATFORM == 'lobsters') {
 if (PLATFORM == 'mbin') {
   $instance = !empty($_GET["instance"]) ? strip_tags(trim($_GET["instance"])) : DEFAULT_MBIN_INSTANCE;
   $community = !empty($_GET["community"]) ? strip_tags(trim($_GET["community"])) : DEFAULT_MBIN_COMMUNITY;
+  $score = DEFAULT_MBIN_SCORE;
 }
 
 
@@ -201,7 +214,6 @@ define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE', $average_posts_per_day_filter_a
 
 
 // Score
-$score = 100;
 if (!empty($_GET["score"])) {
   $filter_type = 'score';
   $score = strip_tags(trim($_GET["score"]));

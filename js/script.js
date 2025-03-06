@@ -375,6 +375,7 @@ createApp({
         this.instance = this.instanceHackerNewsDefault;
         this.community = this.communityHackerNewsDefault;
         this.thresholdFilterAvailable = false;
+        this.score = this.scoreDefaultHackerNews;
         if(this.filterType == 'threshold') {
           this.filterType = 'score';
         }
@@ -382,17 +383,21 @@ createApp({
       if(this.platform == 'lemmy') {
         this.instance = this.instanceLemmyDefault;
         this.community = this.communityLemmyDefault;
+        this.score = this.scoreDefaultLemmy;
       }
       if(this.platform == 'lobsters') {
         this.community = this.communityLobstersDefault;
         this.communityType = this.communityLobstersDefault;
+        this.score = this.scoreDefaultLobsters;
       }
       if(this.platform == 'mbin') {
         this.instance = this.instanceMbinDefault;
         this.community = this.communityMbinDefault;
+        this.score = this.scoreDefaultMbin;
       }
       this.getPosts();
       if(this.platform == 'reddit') {
+        this.score = this.scoreDefaultReddit;
         setTimeout(function(){
           document.getElementById('subreddit').focus();
         }, 1);

@@ -391,6 +391,11 @@
 	const averagePostsPerDayFilterAvailable = '<?php echo AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE; ?>';
 	const filterType = '<?php echo FILTER_TYPE; ?>';
 	const score = <?php echo SCORE; ?>;
+	const scoreDefaultLemmy = '<?php echo DEFAULT_LEMMY_SCORE; ?>';
+	const scoreDefaultHackerNews = '<?php echo DEFAULT_HACKER_NEWS_SCORE; ?>';
+	const scoreDefaultLobsters = '<?php echo DEFAULT_LOBSTERS_SCORE; ?>';
+	const scoreDefaultMbin = '<?php echo DEFAULT_MBIN_SCORE; ?>';
+	const scoreDefaultReddit = '<?php echo DEFAULT_REDDIT_SCORE; ?>';
 	const percentage = <?php echo PERCENTAGE; ?>;
 	const averagePostsPerDay = <?php echo POSTS_PER_DAY; ?>;
 	const showScore = <?php echo SHOW_SCORE ? "true" : "false"; ?>;
