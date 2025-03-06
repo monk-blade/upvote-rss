@@ -342,23 +342,21 @@ abstract class Post {
 
   // Determine if we need to grab the webpage content
   private function shouldGetParsedContent() {
-    if (strpos($this->domain, "self.") !== false) {
-      $this->get_parsed_content = false;
-    }
-    if (BLUR_NSFW && $this->nsfw && $this->image_obfuscated_url) {
-      $this->get_parsed_content = false;
-    }
-    if ($this->imgur_image_url) {
-      $this->get_parsed_content = false;
-    }
-    if ($this->livememe_image_url) {
-      $this->get_parsed_content = false;
-    }
-    if ($this->url_is_image) {
-      $this->get_parsed_content = false;
-    }
-    if($this->embedded_media_html) {
-      $this->get_parsed_content = false;
+    $conditions = [
+      !INCLUDE_CONTENT,
+      strpos($this->domain, "self.") !== false,
+      BLUR_NSFW && $this->nsfw && $this->image_obfuscated_url,
+      $this->imgur_image_url,
+      $this->livememe_image_url,
+      $this->url_is_image,
+      $this->embedded_media_html
+    ];
+
+    foreach ($conditions as $condition) {
+      if ($condition) {
+        $this->get_parsed_content = false;
+        break;
+      }
     }
   }
 
