@@ -108,7 +108,7 @@ class Lobsters extends Post {
 
   // Set Selftext HTML
   private function setSelftextHTML() {
-    $selftext_html = $this->post_data['description'] ?? $this->post_data['description_plain'] ?? '';
+    $selftext_html = $this->post_data['description_plain'] ?? $this->post_data['description'] ?? '';
     if(!empty($selftext_html)) {
       $Parsedown = new \Parsedown();
       $Parsedown->setSafeMode(true);
