@@ -71,16 +71,13 @@ createApp({
     }
   },
   methods: {
-    submitForm() {
-      this.getPosts();
-    },
-    debouncedSearch(event) {
+    debouncedSearch(timeout = 10,  event = null) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = setTimeout(() => {
-        if(event.target.value.length > 0) {
+        if (event === null || event.target.value.length > 0) {
           this.getPosts();
         }
-      }, 500);
+      }, timeout);
     },
     generateButton() {
       document.querySelector('.post-list').scrollTo(0, 0);
@@ -224,7 +221,7 @@ createApp({
     },
     selectSubreddit(subreddit) {
       this.subreddit = subreddit;
-      this.getPosts();
+      this.debouncedSearch();
     },
     async getSubreddits() {
       if(this.subreddit.length < 3) {
@@ -342,6 +339,9 @@ createApp({
     this.progressCircumference = this.progressNormalizedRadius * 2 * Math.PI;
     this.darkMode = sessionStorage.getItem('darkMode') || 'auto';
     this.showRssURL = navigator.clipboard ? false : true;
+    setTimeout(() => {
+      document.querySelector('#app').classList.add('initialized');
+    }, 1200);
   },
   watch: {
     loading() {
@@ -397,6 +397,9 @@ createApp({
         this.instance = this.instanceLemmyDefault;
         this.community = this.communityLemmyDefault;
         this.score = this.scoreDefaultLemmy;
+        setTimeout(function(){
+          document.getElementById('community').focus();
+        }, 1);
       }
       if(this.platform == 'lobsters') {
         this.community = this.communityLobstersDefault;
@@ -408,27 +411,36 @@ createApp({
         this.instance = this.instanceMbinDefault;
         this.community = this.communityMbinDefault;
         this.score = this.scoreDefaultMbin;
+        setTimeout(function(){
+          document.getElementById('community').focus();
+        }, 1);
       }
-      this.getPosts();
       if(this.platform == 'reddit') {
         this.score = this.scoreDefaultReddit;
         setTimeout(function(){
           document.getElementById('subreddit').focus();
         }, 1);
       }
+      this.debouncedSearch();
     },
     communityType() {
       if(this.platform == 'lobsters' && this.communityType == 'all') {
         this.community = this.communityLobstersDefault;
-        this.getPosts();
+        this.debouncedSearch();
       }
       if(this.platform == 'lobsters' && this.communityType == 'category') {
         this.community = this.communityLobstersDefaultCategory;
-        this.getPosts();
+        setTimeout(function(){
+          document.getElementById('category').focus();
+        }, 1);
+        this.debouncedSearch();
       }
       if(this.platform == 'lobsters' && this.communityType == 'tag') {
         this.community = this.communityLobstersDefaultTag;
-        this.getPosts();
+        setTimeout(function(){
+          document.getElementById('tag').focus();
+        }, 1);
+        this.debouncedSearch();
       }
     },
     overrideRedditDomain() {
@@ -438,13 +450,13 @@ createApp({
           document.getElementById('reddit-domain').focus();
         }, 1);
       }
-      this.getPosts();
+      this.debouncedSearch();
     },
     subreddit() {
       this.getSubreddits();
     },
     filterType() {
-      this.getPosts();
+      this.debouncedSearch();
     },
     showScore() {
       this.updateURL();
@@ -467,16 +479,16 @@ createApp({
       this.updateURL();
     },
     filterNSFW() {
-      this.getPosts();
+      this.debouncedSearch();
     },
     blurNSFW() {
-      this.getPosts();
+      this.debouncedSearch();
     },
     filterOldPosts() {
       if(this.postCutoffDays == 0) {
         this.postCutoffDays = 7;
       }
-      this.getPosts();
+      this.debouncedSearch();
     },
     progress() {
       this.progressStrokeDashOffset = this.progressCircumference - this.progress / 100 * this.progressCircumference;

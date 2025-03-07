@@ -207,6 +207,19 @@ header {
 	width: clamp(160px, 100%, 1600px);
 	max-width: 1600px;
 	margin: 0 auto;
+	&:not(.initialized) .step {
+		@media (prefers-reduced-motion: no-preference) {
+			animation: 0.4s cubic-bezier(.23,.83,.43,1) 0s normal forwards 1 animate_fade_in_up;
+		}
+		&#step-2 {
+			animation-duration: 0.6s;
+			.column-content {
+			}
+		}
+		&#step-3 {
+			animation-duration: 0.8s;
+		}
+	}
 }
 
 
@@ -245,9 +258,6 @@ header {
 	grid-template-rows: auto 1fr;
 	gap: 1rem;
 	z-index: 3;
-	@media (prefers-reduced-motion: no-preference) {
-		animation: 0.4s cubic-bezier(.23,.83,.43,1) 0s normal forwards 1 animate_fade_in_up;
-	}
 	h2 {
 		position: relative;
 		margin: 0 auto clamp(1rem, 4vw, 4rem);
@@ -595,7 +605,6 @@ header {
 
 /* Step 2 */
 #step-2 {
-	animation-duration: 0.6s;
 	z-index: 1;
 	> h2:before {
 		animation-duration: 1.7s;
@@ -796,7 +805,6 @@ header {
 
 /* Step 3 */
 #step-3 {
-	animation-duration: 0.8s;
 	> h2:before {
 		animation-duration: 2.2s;
 	}

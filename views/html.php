@@ -42,7 +42,7 @@
 			<!-- Step 1 -->
 			<section id="step-1" class="step">
 				<h2>Build your feed</h2>
-				<form class="column-content" @submit.prevent="submitForm">
+				<form class="column-content" @submit.prevent="debouncedSearch">
 					<div class="inner">
 						<div class="form-group">
 							<label for="platform">Platform</label>
@@ -64,7 +64,7 @@
 						</div>
 						<div v-if="platform === 'reddit'" class="form-group">
 							<label for="subreddit">Subreddit</label>
-							<input list="subreddits" id="subreddit" name="subreddit" v-model="subreddit" placeholder="Subreddit" @input="debouncedSearch($event)" />
+							<input list="subreddits" id="subreddit" name="subreddit" v-model="subreddit" placeholder="Subreddit" @input="debouncedSearch(600, $event)" />
 							<datalist id="subreddits">
 								<option v-for="subreddit in subreddits" :value="subreddit" />
 								<option v-if="!subreddits.length" value="Loading..." />
@@ -72,7 +72,7 @@
 						</div>
 						<div v-if="platform === 'hacker-news'" class="form-group">
 							<label for="type">Type</label>
-							<select name="type" id="type" v-model="community" @change="getPosts">
+							<select name="type" id="type" v-model="community" @change="debouncedSearch(10, $event)">
 								<option value="beststories">Best</option>
 								<option value="topstories">Top</option>
 								<option value="newstories">New</option>
@@ -90,23 +90,23 @@
 						</div>
 						<div v-if="platform === 'lobsters' && communityType === 'category'" class="form-group">
 							<label for="category">Category</label>
-							<input type="text" id="category" name="category" v-model="community" placeholder="compsci, culture, etc." @input="debouncedSearch($event)" />
+							<input type="text" id="category" name="category" v-model="community" placeholder="compsci, culture, etc." @input="debouncedSearch(600, $event)" />
 						</div>
 						<div v-if="platform === 'lobsters' && communityType === 'tag'" class="form-group">
 							<label for="tag">Tag</label>
-							<input type="text" id="tag" name="tag" v-model="community" placeholder="web, ai, rust, etc." @input="debouncedSearch($event)" />
+							<input type="text" id="tag" name="tag" v-model="community" placeholder="web, ai, rust, etc." @input="debouncedSearch(600, $event)" />
 						</div>
 						<div v-if="platform === 'lemmy' || platform === 'mbin'" class="form-group">
 							<label for="instance">Instance</label>
-							<input type="text" id="instance" name="instance" v-model="instance" placeholder="Instance" @input="debouncedSearch($event)" />
+							<input type="text" id="instance" name="instance" v-model="instance" placeholder="Instance" @input="debouncedSearch(600, $event)" />
 						</div>
 						<div v-if="platform === 'lemmy'" class="form-group">
 							<label for="community">Community</label>
-							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch($event)" />
+							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch(600, $event)" />
 						</div>
 						<div v-if="platform === 'mbin'" class="form-group">
 							<label for="community">Magazine</label>
-							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch($event)" />
+							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch(600, $event)" />
 						</div>
 						<div class="row filter-type-row">
 							<div class="form-group">
@@ -122,15 +122,15 @@
 							</div>
 							<div v-if="filterType === 'score' && scoreFilterAvailable" class="form-group">
 								<label for="score" class="sr-only">Score</label>
-								<input type="number" id="score" name="score" placeholder="Score" min="0" pattern="[0-9]*" inputmode="numeric" v-model="score" @input="debouncedSearch($event)" />
+								<input type="number" id="score" name="score" placeholder="Score" min="0" pattern="[0-9]*" inputmode="numeric" v-model="score" @input="debouncedSearch(250, $event)" />
 							</div>
 							<div v-if="filterType === 'threshold'" class="form-group">
 								<label for="threshold" class="sr-only">Percentage</label>
-								<input type="number" id="threshold" name="threshold" placeholder="Threshold" min="1" pattern="[0-9]*" inputmode="numeric" v-model="threshold" @input="debouncedSearch($event)" />
+								<input type="number" id="threshold" name="threshold" placeholder="Threshold" min="1" pattern="[0-9]*" inputmode="numeric" v-model="threshold" @input="debouncedSearch(250, $event)" />
 							</div>
 							<div v-if="filterType === 'averagePostsPerDay' && averagePostsPerDayFilterAvailable" class="form-group">
 								<label for="averagePostsPerDay" class="sr-only">Posts Per Day</label>
-								<input type="number" id="averagePostsPerDay" name="averagePostsPerDay" placeholder="Posts per day" min="1" pattern="[0-9]*" inputmode="numeric" v-model="averagePostsPerDay" @input="debouncedSearch($event)" />
+								<input type="number" id="averagePostsPerDay" name="averagePostsPerDay" placeholder="Posts per day" min="1" pattern="[0-9]*" inputmode="numeric" v-model="averagePostsPerDay" @input="debouncedSearch(250, $event)" />
 							</div>
 						</div>
 						<div class="filter-information">
@@ -156,7 +156,7 @@
 								</div>
 								<div class="form-group" v-if="platform == 'reddit' && overrideRedditDomain">
 									<label for="reddit-domain" class="sr-only">Reddit domain</label>
-									<input type="text" id="reddit-domain" name="reddit-domain" placeholder="Reddit domain" v-model="redditDomain" @input="debouncedSearch($event)" />
+									<input type="text" id="reddit-domain" name="reddit-domain" placeholder="Reddit domain" v-model="redditDomain" @input="debouncedSearch(600, $event)" />
 								</div>
 								<div class="form-group checkbox">
 									<input type="checkbox" id="show-score" name="show-score" v-model="showScore" />
@@ -201,7 +201,7 @@
 									</div>
 									<div class="form-group" v-if="filterOldPosts">
 										<label for="post-cutoff-days" class="sr-only">Days to keep</label>
-										<input type="number" id="post-cutoff-days" name="post-cutoff-days" placeholder="days to keep" min="1" pattern="[0-9]*" v-model="postCutoffDays" @input="debouncedSearch($event)" />
+										<input type="number" id="post-cutoff-days" name="post-cutoff-days" placeholder="days to keep" min="1" pattern="[0-9]*" v-model="postCutoffDays" @input="debouncedSearch(250, $event)" />
 									</div>
 								</div>
 								<div class="form-group checkbox" v-if="platform == 'reddit'">
