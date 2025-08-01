@@ -138,7 +138,7 @@ Additionally, you can configure an optional [Browserless](https://github.com/bro
 
 ### AI Summaries
 
-Ollama and OpenAI can be used to summarize webpage content. When configured with the options in the [Environment variable](#environment-variables) section below, Upvote RSS will run the parsed article content through the specified LLM and will add the short summary above the content in the feed. When both Ollama and OpenAI are configured, Upvote RSS will attempt the summary through Ollama first and will use OpenAI as a fallback. You can set the preferred model to use and optional system prompt override. I'm not a prompt engineer, so I'm sure there's room for improvement over the default prompt.
+Ollama and OpenAI can be used to summarize webpage content. When configured with the options in the [Environment variable](#environment-variables) section below, Upvote RSS will run the parsed article content through the specified LLM and will add the short summary above the content in the feed. When both Ollama and OpenAI are configured, Upvote RSS will attempt the summary through Ollama first and will use OpenAI as a fallback. You can set the preferred model to use, optional system prompt override, and temperature. I'm not a prompt engineer, so I'm sure there's room for improvement over the default prompt.
 
 ## Environment variables
 
