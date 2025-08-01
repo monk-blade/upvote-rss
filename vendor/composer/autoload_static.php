@@ -16,6 +16,7 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Predis\\' => 7,
+            'Post\\' => 5,
         ),
         'M' => 
         array (
@@ -24,7 +25,12 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         ),
         'L' => 
         array (
+            'Log\\' => 4,
             'League\\Uri\\' => 11,
+        ),
+        'A' => 
+        array (
+            'Auth\\' => 5,
         ),
     );
 
@@ -45,6 +51,10 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         array (
             0 => __DIR__ . '/..' . '/predis/predis/src',
         ),
+        'Post\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/classes/posts',
+        ),
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
@@ -53,10 +63,18 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
         ),
+        'Log\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/classes/log',
+        ),
         'League\\Uri\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/uri/src',
             1 => __DIR__ . '/..' . '/league/uri-interfaces/src',
+        ),
+        'Auth\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/classes/auth',
         ),
     );
 

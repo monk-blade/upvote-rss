@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:1.4.4-php8.4.4-alpine AS build
+FROM dunglas/frankenphp:1.9.0-php8.4.10-alpine AS build
 
 # Install required utilities and PHP extensions
 RUN apk add --no-cache --virtual .build-deps \
@@ -8,7 +8,7 @@ RUN apk add --no-cache --virtual .build-deps \
     rm -rf /var/cache/apk/*
 
 # Final stage
-FROM dunglas/frankenphp:1.4.4-php8.4.4-alpine
+FROM dunglas/frankenphp:1.9.0-php8.4.10-alpine
 
 # Install su-exec and opcache
 RUN apk add --no-cache su-exec && \
