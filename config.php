@@ -11,7 +11,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION            = '1.2.4';
+const UPVOTE_RSS_VERSION            = '1.2.5';
 const DEFAULT_PLATFORM              = 'lemmy';
 const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
@@ -295,6 +295,10 @@ define('SUMMARY_SYSTEM_PROMPT', $summary_system_prompt);
 
 // Summary temperature
 $summary_temperature = $_SERVER["SUMMARY_TEMPERATURE"] ?? $_ENV["SUMMARY_TEMPERATURE"] ?? 0.4;
+$summary_temperature = floatval($summary_temperature);
+if (!($summary_temperature > 0 && $summary_temperature <= 1)) {
+  $summary_temperature = 0.4;
+}
 define('SUMMARY_TEMPERATURE', $summary_temperature);
 
 
