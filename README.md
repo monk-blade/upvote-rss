@@ -157,16 +157,6 @@ REDDIT_CLIENT_ID=your_reddit_client_id
 # Default value: (empty)
 REDDIT_CLIENT_SECRET=your_reddit_client_secret
 
-# OpenAI API key
-# Used to connect to OpenAI for article summaries when the "Include summary" checkbox is checked
-# Default value: (empty)
-OPENAI_API_KEY=your_openai_api_key
-
-# OpenAI API model
-# Model used for article summaries
-# Default value: gpt-4o-mini
-OPENAI_API_MODEL=specified_openai_model
-
 # Ollama URL
 # URL to your Ollama instance for article summaries
 # Default value: (empty)
@@ -176,6 +166,26 @@ OLLAMA_URL=your_ollama_url
 # Model used for article summaries
 # Default value: (empty)
 OLLAMA_MODEL=specified_ollama_model
+
+# Google Gemini API key
+# Used to connect to Google Gemini for article summaries when the "Include summary" checkbox is checked
+# Default value: (empty)
+GOOGLE_GEMINI_API_KEY=your_google_gemini_api_key
+
+# Google Gemini API model
+# Model used for article summaries
+# Default value: gemini-2.5-flash
+GOOGLE_GEMINI_API_MODEL=specified_google_gemini_model
+
+# OpenAI API key
+# Used to connect to OpenAI for article summaries when the "Include summary" checkbox is checked
+# Default value: (empty)
+OPENAI_API_KEY=your_openai_api_key
+
+# OpenAI API model
+# Model used for article summaries
+# Default value: gpt-4o-mini
+OPENAI_API_MODEL=specified_openai_model
 
 # Summary system prompt
 # The prompt that guides the LLM model to give accurate-ish and concise article summaries

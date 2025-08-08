@@ -260,18 +260,25 @@ if (isset($_GET["content"]) && $_GET["content"] == 0) {
 define('INCLUDE_CONTENT', $include_content);
 
 
-// OpenAI API
-$openai_api_key = $_SERVER["OPENAI_API_KEY"] ?? $_ENV["OPENAI_API_KEY"] ?? null;
-define('OPENAI_API_KEY', $openai_api_key);
-$openai_api_model = $_SERVER["OPENAI_API_MODEL"] ?? $_ENV["OPENAI_API_MODEL"] ?? 'gpt-4o-mini';
-define('OPENAI_API_MODEL', $openai_api_model);
-
-
 // Ollama API
 $ollama_url = $_SERVER["OLLAMA_URL"] ?? $_ENV["OLLAMA_URL"] ?? null;
 define('OLLAMA_URL', $ollama_url);
 $ollama_model = $_SERVER["OLLAMA_MODEL"] ?? $_ENV["OLLAMA_MODEL"] ?? null;
 define('OLLAMA_MODEL', $ollama_model);
+
+
+// Google Gemini API
+$gemini_api_key = $_SERVER["GOOGLE_GEMINI_API_KEY"] ?? $_ENV["GOOGLE_GEMINI_API_KEY"] ?? null;
+define('GOOGLE_GEMINI_API_KEY', $gemini_api_key);
+$gemini_api_model = $_SERVER["GOOGLE_GEMINI_API_MODEL"] ?? $_ENV["GOOGLE_GEMINI_API_MODEL"] ?? 'gemini-1';
+define('GOOGLE_GEMINI_API_MODEL', $gemini_api_model);
+
+
+// OpenAI API
+$openai_api_key = $_SERVER["OPENAI_API_KEY"] ?? $_ENV["OPENAI_API_KEY"] ?? null;
+define('OPENAI_API_KEY', $openai_api_key);
+$openai_api_model = $_SERVER["OPENAI_API_MODEL"] ?? $_ENV["OPENAI_API_MODEL"] ?? 'gpt-4o-mini';
+define('OPENAI_API_MODEL', $openai_api_model);
 
 
 // Summary enabled
