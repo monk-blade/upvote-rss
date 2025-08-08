@@ -11,7 +11,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION            = '1.2.5';
+const UPVOTE_RSS_VERSION            = '1.3.0';
 const DEFAULT_PLATFORM              = 'lemmy';
 const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
@@ -307,6 +307,15 @@ if (!($summary_temperature > 0 && $summary_temperature <= 1)) {
   $summary_temperature = 0.4;
 }
 define('SUMMARY_TEMPERATURE', $summary_temperature);
+
+
+// Summary max tokens
+$summary_max_tokens = $_SERVER["SUMMARY_MAX_TOKENS"] ?? $_ENV["SUMMARY_MAX_TOKENS"] ?? 1000;
+$summary_max_tokens = intval($summary_max_tokens);
+if ($summary_max_tokens < 0) {
+  $summary_max_tokens = 1000;
+}
+define('SUMMARY_MAX_TOKENS', $summary_max_tokens);
 
 
 // Comments

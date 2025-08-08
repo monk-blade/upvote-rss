@@ -575,7 +575,7 @@ class WebpageAnalyzer {
       $curl_options = array(
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => json_encode(array(
-          'max_tokens' => 1000,
+          'max_tokens' => SUMMARY_MAX_TOKENS,
           'temperature' => SUMMARY_TEMPERATURE,
           'model' => $gemini_model,
           'messages' => [
@@ -629,7 +629,7 @@ class WebpageAnalyzer {
       $curl_options = array(
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => json_encode(array(
-          'max_tokens' => 150,
+          'max_tokens' => SUMMARY_MAX_TOKENS,
           'temperature' => SUMMARY_TEMPERATURE,
           'model' => $openai_model,
           'messages' => [

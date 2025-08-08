@@ -197,6 +197,11 @@ SUMMARY_SYSTEM_PROMPT="As GLaDOS, provide a concise and analytical summary of th
 # Default value: 0.4
 SUMMARY_TEMPERATURE=0.4
 
+# Summary max tokens
+# Set a maximum number of tokens the LLM will use to generate a response.
+# Default value: 1000
+SUMMARY_MAX_TOKENS=1000
+
 # Redis host
 # Redis instance IP address or domain used for API and webpage caching which will override the default filesystem caching method
 # Default value: (empty)
