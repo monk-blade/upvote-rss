@@ -295,7 +295,7 @@ define('INCLUDE_SUMMARY', $include_summary);
 
 
 // Summary prompt
-$summary_system_prompt = "You are web article summarizer. Use the following pieces of retrieved context to answer the question. Do not answer from your own knowledge base. If the answer isn't present in the knowledge base, refrain from providing an answer based on your own knowledge. Instead, say nothing. Output should be limited to one paragraph with a maximum of three sentences, and keep the answer concise. Always complete the last sentence. Do not hallucinate or make up information.";
+$summary_system_prompt = "You are web article summarizer. Use the following pieces of retrieved context to answer the question. Do not answer from your own knowledge base. If the answer isn't present in the knowledge base, refrain from providing an answer based on your own knowledge. Instead, say nothing. Output should be limited to one paragraph with a maximum of three sentences, and keep the answer concise. Always complete the last sentence. Do not hallucinate or make up information. Do not include information about the article's publisher or author unless they have some bearing on the story.";
 $summary_system_prompt = $_SERVER["SUMMARY_SYSTEM_PROMPT"] ?? $_ENV["SUMMARY_SYSTEM_PROMPT"] ?? $summary_system_prompt;
 define('SUMMARY_SYSTEM_PROMPT', $summary_system_prompt);
 
