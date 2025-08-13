@@ -21,6 +21,7 @@ createApp({
       instanceHackerNewsDefault: instanceHackerNewsDefault,
       instanceLemmyDefault: instanceLemmyDefault,
       instanceMbinDefault: instanceMbinDefault,
+      instancePieFedDefault: instancePieFedDefault,
       community: community,
       communityType: communityType,
       communityHackerNewsDefault: communityHackerNewsDefault,
@@ -29,6 +30,7 @@ createApp({
       communityLobstersDefaultCategory: communityLobstersDefaultCategory,
       communityLobstersDefaultTag: communityLobstersDefaultTag,
       communityMbinDefault: communityMbinDefault,
+      communityPieFedDefault: communityPieFedDefault,
       community_icon: null,
       community_url: null,
       community_title: null,
@@ -44,6 +46,7 @@ createApp({
       scoreDefaultLemmy: scoreDefaultLemmy,
       scoreDefaultLobsters: scoreDefaultLobsters,
       scoreDefaultMbin: scoreDefaultMbin,
+      scoreDefaultPieFed: scoreDefaultPieFed,
       scoreDefaultReddit: scoreDefaultReddit,
       threshold: percentage || 100,
       averagePostsPerDay: averagePostsPerDay || 3,
@@ -100,7 +103,7 @@ createApp({
       if(this.platform == 'hacker-news') {
         newURL.searchParams.set('community', this.community);
       }
-      if(this.platform == 'lemmy' || this.platform == 'mbin') {
+      if(this.platform == 'lemmy' || this.platform == 'mbin' || this.platform == 'piefed') {
         newURL.searchParams.set('instance', this.instance);
         newURL.searchParams.set('community', this.community);
       }
@@ -411,6 +414,14 @@ createApp({
         this.instance = this.instanceMbinDefault;
         this.community = this.communityMbinDefault;
         this.score = this.scoreDefaultMbin;
+        setTimeout(function(){
+          document.getElementById('community').focus();
+        }, 1);
+      }
+      if(this.platform == 'piefed') {
+        this.instance = this.instancePieFedDefault;
+        this.community = this.communityPieFedDefault;
+        this.score = this.scoreDefaultPieFed;
         setTimeout(function(){
           document.getElementById('community').focus();
         }, 1);

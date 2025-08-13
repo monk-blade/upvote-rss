@@ -165,4 +165,5 @@ include_once "communities/hacker-news.php";
 include_once "communities/lemmy.php";
 include_once "communities/lobsters.php";
 include_once "communities/mbin.php";
+include_once "communities/piefed.php";
 include_once "communities/reddit.php";

@@ -619,4 +619,5 @@ include_once "posts/hacker-news.php";
 include_once "posts/lemmy.php";
 include_once "posts/lobsters.php";
 include_once "posts/mbin.php";
+include_once "posts/piefed.php";
 include_once "posts/reddit.php";

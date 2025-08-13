@@ -11,7 +11,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 
 // Set defaults
-const UPVOTE_RSS_VERSION            = '1.3.0';
+const UPVOTE_RSS_VERSION            = '1.4.0';
 const DEFAULT_PLATFORM              = 'lemmy';
 const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
@@ -19,6 +19,9 @@ const DEFAULT_HACKER_NEWS_SCORE     = 100;
 const DEFAULT_LEMMY_INSTANCE        = 'lemmy.world';
 const DEFAULT_LEMMY_COMMUNITY       = 'Technology';
 const DEFAULT_LEMMY_SCORE           = 100;
+const DEFAULT_PIEFED_INSTANCE       = 'piefed.social';
+const DEFAULT_PIEFED_COMMUNITY      = 'goodnewseveryone';
+const DEFAULT_PIEFED_SCORE          = 50;
 const DEFAULT_LOBSTERS_INSTANCE     = 'lobste.rs';
 const DEFAULT_LOBSTERS_COMMUNITY    = 'all';
 const DEFAULT_LOBSTERS_CATEGORY     = 'compsci';
@@ -146,6 +149,13 @@ if (PLATFORM == 'lemmy') {
   $score = DEFAULT_LEMMY_SCORE;
 }
 
+// PieFed
+if (PLATFORM == 'piefed') {
+  $instance = !empty($_GET["instance"]) ? strip_tags(trim($_GET["instance"])) : DEFAULT_PIEFED_INSTANCE;
+  $community = !empty($_GET["community"]) ? strip_tags(trim($_GET["community"])) : DEFAULT_PIEFED_COMMUNITY;
+  $score = DEFAULT_PIEFED_SCORE;
+}
+
 
 // Lobsters
 if (PLATFORM == 'lobsters') {
@@ -204,9 +214,9 @@ define('QUERY', $query);
 
 
 // Filters Available
-define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'reddit']);
-define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['lemmy', 'mbin', 'reddit']);
-define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'reddit']);
+define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'piefed', 'reddit']);
+define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['lemmy', 'mbin', 'piefed', 'reddit']);
+define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
 
 
 // Score

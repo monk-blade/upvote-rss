@@ -167,6 +167,11 @@ if ($data['getPosts'] ?? false) {
 			$community = $data['community'] ?? DEFAULT_MBIN_COMMUNITY;
 			$community = new Community\Mbin($community, $instance);
 			break;
+		case 'piefed':
+			$instance  = $data['instance'] ?? DEFAULT_PIEFED_INSTANCE;
+			$community = $data['community'] ?? DEFAULT_PIEFED_COMMUNITY;
+			$community = new Community\PieFed($community, $instance);
+			break;
 		default:
 			returnJSONerror('Invalid platform');
 	}
@@ -184,7 +189,7 @@ if ($data['getPosts'] ?? false) {
 	// Check if instance is valid
 	if (!$community->is_instance_valid) {
 		$message = "Invalid instance.";
-		if ($platform === 'lemmy' || $platform === 'mbin') {
+		if ($platform === 'lemmy' || $platform === 'mbin' || $platform === 'piefed') {
 			$message = "\"$instance\" it either unavailable or doesn't appear to be a valid " . ucfirst($platform) . " instance.";
 		}
 		returnJSONerror($message);
@@ -206,7 +211,7 @@ if ($data['getPosts'] ?? false) {
 		} elseif ($platform === 'lobsters' && $community_type === 'all') {
 			$message = "\"$community->slug\" doesn't appear to be a valid Lobsters community.";
 		} elseif (
-			$platform === 'lemmy' || $platform === 'mbin'
+			$platform === 'lemmy' || $platform === 'mbin' || $platform === 'piefed'
 		) {
 			$message = "\"$community->slug\" doesn't appear to be a valid community at \"$instance\".";
 		}

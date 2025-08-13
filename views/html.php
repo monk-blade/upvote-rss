@@ -29,7 +29,7 @@
 		<a href=".">
 			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803">
 		</a>
-		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, Hacker News, Lobsters, and Mbin</h1>
+		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, Hacker News, Lobsters, PieFed, and Mbin</h1>
 		<?php if(DEMO_MODE) : ?>
 			<p><a href="https://github.com/johnwarne/upvote-rss/" target="_blank">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
 		<?php endif; ?>
@@ -50,6 +50,7 @@
 								<option value="hacker-news">Hacker News</option>
 								<option value="lemmy">Lemmy</option>
 								<option value="lobsters">Lobsters</option>
+								<option value="piefed">PieFed</option>
 								<option value="mbin">Mbin</option>
 								<template v-if="demoMode">
 									<option disabled>Reddit (available only self-hosted)</option>
@@ -96,11 +97,11 @@
 							<label for="tag">Tag</label>
 							<input type="text" id="tag" name="tag" v-model="community" placeholder="web, ai, rust, etc." @input="debouncedSearch(600, $event)" />
 						</div>
-						<div v-if="platform === 'lemmy' || platform === 'mbin'" class="form-group">
+						<div v-if="platform === 'lemmy' || platform === 'mbin' || platform === 'piefed'" class="form-group">
 							<label for="instance">Instance</label>
 							<input type="text" id="instance" name="instance" v-model="instance" placeholder="Instance" @input="debouncedSearch(600, $event)" />
 						</div>
-						<div v-if="platform === 'lemmy'" class="form-group">
+						<div v-if="platform === 'lemmy' || platform === 'piefed'" class="form-group">
 							<label for="community">Community</label>
 							<input type="text" id="community" name="community" v-model="community" placeholder="Community" @input="debouncedSearch(600, $event)" />
 						</div>
@@ -378,6 +379,7 @@
 	const instanceLobstersDefault
 		= '<?php echo DEFAULT_LOBSTERS_INSTANCE; ?>';
 	const instanceMbinDefault = '<?php echo DEFAULT_MBIN_INSTANCE; ?>';
+	const instancePieFedDefault = '<?php echo DEFAULT_PIEFED_INSTANCE; ?>';
 	const community = '<?php echo COMMUNITY; ?>';
 	const communityType = '<?php echo COMMUNITY_TYPE; ?>';
 	const communityHackerNewsDefault = '<?php echo DEFAULT_HACKER_NEWS_COMMUNITY; ?>';
@@ -386,6 +388,7 @@
 	const communityLobstersDefaultCategory = '<?php echo DEFAULT_LOBSTERS_CATEGORY; ?>';
 	const communityLobstersDefaultTag = '<?php echo DEFAULT_LOBSTERS_TAG; ?>';
 	const communityMbinDefault = '<?php echo DEFAULT_MBIN_COMMUNITY; ?>';
+	const communityPieFedDefault = '<?php echo DEFAULT_PIEFED_COMMUNITY; ?>';
 	const scoreFilterAvailablePlatforms = <?php echo json_encode(SCORE_FILTER_AVAILABLE_PLATFORMS); ?>;
 	const thresholdFilterAvailablePlatforms = <?php echo json_encode(THRESHOLD_FILTER_AVAILABLE_PLATFORMS); ?>;
 	const averagePostsPerDayFilterAvailablePlatforms = <?php echo json_encode(AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS); ?>;
@@ -395,6 +398,7 @@
 	const scoreDefaultHackerNews = '<?php echo DEFAULT_HACKER_NEWS_SCORE; ?>';
 	const scoreDefaultLobsters = '<?php echo DEFAULT_LOBSTERS_SCORE; ?>';
 	const scoreDefaultMbin = '<?php echo DEFAULT_MBIN_SCORE; ?>';
+	const scoreDefaultPieFed = '<?php echo DEFAULT_PIEFED_SCORE; ?>';
 	const scoreDefaultReddit = '<?php echo DEFAULT_REDDIT_SCORE; ?>';
 	const percentage = <?php echo PERCENTAGE; ?>;
 	const averagePostsPerDay = <?php echo POSTS_PER_DAY; ?>;

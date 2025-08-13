@@ -72,6 +72,7 @@ class RSS {
 			'lemmy'       => new Community\Lemmy(COMMUNITY, INSTANCE, FILTER_NSFW, BLUR_NSFW),
 			'lobsters'    => new Community\Lobsters(COMMUNITY, COMMUNITY_TYPE),
 			'mbin'        => new Community\Mbin(COMMUNITY, INSTANCE, FILTER_NSFW, BLUR_NSFW),
+			'piefed'      => new Community\PieFed(COMMUNITY, INSTANCE, FILTER_NSFW, BLUR_NSFW),
 			'reddit'      => new Community\Reddit(SUBREDDIT, FILTER_NSFW, BLUR_NSFW),
 			default       => null,
 		};
@@ -84,7 +85,7 @@ class RSS {
 			if (PLATFORM === 'reddit') {
 				$error_message = "The requested subreddit " . $this->community->slug . " does not exist.";
 			}
-			if (PLATFORM === 'lemmy' || PLATFORM === 'mbin') {
+			if (PLATFORM === 'lemmy' || PLATFORM === 'mbin' || PLATFORM === 'piefed') {
 				$error_message = "Community not valid: " . PLATFORM . " | " . INSTANCE . " | " . COMMUNITY;
 			}
 			http_response_code(406);
