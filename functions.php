@@ -182,7 +182,8 @@ function cleanURL($url)
 	// Remove the following query parameters: guccounter, guce_referrer, guce_referrer_sig, fbclid, gclid, gclsrc, gclaw
 	$url = preg_replace("/&?(guccounter|guce_referrer|guce_referrer_sig|fbclid|gclid|gclsrc|gclaw)\=[^&]+/", "", "$url");
 	$url = trim($url);
-	$url = htmlspecialchars($url);
+	$url = htmlspecialchars($url, ENT_QUOTES | ENT_XML1, 'UTF-8');
+	$url = str_replace("&amp;", "&", $url);
 	return $url;
 }
 
