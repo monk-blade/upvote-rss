@@ -185,7 +185,7 @@ class PieFed extends Post {
     $log = new \CustomLogger;
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/piefed/comments/";
-    $url = "https://$this->instance/api/alpha/comment/list?post_id=$this->id&max_depth=1&sort=Top&type_=All&limit=" . COMMENTS;
+    $url = "https://$this->instance/api/alpha/comment/list?post_id=$this->id&max_depth=0&sort=Top&type_=All&limit=" . COMMENTS;
     if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
     }
@@ -209,7 +209,7 @@ class PieFed extends Post {
       $body = str_replace('href="/c/', 'href="https://' . $this->instance . '/c/', $body);
       $comments_min[] = [
         'id' => $comment['comment']['id'],
-        'author' => $comment['comment']['creator_id'],
+        'author' => $comment['creator']['id'],
         'body' => $body,
         'created_utc' => normalizeTimestamp($comment['comment']['published']),
         'permalink' => "https://$this->instance/comment/" . $comment['comment']['id'],
