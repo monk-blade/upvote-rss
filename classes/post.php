@@ -368,7 +368,7 @@ abstract class Post {
       $this->parsed_content = $webpage->getParsedContent() ?? '';
       $this->parsed_content_word_count = $webpage->getWordCount();
       $this->parsed_image_url = $webpage->getLeadImageURL() ?? '';
-      $this->summary = INCLUDE_SUMMARY && !empty($webpage->getSummary()) ? $webpage->getSummary() : '';
+      $this->summary = $webpage->getSummary() ?: '';
       $this->is_large_image_in_content = $webpage->isLargeIntroImageInContent();
       if($this->is_large_image_in_content) {
         $this->parsed_image_url = '';

@@ -11,10 +11,8 @@
         "monolog/monolog": "^2.10"
     },
     "autoload": {
-        "psr-4": {
-            "Post\\": "classes/posts/",
-            "Auth\\": "classes/auth/",
-            "Log\\": "classes/log/"
-        }
+        "classmap": [
+            "classes/"
+        ]
     }
 }

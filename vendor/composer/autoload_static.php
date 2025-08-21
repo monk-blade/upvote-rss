@@ -16,7 +16,6 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Predis\\' => 7,
-            'Post\\' => 5,
         ),
         'M' => 
         array (
@@ -25,12 +24,7 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         ),
         'L' => 
         array (
-            'Log\\' => 4,
             'League\\Uri\\' => 11,
-        ),
-        'A' => 
-        array (
-            'Auth\\' => 5,
         ),
     );
 
@@ -51,10 +45,6 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         array (
             0 => __DIR__ . '/..' . '/predis/predis/src',
         ),
-        'Post\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/classes/posts',
-        ),
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
@@ -63,18 +53,10 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
         ),
-        'Log\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/classes/log',
-        ),
         'League\\Uri\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/uri/src',
             1 => __DIR__ . '/..' . '/league/uri-interfaces/src',
-        ),
-        'Auth\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/classes/auth',
         ),
     );
 
@@ -89,7 +71,35 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
     );
 
     public static $classMap = array (
+        'Auth\\Auth' => __DIR__ . '/../..' . '/classes/auth.php',
+        'Auth\\Reddit' => __DIR__ . '/../..' . '/classes/auth/reddit.php',
+        'Community\\Community' => __DIR__ . '/../..' . '/classes/community.php',
+        'Community\\HackerNews' => __DIR__ . '/../..' . '/classes/communities/hacker-news.php',
+        'Community\\Lemmy' => __DIR__ . '/../..' . '/classes/communities/lemmy.php',
+        'Community\\Lobsters' => __DIR__ . '/../..' . '/classes/communities/lobsters.php',
+        'Community\\Mbin' => __DIR__ . '/../..' . '/classes/communities/mbin.php',
+        'Community\\PieFed' => __DIR__ . '/../..' . '/classes/communities/piefed.php',
+        'Community\\Reddit' => __DIR__ . '/../..' . '/classes/communities/reddit.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'CustomLogger' => __DIR__ . '/../..' . '/classes/custom-logger.php',
+        'Parser\\Mercury' => __DIR__ . '/../..' . '/classes/parsers/mercury.php',
+        'Parser\\Parser' => __DIR__ . '/../..' . '/classes/parser.php',
+        'Parser\\ReadabilityJS' => __DIR__ . '/../..' . '/classes/parsers/readability-js.php',
+        'Parser\\ReadabilityPHP' => __DIR__ . '/../..' . '/classes/parsers/readability-php.php',
+        'Post\\HackerNews' => __DIR__ . '/../..' . '/classes/posts/hacker-news.php',
+        'Post\\Lemmy' => __DIR__ . '/../..' . '/classes/posts/lemmy.php',
+        'Post\\Lobsters' => __DIR__ . '/../..' . '/classes/posts/lobsters.php',
+        'Post\\Mbin' => __DIR__ . '/../..' . '/classes/posts/mbin.php',
+        'Post\\PieFed' => __DIR__ . '/../..' . '/classes/posts/piefed.php',
+        'Post\\Post' => __DIR__ . '/../..' . '/classes/post.php',
+        'Post\\Reddit' => __DIR__ . '/../..' . '/classes/posts/reddit.php',
+        'RSS' => __DIR__ . '/../..' . '/classes/rss.php',
+        'SummarizerFactory' => __DIR__ . '/../..' . '/classes/summarizer-factory.php',
+        'Summarizer\\GoogleGemini' => __DIR__ . '/../..' . '/classes/summarizers/google-gemini-summarizer.php',
+        'Summarizer\\Ollama' => __DIR__ . '/../..' . '/classes/summarizers/ollama-summarizer.php',
+        'Summarizer\\OpenAI' => __DIR__ . '/../..' . '/classes/summarizers/openai-summarizer.php',
+        'Summarizer\\Summarizer' => __DIR__ . '/../..' . '/classes/summarizer.php',
+        'WebpageAnalyzer' => __DIR__ . '/../..' . '/classes/webpage-analyzer.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

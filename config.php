@@ -280,7 +280,7 @@ define('OLLAMA_MODEL', $ollama_model);
 // Google Gemini API
 $gemini_api_key = $_SERVER["GOOGLE_GEMINI_API_KEY"] ?? $_ENV["GOOGLE_GEMINI_API_KEY"] ?? null;
 define('GOOGLE_GEMINI_API_KEY', $gemini_api_key);
-$gemini_api_model = $_SERVER["GOOGLE_GEMINI_API_MODEL"] ?? $_ENV["GOOGLE_GEMINI_API_MODEL"] ?? 'gemini-1';
+$gemini_api_model = $_SERVER["GOOGLE_GEMINI_API_MODEL"] ?? $_ENV["GOOGLE_GEMINI_API_MODEL"] ?? 'gemini-2.5-flash';
 define('GOOGLE_GEMINI_API_MODEL', $gemini_api_model);
 
 
@@ -292,15 +292,18 @@ define('OPENAI_API_MODEL', $openai_api_model);
 
 
 // Summary enabled
-$summary_enabled = false;
-if (OPENAI_API_KEY !== null) $summary_enabled = true;
-if (OLLAMA_URL !== null && OLLAMA_MODEL !== null) $summary_enabled = true;
+$summary_enabled = match (true) {
+  !empty(OLLAMA_URL) && !empty(OLLAMA_MODEL) => true,
+  !empty(GOOGLE_GEMINI_API_KEY) => true,
+  !empty(OPENAI_API_KEY) => true,
+  default => false
+};
 define('SUMMARY_ENABLED', $summary_enabled);
 
 
 // Summary
 $include_summary = false;
-if (isset($_GET["summary"])) $include_summary = true;
+if (isset($_GET["summary"]) && SUMMARY_ENABLED) $include_summary = true;
 define('INCLUDE_SUMMARY', $include_summary);
 
 
