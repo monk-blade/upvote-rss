@@ -31,8 +31,8 @@ return array(
     'RSS' => $baseDir . '/classes/rss.php',
     'SummarizerFactory' => $baseDir . '/classes/summarizer-factory.php',
     'Summarizer\\GoogleGemini' => $baseDir . '/classes/summarizers/google-gemini-summarizer.php',
-    'Summarizer\\Ollama' => $baseDir . '/classes/summarizers/ollama-summarizer.php',
     'Summarizer\\OpenAI' => $baseDir . '/classes/summarizers/openai-summarizer.php',
+    'Summarizer\\Ollama' => $baseDir . '/classes/summarizers/ollama.php',
     'Summarizer\\Summarizer' => $baseDir . '/classes/summarizer.php',
     'WebpageAnalyzer' => $baseDir . '/classes/webpage-analyzer.php',
 );
