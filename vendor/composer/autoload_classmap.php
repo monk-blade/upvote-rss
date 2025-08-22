@@ -30,6 +30,7 @@ return array(
     'Post\\Reddit' => $baseDir . '/classes/posts/reddit.php',
     'RSS' => $baseDir . '/classes/rss.php',
     'SummarizerFactory' => $baseDir . '/classes/summarizer-factory.php',
+    'Summarizer\\Anthropic' => $baseDir . '/classes/summarizers/anthropic.php',
     'Summarizer\\GoogleGemini' => $baseDir . '/classes/summarizers/google-gemini.php',
     'Summarizer\\Ollama' => $baseDir . '/classes/summarizers/ollama.php',
     'Summarizer\\OpenAI' => $baseDir . '/classes/summarizers/openai.php',

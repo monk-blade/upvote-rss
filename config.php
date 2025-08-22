@@ -290,12 +290,19 @@ define('OPENAI_API_KEY', $openai_api_key);
 $openai_api_model = $_SERVER["OPENAI_API_MODEL"] ?? $_ENV["OPENAI_API_MODEL"] ?? 'gpt-4o-mini';
 define('OPENAI_API_MODEL', $openai_api_model);
 
+// Anthropic API
+$anthropic_api_key = $_SERVER["ANTHROPIC_API_KEY"] ?? $_ENV["ANTHROPIC_API_KEY"] ?? null;
+define('ANTHROPIC_API_KEY', $anthropic_api_key);
+$anthropic_api_model = $_SERVER["ANTHROPIC_API_MODEL"] ?? $_ENV["ANTHROPIC_API_MODEL"] ?? 'claude-3-haiku-20240307';
+define('ANTHROPIC_API_MODEL', $anthropic_api_model);
+
 
 // Summary enabled
 $summary_enabled = match (true) {
   !empty(OLLAMA_URL) && !empty(OLLAMA_MODEL) => true,
   !empty(GOOGLE_GEMINI_API_KEY) => true,
   !empty(OPENAI_API_KEY) => true,
+  !empty(ANTHROPIC_API_KEY) => true,
   default => false
 };
 define('SUMMARY_ENABLED', $summary_enabled);

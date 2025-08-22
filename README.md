@@ -138,7 +138,7 @@ Additionally, you can configure an optional [Browserless](https://github.com/bro
 
 ### AI Summaries
 
-Ollama and OpenAI can be used to summarize webpage content. When configured with the options in the [Environment variable](#environment-variables) section below, Upvote RSS will run the parsed article content through the specified LLM and will add the short summary above the content in the feed. When both Ollama and OpenAI are configured, Upvote RSS will attempt the summary through Ollama first and will use OpenAI as a fallback. You can set the preferred model to use, optional system prompt override, and temperature. I'm not a prompt engineer, so I'm sure there's room for improvement over the default prompt.
+Ollama, OpenAI, Google Gemini, and Anthropic can be used to summarize webpage content. When configured with the options in the [Environment variable](#environment-variables) section below, Upvote RSS will run the parsed article content through the specified LLM and will add a short summary above the content in the feed. When multiple providers are configured, Upvote RSS will attempt the summarization in this order in case any of them fail: Ollama, Google Gemini, OpenAI, Anthropic. You can set the preferred model to use for each provider, optional system prompt override, and temperature. I'm not a prompt engineer, so I'm sure there's room for improvement over the default prompt.
 
 ## Environment variables
 
@@ -186,6 +186,16 @@ OPENAI_API_KEY=your_openai_api_key
 # Model used for article summaries
 # Default value: gpt-4o-mini
 OPENAI_API_MODEL=specified_openai_model
+
+# Anthropic API key
+# Used to connect to Anthropic for article summaries when the "Include summary" checkbox is checked
+# Default value: (empty)
+ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# Anthropic API model
+# Model used for article summaries
+# Default value: claude-3-haiku-20240307
+ANTHROPIC_API_MODEL=specified_anthropic_model
 
 # Summary system prompt
 # The prompt that guides the LLM model to give accurate-ish and concise article summaries

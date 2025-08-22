@@ -16,7 +16,8 @@ class SummarizerFactory {
       $potential_summarizers = [
         new \Summarizer\Ollama(),
         new \Summarizer\GoogleGemini(),
-        new \Summarizer\OpenAI()
+        new \Summarizer\OpenAI(),
+        new \Summarizer\Anthropic(),
       ];
 
       foreach ($potential_summarizers as $summarizer) {
