@@ -41,9 +41,9 @@ class OpenAI extends Summarizer {
     $curl_options = array(
       CURLOPT_CUSTOMREQUEST => 'POST',
       CURLOPT_POSTFIELDS => json_encode(array(
+        'model'                 => $this->model_name,
         'max_completion_tokens' => $this->max_tokens,
         'temperature'           => $this->temperature,
-        'model'                 => $this->model_name,
         'messages'              => [
           array(
             'role'    => 'system',

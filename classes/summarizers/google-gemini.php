@@ -41,10 +41,10 @@ class GoogleGemini extends Summarizer {
     $curl_options = array(
       CURLOPT_CUSTOMREQUEST => 'POST',
       CURLOPT_POSTFIELDS => json_encode(array(
-        'max_tokens'  => $this->max_tokens,
-        'temperature' => $this->temperature,
-        'model'       => $this->model_name,
-        'messages'    => [
+        'model'                 => $this->model_name,
+        'max_completion_tokens' => $this->max_tokens,
+        'temperature'           => $this->temperature,
+        'messages'              => [
           array(
             'role'    => 'system',
             'content' => $this->system_prompt

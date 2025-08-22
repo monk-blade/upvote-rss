@@ -95,9 +95,9 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         'Post\\Reddit' => __DIR__ . '/../..' . '/classes/posts/reddit.php',
         'RSS' => __DIR__ . '/../..' . '/classes/rss.php',
         'SummarizerFactory' => __DIR__ . '/../..' . '/classes/summarizer-factory.php',
-        'Summarizer\\GoogleGemini' => __DIR__ . '/../..' . '/classes/summarizers/google-gemini-summarizer.php',
-        'Summarizer\\OpenAI' => __DIR__ . '/../..' . '/classes/summarizers/openai-summarizer.php',
+        'Summarizer\\GoogleGemini' => __DIR__ . '/../..' . '/classes/summarizers/google-gemini.php',
         'Summarizer\\Ollama' => __DIR__ . '/../..' . '/classes/summarizers/ollama.php',
+        'Summarizer\\OpenAI' => __DIR__ . '/../..' . '/classes/summarizers/openai.php',
         'Summarizer\\Summarizer' => __DIR__ . '/../..' . '/classes/summarizer.php',
         'WebpageAnalyzer' => __DIR__ . '/../..' . '/classes/webpage-analyzer.php',
     );
