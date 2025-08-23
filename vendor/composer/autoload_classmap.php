@@ -33,6 +33,7 @@ return array(
     'Summarizer\\Anthropic' => $baseDir . '/classes/summarizers/anthropic.php',
     'Summarizer\\DeepSeek' => $baseDir . '/classes/summarizers/deepseek.php',
     'Summarizer\\GoogleGemini' => $baseDir . '/classes/summarizers/google-gemini.php',
+    'Summarizer\\Mistral' => $baseDir . '/classes/summarizers/mistral.php',
     'Summarizer\\Ollama' => $baseDir . '/classes/summarizers/ollama.php',
     'Summarizer\\OpenAI' => $baseDir . '/classes/summarizers/openai.php',
     'Summarizer\\OpenAICompatible' => $baseDir . '/classes/summarizers/openai-compatible.php',

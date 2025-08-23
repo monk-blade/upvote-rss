@@ -296,6 +296,12 @@ define('ANTHROPIC_API_KEY', $anthropic_api_key);
 $anthropic_api_model = $_SERVER["ANTHROPIC_API_MODEL"] ?? $_ENV["ANTHROPIC_API_MODEL"] ?? 'claude-3-haiku-20240307';
 define('ANTHROPIC_API_MODEL', $anthropic_api_model);
 
+// Mistral API
+$mistral_api_key = $_SERVER["MISTRAL_API_KEY"] ?? $_ENV["MISTRAL_API_KEY"] ?? null;
+define('MISTRAL_API_KEY', $mistral_api_key);
+$mistral_api_model = $_SERVER["MISTRAL_API_MODEL"] ?? $_ENV["MISTRAL_API_MODEL"] ?? 'mistral-small-latest';
+define('MISTRAL_API_MODEL', $mistral_api_model);
+
 // DeepSeek API
 $deepseek_api_key = $_SERVER["DEEPSEEK_API_KEY"] ?? $_ENV["DEEPSEEK_API_KEY"] ?? null;
 define('DEEPSEEK_API_KEY', $deepseek_api_key);
@@ -317,6 +323,7 @@ $summary_enabled = match (true) {
   !empty(GOOGLE_GEMINI_API_KEY) => true,
   !empty(OPENAI_API_KEY) => true,
   !empty(ANTHROPIC_API_KEY) => true,
+  !empty(MISTRAL_API_KEY) => true,
   !empty(DEEPSEEK_API_KEY) => true,
   !empty(OPENAI_COMPATIBLE_URL) && !empty(OPENAI_COMPATIBLE_API_MODEL) => true,
   default => false
