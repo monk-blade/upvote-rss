@@ -168,11 +168,7 @@
 									<label for="include-content">Include article content</label>
 								</div>
 								<div v-if="includeContent" class="form-group checkbox">
-									<template v-if="demoMode">
-										<input type="checkbox" id="include-summary" name="include-summary" disabled />
-										<label for="include-summary">Include summary <br>(available only self-hosted)</label>
-									</template>
-									<template v-else-if="summaryEnabled">
+									<template v-if="summaryEnabled">
 										<input type="checkbox" id="include-summary" name="include-summary" v-model="includeSummary" />
 										<label for="include-summary">Include summary</label>
 									</template>
