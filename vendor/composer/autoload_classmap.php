@@ -31,6 +31,7 @@ return array(
     'RSS' => $baseDir . '/classes/rss.php',
     'SummarizerFactory' => $baseDir . '/classes/summarizer-factory.php',
     'Summarizer\\Anthropic' => $baseDir . '/classes/summarizers/anthropic.php',
+    'Summarizer\\DeepSeek' => $baseDir . '/classes/summarizers/deepseek.php',
     'Summarizer\\GoogleGemini' => $baseDir . '/classes/summarizers/google-gemini.php',
     'Summarizer\\Ollama' => $baseDir . '/classes/summarizers/ollama.php',
     'Summarizer\\OpenAI' => $baseDir . '/classes/summarizers/openai.php',

@@ -18,6 +18,7 @@ class SummarizerFactory {
         new \Summarizer\GoogleGemini(),
         new \Summarizer\OpenAI(),
         new \Summarizer\Anthropic(),
+        new \Summarizer\DeepSeek(),
         new \Summarizer\OpenAICompatible(),
       ];
 

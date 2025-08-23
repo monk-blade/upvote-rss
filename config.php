@@ -296,6 +296,12 @@ define('ANTHROPIC_API_KEY', $anthropic_api_key);
 $anthropic_api_model = $_SERVER["ANTHROPIC_API_MODEL"] ?? $_ENV["ANTHROPIC_API_MODEL"] ?? 'claude-3-haiku-20240307';
 define('ANTHROPIC_API_MODEL', $anthropic_api_model);
 
+// DeepSeek API
+$deepseek_api_key = $_SERVER["DEEPSEEK_API_KEY"] ?? $_ENV["DEEPSEEK_API_KEY"] ?? null;
+define('DEEPSEEK_API_KEY', $deepseek_api_key);
+$deepseek_api_model = $_SERVER["DEEPSEEK_API_MODEL"] ?? $_ENV["DEEPSEEK_API_MODEL"] ?? 'deepseek-chat';
+define('DEEPSEEK_API_MODEL', $deepseek_api_model);
+
 // OpenAI Compatible API
 $openai_compatible_url = $_SERVER["OPENAI_COMPATIBLE_URL"] ?? $_ENV["OPENAI_COMPATIBLE_URL"] ?? null;
 define('OPENAI_COMPATIBLE_URL', $openai_compatible_url);
@@ -311,6 +317,7 @@ $summary_enabled = match (true) {
   !empty(GOOGLE_GEMINI_API_KEY) => true,
   !empty(OPENAI_API_KEY) => true,
   !empty(ANTHROPIC_API_KEY) => true,
+  !empty(DEEPSEEK_API_KEY) => true,
   !empty(OPENAI_COMPATIBLE_URL) && !empty(OPENAI_COMPATIBLE_API_MODEL) => true,
   default => false
 };
