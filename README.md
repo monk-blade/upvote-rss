@@ -138,7 +138,7 @@ Additionally, you can configure an optional [Browserless](https://github.com/bro
 
 ### AI Summaries
 
-Ollama, OpenAI, Google Gemini, and Anthropic can be used to summarize webpage content. When configured with the options in the [Environment variable](#environment-variables) section below, Upvote RSS will run the parsed article content through the specified LLM and will add a short summary above the content in the feed. When multiple providers are configured, Upvote RSS will attempt the summarization in this order in case any of them fail: Ollama, Google Gemini, OpenAI, Anthropic. You can set the preferred model to use for each provider, optional system prompt override, and temperature. I'm not a prompt engineer, so I'm sure there's room for improvement over the default prompt.
+Ollama, OpenAI, Google Gemini, and Anthropic can be used to summarize webpage content. Additionally, any OpenAI-compatible provider can be used. When configured with the options in the [Environment variable](#environment-variables) section below, Upvote RSS will run the parsed article content through the specified LLM and will add a short summary above the content in the feed. When multiple providers are configured, Upvote RSS will attempt the summarization in this order in case any of them fail: Ollama, Google Gemini, OpenAI, Anthropic, OpenAI-compatible. You can set the preferred model to use for each provider, optional system prompt override, and temperature. I'm not a prompt engineer, so I'm sure there's room for improvement over the default prompt.
 
 ## Environment variables
 
@@ -196,6 +196,21 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 # Model used for article summaries
 # Default value: claude-3-haiku-20240307
 ANTHROPIC_API_MODEL=specified_anthropic_model
+
+# OpenAI-compatible API URL
+# Used to connect to an OpenAI-compatible provider for article summaries when the "Include summary" checkbox is checked. This should be the full URL to the completions endpoint. For example, the one at OpenRouter is https://openrouter.ai/api/v1/chat/completions.
+# Default value: (empty)
+OPENAI_COMPATIBLE_URL=your_openai_compatible_url
+
+# OpenAI-compatible API key
+# Used to connect to an OpenAI-compatible provider for article summaries when the "Include summary" checkbox is checked.
+# Default value: (empty)
+OPENAI_COMPATIBLE_API_KEY=your_openai_compatible_api_key
+
+# OpenAI-compatible API model
+# Model used for article summaries
+# Default value: (empty)
+OPENAI_COMPATIBLE_API_MODEL=specified_openai_compatible_model
 
 # Summary system prompt
 # The prompt that guides the LLM model to give accurate-ish and concise article summaries

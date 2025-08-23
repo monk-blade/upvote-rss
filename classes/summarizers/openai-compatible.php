@@ -2,27 +2,42 @@
 
 namespace Summarizer;
 
-class Anthropic extends Summarizer {
+class OpenAICompatible extends Summarizer {
 
   // Properties
   private ?string $api_key;
-  private string  $api_url = 'https://api.anthropic.com/v1/chat/completions';
+  private ?string $api_url;
   private ?bool   $is_model_available;
 
 
   // Constructor
   public function __construct() {
     parent::__construct();
-    $this->provider_name      = 'Anthropic';
-    $this->api_key            = ANTHROPIC_API_KEY;
-    $this->model_name         = ANTHROPIC_API_MODEL;
+    $this->provider_name      = 'OpenAI-compatible';
+    $this->api_url            = OPENAI_COMPATIBLE_URL;
+    $this->api_key            = OPENAI_COMPATIBLE_API_KEY;
+    $this->model_name         = OPENAI_COMPATIBLE_API_MODEL;
     $this->is_model_available = null;
   }
 
 
   // Check if the provider is available
   public function isAvailable(): bool {
-    return !empty($this->api_key);
+    if (empty($this->api_url) && empty($this->model_name)) {
+      return false;
+    }
+
+    if (!empty($this->api_url) && empty($this->model_name)) {
+      $this->log->warning("$this->provider_name URL is set but model is not. The $this->provider_name summarizer will be disabled for this session.");
+      return false;
+    }
+
+    if (empty($this->api_url) && !empty($this->model_name)) {
+      $this->log->warning("$this->provider_name model is set but URL is not. The $this->provider_name summarizer will be disabled for this session.");
+      return false;
+    }
+
+    return true;
   }
 
 
@@ -36,7 +51,7 @@ class Anthropic extends Summarizer {
       return [];
     }
 
-    $this->log->info("Trying to get summary from $this->provider_name API for $url");
+    $this->log->info("Trying to get summary from $this->provider_name API at $this->api_url for $url");
 
     $curl_options = array(
       CURLOPT_CUSTOMREQUEST => 'POST',
@@ -76,13 +91,13 @@ class Anthropic extends Summarizer {
       return [];
     }
 
-    if(!empty($response['error']['message']) && $response['error']['message'] === 'Invalid Anthropic API Key') {
-      $this->log->error("$this->provider_name API key is invalid. You can find your API key at https://console.anthropic.com/settings/keys. The $this->provider_name summarizer will be disabled for this session.");
+    if(!empty($response['error']['code']) && $response['error']['code'] === 'invalid_api_key') {
+      $this->log->error("$this->provider_name API key is invalid. The $this->provider_name summarizer will be disabled for this session.");
       $this->is_summarizer_available = false;
       return [];
     }
 
-    if(!empty($response['error']['code']) && $response['error']['code'] === 'not_found_error') {
+    if(!empty($response['error']['code']) && $response['error']['code'] === 'model_not_found') {
       $this->log->error("$this->provider_name API model $this->model_name not found. The $this->provider_name summarizer will be disabled for this session.");
       $this->is_model_available = false;
       return [];

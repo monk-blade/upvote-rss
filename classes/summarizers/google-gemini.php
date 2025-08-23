@@ -58,7 +58,8 @@ class GoogleGemini extends Summarizer {
       CURLOPT_HTTPHEADER => array(
         'Content-Type: application/json',
         'Authorization: Bearer ' . ($this->api_key ?? '')
-      )
+      ),
+      CURLOPT_TIMEOUT => MAX_EXECUTION_TIME
     );
 
     $curl_response = curlURL($this->api_url, $curl_options);

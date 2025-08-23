@@ -99,6 +99,7 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
         'Summarizer\\GoogleGemini' => __DIR__ . '/../..' . '/classes/summarizers/google-gemini.php',
         'Summarizer\\Ollama' => __DIR__ . '/../..' . '/classes/summarizers/ollama.php',
         'Summarizer\\OpenAI' => __DIR__ . '/../..' . '/classes/summarizers/openai.php',
+        'Summarizer\\OpenAICompatible' => __DIR__ . '/../..' . '/classes/summarizers/openai-compatible.php',
         'Summarizer\\Summarizer' => __DIR__ . '/../..' . '/classes/summarizer.php',
         'WebpageAnalyzer' => __DIR__ . '/../..' . '/classes/webpage-analyzer.php',
     );

@@ -34,6 +34,7 @@ return array(
     'Summarizer\\GoogleGemini' => $baseDir . '/classes/summarizers/google-gemini.php',
     'Summarizer\\Ollama' => $baseDir . '/classes/summarizers/ollama.php',
     'Summarizer\\OpenAI' => $baseDir . '/classes/summarizers/openai.php',
+    'Summarizer\\OpenAICompatible' => $baseDir . '/classes/summarizers/openai-compatible.php',
     'Summarizer\\Summarizer' => $baseDir . '/classes/summarizer.php',
     'WebpageAnalyzer' => $baseDir . '/classes/webpage-analyzer.php',
 );
