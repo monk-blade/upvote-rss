@@ -182,7 +182,7 @@ class Lemmy extends Post {
 
   // Get comments
 	public function getComments() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lemmy/comments/";
     $url = "https://$this->instance/api/v3/comment/list?post_id=$this->id&max_depth=1&sort=Top&type_=All&limit=" . COMMENTS;

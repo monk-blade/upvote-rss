@@ -253,7 +253,7 @@ class Reddit extends Post {
 
   // Get comments
 	public function getComments() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     $reddit_auth = new \Auth\Reddit();
     if (!$reddit_auth->getToken()) {
       $message = "Reddit auth token not found";
@@ -269,8 +269,7 @@ class Reddit extends Post {
     $curl_response = curlURL($url, [
       CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $reddit_auth->getToken()),
       CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')'
-    ]);
-    $curl_data = json_decode($curl_response, true);
+    ]);    $curl_data = json_decode($curl_response, true);
     if (empty($curl_data) || !empty($curl_data['error'])) {
       $message = "Error in Reddit comments response: " . json_encode($curl_data['error'] ?? 'Unknown error');
       $log->error($message);

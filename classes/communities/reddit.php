@@ -46,7 +46,7 @@ class Reddit extends Community
 
   // Get subreddit info
   protected function getCommunityInfo() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/reddit/$this->slug/about/";
     $info = cacheGet($this->slug, $info_directory);
@@ -131,7 +131,7 @@ class Reddit extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = '') {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested subreddit $this->slug does not exist");
       return [];
@@ -216,7 +216,7 @@ class Reddit extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested subreddit $this->slug does not exist");
       return [];
@@ -262,7 +262,7 @@ class Reddit extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested subreddit $this->slug does not exist");
       return 0;

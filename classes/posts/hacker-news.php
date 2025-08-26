@@ -109,7 +109,7 @@ class HackerNews extends Post {
 
   // Get comments
 	public function getComments() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
 		$cache_object_key = $this->id . "_limit_" . COMMENTS;
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/comments/";
 		if (cacheGet($cache_object_key, $cache_directory)) {

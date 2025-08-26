@@ -9,7 +9,7 @@ if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQU
 // Setup
 $include_progress = true;
 include 'app.php';
-$log = new \CustomLogger;
+$log = \CustomLogger::getLogger();
 
 // Get $_POST data
 $data = json_decode(file_get_contents('php://input'), true);

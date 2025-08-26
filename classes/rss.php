@@ -19,7 +19,7 @@ class RSS {
 		$this->community        = null;
 		$this->start_time       = microtime(true);
 		$this->xml              = new DOMDocument("1.0", "UTF-8");
-		$this->log              = new CustomLogger;
+		$this->log              = \CustomLogger::getLogger();
 	}
 
 	public function generateRSS() {

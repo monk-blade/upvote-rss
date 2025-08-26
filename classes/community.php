@@ -42,7 +42,7 @@ abstract class Community
     $filter_old_posts = FILTER_OLD_POSTS,
     $post_cutoff_days = POST_CUTOFF_DAYS
   ) {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log_message = $this->slug . " is not a valid community";
       if (PLATFORM === 'lemmy') {
@@ -123,7 +123,7 @@ abstract class Community
     if (empty($hot_posts)) {
       return [];
     }
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!empty($hot_posts['error'])) {
       $log->error($hot_posts['error']);
       return $hot_posts;

@@ -16,7 +16,7 @@ abstract class Summarizer {
 
   // Constructor
   public function __construct() {
-    $this->log                     = new \CustomLogger;
+    $this->log                     = \CustomLogger::getLogger();
     $this->is_summarizer_available = null;
     $this->temperature             = SUMMARY_TEMPERATURE;
     $this->max_tokens              = SUMMARY_MAX_TOKENS;

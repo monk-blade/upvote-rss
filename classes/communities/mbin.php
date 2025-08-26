@@ -46,7 +46,7 @@ class Mbin extends Community
 
 
   protected function getInstanceInfo() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     $url = "https://$this->instance/api/instance";
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
@@ -66,7 +66,7 @@ class Mbin extends Community
 
 
   protected function getCommunityInfo() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/about/";
     $info = cacheGet($this->slug, $info_directory);
@@ -143,7 +143,7 @@ class Mbin extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = null) {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
       return [];
@@ -223,7 +223,7 @@ class Mbin extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
       return [];
@@ -256,7 +256,7 @@ class Mbin extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
       return 0;

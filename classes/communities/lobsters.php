@@ -39,7 +39,7 @@ class Lobsters extends Community
 
 
 	protected function getCommunityInfo() {
-		$log = new \CustomLogger;
+		$log = \CustomLogger::getLogger();
 		if (!in_array($this->community_type, ['all', 'category', 'tag'])) {
 			$message = "The requested Lobsters community type $this->community_type does not exist";
 			$log->error($message);
@@ -108,7 +108,7 @@ class Lobsters extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = null) {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested Lobsters community $this->slug does not exist");
       return [];
@@ -264,7 +264,7 @@ class Lobsters extends Community
   // Get hot posts
   // TODO: Get hot posts from Lobsters
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log->error("The requested Lobsters community $this->slug does not exist");
       return [];
@@ -330,7 +330,7 @@ class Lobsters extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     $cache_object_key = "$this->slug-month-average-top-score";
     $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/$this->slug/";
     if ($this->community_type === 'category') {

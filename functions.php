@@ -37,7 +37,7 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
 	if (empty($cache_object_key) || empty($cache_object_value)) {
 		return;
 	}
-	$log = new \CustomLogger;
+	$log = \CustomLogger::getLogger();
 	// Use Redis if available
 	if (REDIS) {
 		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
@@ -277,7 +277,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 	if (empty($image_url)) {
 		return [];
 	}
-	$log = new \CustomLogger;
+	$log = \CustomLogger::getLogger();
 	// Get the image extension
 	$image_extension = pathinfo($image_url, PATHINFO_EXTENSION);
 	// If the image exists in the cache, return the URL of the cached image file as the first element of the array

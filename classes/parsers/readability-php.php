@@ -17,7 +17,7 @@ class ReadabilityPHP extends Parser {
     $url = null
   ) {
     if (!empty($url)) $this->url = $url;
-    $this->log = new \CustomLogger;
+    $this->log = \CustomLogger::getLogger();
   }
 
   public function getParsedWebpage() {

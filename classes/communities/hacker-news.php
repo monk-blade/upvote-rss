@@ -37,7 +37,7 @@ class HackerNews extends Community
 
 
 	protected function getCommunityInfo() {
-		$log = new \CustomLogger;
+		$log = \CustomLogger::getLogger();
 		if (!in_array($this->slug, ['beststories', 'topstories', 'newstories', 'askstories', 'showstories'])) {
 			$message = "The requested Hacker News category $this->slug does not exist";
 			$log->error($message);
@@ -67,7 +67,7 @@ class HackerNews extends Community
 
 
 	public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-		$log = new \CustomLogger;
+		$log = \CustomLogger::getLogger();
 		$limit = $limit ?? $this->max_items_per_request;
 		$cache_object_key = $this->slug . '_limit_' . $limit;
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/top_posts/";
@@ -121,7 +121,7 @@ class HackerNews extends Community
 
 
 	private function getTopCategoryPostIDs() {
-		$log = new \CustomLogger;
+		$log = \CustomLogger::getLogger();
 		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/category_post_ids/";
 		if (cacheGet($this->slug, $cache_directory)) {
 			return cacheGet($this->slug, $cache_directory);
@@ -151,7 +151,7 @@ class HackerNews extends Community
 		$filter_old_posts = FILTER_OLD_POSTS,
 		$post_cutoff_days = POST_CUTOFF_DAYS
 	) {
-		$log = new \CustomLogger;
+		$log = \CustomLogger::getLogger();
 
 		// Check if community is valid
 		if (!$this->is_community_valid) {

@@ -6,7 +6,7 @@ class Reddit extends Auth {
   private $log;
 
   public function __construct() {
-    $this->log = new \CustomLogger;
+    $this->log = \CustomLogger::getLogger();
   }
 
   public function getToken() {

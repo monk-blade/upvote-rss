@@ -42,7 +42,7 @@ class WebpageAnalyzer {
 
   // Constructor
   public function __construct($url) {
-    $this->log = new \CustomLogger;
+    $this->log = \CustomLogger::getLogger();
     $this->url = cleanURL($url) ?? '';
     $this->getCacheObjectKey();
     $this->getPropertiesFromCache();

@@ -36,7 +36,7 @@ abstract class Parser {
   abstract function getParsedWebpage();
 
   public function getBrowserlessPage($url = '') {
-    $log = new \CustomLogger;
+    $log = \CustomLogger::getLogger();
     if (empty($url)) {
       return;
     }
