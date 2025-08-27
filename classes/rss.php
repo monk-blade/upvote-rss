@@ -12,7 +12,7 @@ class RSS {
 	private $log;
 
 	public function __construct() {
-		$this->rss_directory    = $_SERVER['DOCUMENT_ROOT'] . "/cache/rss/";
+		$this->rss_directory    = "rss";
 		$this->request_uri      = "";
 		$this->feed_title       = "";
 		$this->feed_description = "";

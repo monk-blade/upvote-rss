@@ -261,8 +261,8 @@ class Reddit extends Post {
       return ['error' => $message];
     }
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/reddit/comments/";
     $url = "https://oauth.reddit.com/comments/$this->id.json?depth=1&showmore=0&limit=" . COMMENTS;
+    $cache_directory = "communities/reddit/comments";
     if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
     }

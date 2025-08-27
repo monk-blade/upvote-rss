@@ -46,11 +46,11 @@ class Lobsters extends Community
 			return ['error' => $message];
 		}
     // Check cache directory first
-    $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/$this->slug/about/";
+    $info_directory = "communities/lobsters/$this->slug/about";
     if ($this->community_type === 'category') {
-      $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/category/$this->slug/about/";
+      $info_directory = "communities/lobsters/category/$this->slug/about";
     } elseif ($this->community_type === 'tag') {
-      $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/tag/$this->slug/about/";
+      $info_directory = "communities/lobsters/tag/$this->slug/about";
     }
     $info = cacheGet($this->slug, $info_directory);
     if (empty($info)) {
@@ -120,14 +120,14 @@ class Lobsters extends Community
     $limit = $number_of_requests * $this->max_items_per_request;
     // Use cached top posts if present
     $cache_object_key = "$this->slug-top";
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/$this->slug/";
+    $cache_directory = "communities/lobsters/$this->slug";
     $base_url = "https://$this->instance/top/page/";
     if ($this->community_type === 'category') {
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/category/$this->slug/top_posts_month/";
+      $cache_directory = "communities/lobsters/category/$this->slug/top_posts_month";
       $base_url = "https://$this->instance/categories/$this->slug.json";
     }
     if ($this->community_type === 'tag') {
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/tag/$this->slug/top_posts_month/";
+      $cache_directory = "communities/lobsters/tag/$this->slug/top_posts_month";
       $base_url = "https://$this->instance/t/$this->slug.json";
     }
     $cache_expiration = TOP_DAILY_POSTS_EXPIRATION;
@@ -136,7 +136,7 @@ class Lobsters extends Community
       return array_slice($top_posts, 0, $limit);
     }
     $progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
-    $progress_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/progress/";
+    $progress_cache_directory = "progress";
     if (INCLUDE_PROGRESS) {
       cacheDelete($progress_cache_object_key, $progress_cache_directory);
     }
@@ -262,7 +262,6 @@ class Lobsters extends Community
 
 
   // Get hot posts
-  // TODO: Get hot posts from Lobsters
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
     $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
@@ -273,7 +272,7 @@ class Lobsters extends Community
     // All posts
     if ($this->community_type === 'all') {
       $cache_object_key = "$this->slug-hot-limit-$limit-min";
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/$this->slug/hot_posts/";
+      $cache_directory = "communities/lobsters/$this->slug/hot_posts";
       if (cacheGet($cache_object_key, $cache_directory)) {
         return cacheGet($cache_object_key, $cache_directory);
       }
@@ -296,7 +295,7 @@ class Lobsters extends Community
     // Category posts
     if ($this->community_type === 'category') {
       $cache_object_key = "$this->slug-hot-limit-$limit-min";
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/category/$this->slug/hot_posts/";
+      $cache_directory = "communities/lobsters/category/$this->slug/hot_posts";
       if (cacheGet($cache_object_key, $cache_directory)) {
         return cacheGet($cache_object_key, $cache_directory);
       }
@@ -312,7 +311,7 @@ class Lobsters extends Community
     // Tag posts
     if ($this->community_type === 'tag') {
       $cache_object_key = "$this->slug-hot-limit-$limit-min";
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/tag/$this->slug/hot_posts/";
+      $cache_directory = "communities/lobsters/tag/$this->slug/hot_posts";
       if (cacheGet($cache_object_key, $cache_directory)) {
         return cacheGet($cache_object_key, $cache_directory);
       }
@@ -332,12 +331,12 @@ class Lobsters extends Community
   public function getMonthlyAverageTopScore() {
     $log = \CustomLogger::getLogger();
     $cache_object_key = "$this->slug-month-average-top-score";
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/$this->slug/";
+    $cache_directory = "communities/lobsters/$this->slug";
     if ($this->community_type === 'category') {
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/category/$this->slug/top_posts_month/";
+      $cache_directory = "communities/lobsters/category/$this->slug/top_posts_month";
     }
     if ($this->community_type === 'tag') {
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/tag/$this->slug/top_posts_month/";
+      $cache_directory = "communities/lobsters/tag/$this->slug/top_posts_month";
     }
     // Use cached score if present
     if (cacheGet($cache_object_key, $cache_directory)) {

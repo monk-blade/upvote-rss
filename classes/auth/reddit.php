@@ -15,7 +15,7 @@ class Reddit extends Auth {
       $this->log->error($message);
       throw new \Exception($message);
     }
-    $auth_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/auth/reddit/";
+    $auth_directory = "auth/reddit";
     $token = cacheGet(REDDIT_CLIENT_ID_ENCRYPTED, $auth_directory);
     if ($token) {
       return openssl_decrypt($token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);

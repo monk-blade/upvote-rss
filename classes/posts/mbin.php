@@ -151,7 +151,7 @@ class Mbin extends Post {
 	public function getComments() {
     $log = \CustomLogger::getLogger();
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/comments/";
+    $cache_directory = "communities/mbin/comments";
     if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
     }

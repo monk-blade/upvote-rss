@@ -184,8 +184,8 @@ class PieFed extends Post {
 	public function getComments() {
     $log = \CustomLogger::getLogger();
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/piefed/comments/";
     $url = "https://$this->instance/api/alpha/comment/list?post_id=$this->id&max_depth=0&sort=Top&type_=All&limit=" . COMMENTS;
+    $cache_directory = "communities/piefed/comments";
     if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);
     }

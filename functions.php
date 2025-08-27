@@ -1,5 +1,7 @@
 <?php
 
+// Cache root directory
+const UPVOTE_RSS_CACHE_ROOT = __DIR__ . '/cache/';
 
 /**
  * Get cached data
@@ -7,21 +9,29 @@
  * @param string $cache_directory The directory where the cache is stored
  * @return mixed The cached object
  */
-function cacheGet($cache_object_key, $cache_directory = 'cache/')
+function cacheGet($cache_object_key, $cache_directory = '')
 {
+	if (empty($cache_object_key)) {
+		return null;
+	}
+
+	$cache_directory = ltrim($cache_directory, '/');
+	$cache_directory = rtrim($cache_directory, '/');
+
 	// Use Redis if available
 	if (REDIS) {
 		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
-		$cache_directory = str_replace($_SERVER['DOCUMENT_ROOT'], '', $cache_directory);
-		$key = 'upvote_rss' . str_replace(['cache/', '/'], ':', $cache_directory) . ':' . $cache_object_key;
+		$key = 'upvote_rss:' . str_replace('/', ':', $cache_directory) . ':' . $cache_object_key;
 		$key = str_replace(['.'], '_', $key);
 		$key = str_replace('::', ':', $key);
-		if ($client->exists($key)) return unserialize($client->get($key));
-		else return null;
-	} else {
-		@include $cache_directory . urlencode($cache_object_key);
-		return isset($val) ? $val : false;
+		if ($client->exists($key)) {
+			return unserialize($client->get($key));
+		}
+		return null;
 	}
+	$cache_directory = UPVOTE_RSS_CACHE_ROOT . $cache_directory . '/';
+	@include $cache_directory . urlencode($cache_object_key);
+	return isset($val) ? $val : false;
 }
 
 
@@ -32,41 +42,42 @@ function cacheGet($cache_object_key, $cache_directory = 'cache/')
  * @param string $cache_directory The directory where the cache is stored
  * @param int $cache_expiration The expiration time of the cache in seconds
  */
-function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'cache/', $cache_expiration = 0)
+function cacheSet($cache_object_key, $cache_object_value, $cache_directory = '', $cache_expiration = 0)
 {
 	if (empty($cache_object_key) || empty($cache_object_value)) {
 		return;
 	}
+
+	$cache_directory = ltrim($cache_directory, '/');
+	$cache_directory = rtrim($cache_directory, '/');
+
 	$log = \CustomLogger::getLogger();
 	// Use Redis if available
 	if (REDIS) {
 		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
-		// remove document root from cache directory
-		$cache_directory = str_replace($_SERVER['DOCUMENT_ROOT'], '', $cache_directory);
-		$key = 'upvote_rss' . str_replace(['cache/', '/'], ':', $cache_directory) . ':' . $cache_object_key;
+		$key = 'upvote_rss:' . str_replace('/', ':', $cache_directory) . ':' . $cache_object_key;
 		$key = str_replace(['.'], '_', $key);
 		$key = str_replace('::', ':', $key);
 		$client->set($key, serialize($cache_object_value), 'EX', $cache_expiration);
 		return;
-	} else {
-		if (!is_dir($cache_directory)) {
-			try {
-				mkdir($cache_directory, 0755, true);
-			} catch (\Exception $e) {
-				$log->error("Failed to create cache directory: " . $e->getMessage());
-				return;
-			}
-		}
-		$cache_object_value = var_export($cache_object_value, true);
-		$cache_directory = realpath($cache_directory) . '/';
-		$file_path = $cache_directory . urlencode($cache_object_key);
+	}
+	$cache_directory = UPVOTE_RSS_CACHE_ROOT . $cache_directory . '/';
+	if (!is_dir($cache_directory)) {
 		try {
-			if (file_put_contents($file_path, '<?php $val = ' . $cache_object_value . ';', LOCK_SH) === false) {
-				throw new \Exception("Failed to write cache file: $file_path");
-			}
+			mkdir($cache_directory, 0755, true);
 		} catch (\Exception $e) {
-			$log->error($e->getMessage());
+			$log->error("Failed to create cache directory: " . $e->getMessage());
+			return;
 		}
+	}
+	$cache_object_value = var_export($cache_object_value, true);
+	$file_path = $cache_directory . urlencode($cache_object_key);
+	try {
+		if (file_put_contents($file_path, '<?php $val = ' . $cache_object_value . ';', LOCK_SH) === false) {
+			throw new \Exception("Failed to write cache file: $file_path");
+		}
+	} catch (\Exception $e) {
+		$log->error($e->getMessage());
 	}
 }
 
@@ -76,18 +87,18 @@ function cacheSet($cache_object_key, $cache_object_value, $cache_directory = 'ca
  * @param string $cache_object_key The key of the cached object
  * @param string $cache_directory The directory where the cache is stored
  */
-function cacheDelete($cache_object_key, $cache_directory = 'cache/')
+function cacheDelete($cache_object_key, $cache_directory = '')
 {
 	// Use Redis if available
 	if (REDIS) {
 		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
-		$cache_directory = str_replace($_SERVER['DOCUMENT_ROOT'], '', $cache_directory);
-		$key = 'upvote_rss' . str_replace(['cache/', '/'], ':', $cache_directory) . ':' . $cache_object_key;
+		$key = 'upvote_rss:' . str_replace('/', ':', $cache_directory) . ':' . $cache_object_key;
 		$key = str_replace(['.'], '_', $key);
 		$key = str_replace('::', ':', $key);
 		$client->del($key);
 		return;
 	} else {
+		$cache_directory = UPVOTE_RSS_CACHE_ROOT . $cache_directory . '/';
 		$cache_file = $cache_directory . urlencode($cache_object_key);
 		if (file_exists($cache_file)) unlink($cache_file);
 	}
@@ -287,7 +298,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 	$cache_object_key = str_replace(['/', '.'], '-', $cache_object_key);
 	$cache_object_key = filter_var($cache_object_key, FILTER_SANITIZE_ENCODED);
 	$cache_object_key = substr($cache_object_key, 0, 100) . '-' . $max_width . 'x' . $max_height;
-	$cache_directory = 'cache/images/';
+	$cache_directory = UPVOTE_RSS_CACHE_ROOT . 'images/';
 	$cache_file = $cache_directory . $cache_object_key . '.' . $image_extension;
 	$request_uri = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
 	$url_to_cache_file = getProtocol() . $_SERVER['HTTP_HOST'] . $request_uri . $cache_file;

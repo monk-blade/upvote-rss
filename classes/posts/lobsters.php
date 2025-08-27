@@ -125,10 +125,10 @@ class Lobsters extends Post {
 	public function getComments() {
     $log = \CustomLogger::getLogger();
     $cache_object_key = $this->id . "_limit_" . COMMENTS;
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/lobsters/comments/";
     $comments = cacheGet($cache_object_key, $cache_directory);
     if ($comments) {
       return array_slice($comments, 0, COMMENTS);
+    $cache_directory = "communities/lobsters/comments";
     }
     $url = $this->permalink . '.json';
     $curl_response = curlURL($url);

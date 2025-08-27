@@ -5,7 +5,7 @@ class WebpageAnalyzer {
   // Properties
   public  string  $url                          = '';
   private string  $cache_object_key             = '';
-  private string  $cache_directory              = 'cache/webpages/';
+  private string  $cache_directory              = 'webpages';
   public  string  $domain                       = '';
   private int     $status                       = 0;
   public  string  $title                        = '';

@@ -18,12 +18,12 @@ $directory_expirations = [
   "/webpages/"                => WEBPAGE_EXPIRATION,
   "/images/"                  => IMAGE_EXPIRATION
 ];
-if (!is_dir("cache")) mkdir("cache", 0755, true);
+if (!is_dir(UPVOTE_RSS_CACHE_ROOT)) mkdir(UPVOTE_RSS_CACHE_ROOT, 0755, true);
 for ($i = 0; $i < 10; $i++) {
-  if (is_dir("cache")) break;
+  if (is_dir(UPVOTE_RSS_CACHE_ROOT)) break;
   usleep(100000);
 }
-$cache_directory_iterator = new RecursiveDirectoryIterator("cache") ?? [];
+$cache_directory_iterator = new RecursiveDirectoryIterator(UPVOTE_RSS_CACHE_ROOT) ?? [];
 foreach (new RecursiveIteratorIterator($cache_directory_iterator) as $item) {
   if (is_file($item)) {
     foreach ($directory_expirations as $search => $expiration) {

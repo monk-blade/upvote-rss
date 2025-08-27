@@ -96,7 +96,7 @@ class HackerNews extends Post {
 
   // Get single comment
   private function getComment($comment_id = null) {
-		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/comments/";
+		$cache_directory = "communities/hacker_news/comments";
 		if (cacheGet($comment_id, $cache_directory)) {
 			return cacheGet($comment_id, $cache_directory);
     }

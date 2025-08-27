@@ -74,7 +74,7 @@ class Mbin extends Community
   protected function getCommunityInfo() {
     $log = \CustomLogger::getLogger();
     // Check cache directory first
-    $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/about/";
+    $info_directory = "communities/mbin/$this->instance/$this->slug/about";
     $info = cacheGet($this->slug, $info_directory);
     if (!empty($info)) {
       $this->is_instance_valid = true;
@@ -160,7 +160,7 @@ class Mbin extends Community
     $number_of_requests = ceil($limit / $this->max_items_per_request);
     $limit = $number_of_requests * $this->max_items_per_request;
     $cache_object_key = "$this->slug-top";
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/top_posts/";
+    $cache_directory = "communities/mbin/$this->instance/$this->slug/top_posts";
     $cache_expiration = TOP_DAILY_POSTS_EXPIRATION;
     if ($period && $period == 'month') {
       $cache_expiration = TOP_MONTHLY_POSTS_EXPIRATION;
@@ -169,7 +169,7 @@ class Mbin extends Community
     $base_url = "https://$this->instance/api/magazine/$this->magazine_id/entries?perPage=$this->max_items_per_request&sort=top";
     if ($period) {
       $cache_object_key = "$this->slug-top-$period";
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/top_posts_$period/";
+      $cache_directory = "communities/mbin/$this->instance/$this->slug/top_posts_$period";
       $period = $period === 'month' ? '1m' : '1d';
       $base_url .= "&time=$period";
     }
@@ -180,7 +180,7 @@ class Mbin extends Community
     }
     $top_posts = [];
     $progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
-    $progress_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/progress/";
+    $progress_cache_directory = "progress";
     if (INCLUDE_PROGRESS) {
       cacheDelete($progress_cache_object_key, $progress_cache_directory);
     }
@@ -236,7 +236,7 @@ class Mbin extends Community
     }
     $limit = $limit ?? $this->max_items_per_request;
     $cache_object_key = "$this->slug-hot-limit-$limit-min";
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/hot_posts/";
+    $cache_directory = "communities/mbin/$this->instance/$this->slug/hot_posts";
     // Get posts documentation: https://docs.joinmbin.org/api/#tag/magazine/operation/get_api_magazine_entries_retrieve
     $url = "https://" . $this->instance . "/api/magazine/" . $this->magazine_id . "/entries?perPage=" . $this->max_items_per_request . "&sort=hot";
     if (cacheGet($cache_object_key, $cache_directory)) {
@@ -268,7 +268,7 @@ class Mbin extends Community
       return 0;
     }
     $cache_object_key = "$this->slug-month-average-top-score";
-    $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/top_posts_month/";
+    $cache_directory = "communities/mbin/$this->instance/$this->slug/top_posts_month";
     // Use cached score if present
     if (cacheGet($cache_object_key, $cache_directory)) {
       return cacheGet($cache_object_key, $cache_directory);

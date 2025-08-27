@@ -194,7 +194,7 @@ abstract class Post {
       $gallery_id = explode('/', $this->url);
       $gallery_id = end($gallery_id);
       $cache_object_key = $gallery_id;
-      $cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/galleries/reddit/";
+      $cache_directory = "galleries/reddit";
       $gallery = '';
       if (cacheGet($cache_object_key, $cache_directory)) {
         $gallery = cacheGet($cache_object_key, $cache_directory);

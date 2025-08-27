@@ -70,12 +70,12 @@ class HackerNews extends Community
 		$log = \CustomLogger::getLogger();
 		$limit = $limit ?? $this->max_items_per_request;
 		$cache_object_key = $this->slug . '_limit_' . $limit;
-		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/top_posts/";
+		$cache_directory = "communities/hacker_news/top_posts";
 		if (cacheGet($cache_object_key, $cache_directory)) {
 			return cacheGet($cache_object_key, $cache_directory);
 		}
 		$progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
-		$progress_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/progress/";
+		$progress_cache_directory = "progress";
 		$top_post_ids = $this->getTopCategoryPostIDs($this->slug);
 		$top_post_ids = array_slice($top_post_ids, 0, $limit);
 		$posts = [];
@@ -90,7 +90,7 @@ class HackerNews extends Community
 			if (INCLUDE_PROGRESS) {
 				cacheSet($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
 			}
-			$individual_post_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/individual_posts/";
+			$individual_post_cache_directory = "communities/hacker_news/individual_posts";
 			if (cacheGet($post_id, $individual_post_cache_directory)) {
 				$posts[] = cacheGet($post_id, $individual_post_cache_directory);
 			} else {
@@ -122,7 +122,7 @@ class HackerNews extends Community
 
 	private function getTopCategoryPostIDs() {
 		$log = \CustomLogger::getLogger();
-		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/category_post_ids/";
+		$cache_directory = "communities/hacker_news/category_post_ids";
 		if (cacheGet($this->slug, $cache_directory)) {
 			return cacheGet($this->slug, $cache_directory);
 		}

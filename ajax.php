@@ -55,7 +55,7 @@ if ($data['getProgress'] ?? false) {
 		$community = $subreddit;
 	}
 	$progress_cache_object_key = "progress_" . $platform . "_" . $community;
-	$progress_cache_directory  = "cache/progress/";
+	$progress_cache_directory  = "progress";
 	$progress                  = cacheGet($progress_cache_object_key, $progress_cache_directory);
 	if (empty($progress)) {
 		$progress = [
