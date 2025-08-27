@@ -49,18 +49,24 @@ class Mbin extends Community
     $log = \CustomLogger::getLogger();
     $url = "https://$this->instance/api/instance";
     $curl_response = curlURL($url);
+    if (empty($curl_response)) {
+      $message = "The Mbin instance $this->instance is not reachable";
+      $log->error($message);
+      return ['error' => $message];
+    }
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data)) {
       $message = "The Mbin instance $this->instance is not reachable";
       $log->error($message);
       return ['error' => $message];
     }
-    if (!empty($curl_data['about']) && empty($curl_data['error'])) {
-      $this->is_instance_valid = true;
-    } elseif (!empty($curl_data['error'])) {
+    if (!empty($curl_data['error'])) {
       $message = "Error retrieving data for the Mbin instance $this->instance: " . ($curl_data['error'] ?? 'Unknown error');
       $log->error($message);
       return ['error' => $message];
+    }
+    if (!empty($curl_data['about']) && empty($curl_data['error'])) {
+      $this->is_instance_valid = true;
     }
   }
 
@@ -70,74 +76,74 @@ class Mbin extends Community
     // Check cache directory first
     $info_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/mbin/$this->instance/$this->slug/about/";
     $info = cacheGet($this->slug, $info_directory);
-    if (!empty($info && !empty($this->magazine_id))) {
+    if (!empty($info)) {
       $this->is_instance_valid = true;
       $this->is_community_valid = true;
-      $this->magazine_id = $info['magazineId'] ?? 0;
     } else {
       // Check if instance is valid
       $this->getInstanceInfo();
-      if ($this->is_instance_valid) {
-        // Get community info
-        $this->instance = rtrim(preg_replace('/^https?:\/\//', '', $this->instance), '/');
-        // Get magazine id from slug
-        $url = "https://$this->instance/api/magazine/name/$this->slug";
-        $curl_response = curlURL($url);
-        $info = json_decode($curl_response, true);
-        if (!empty($info['magazineId']) && empty($info['error'])) {
-          $this->is_community_valid = true;
-          $this->magazine_id = $info['magazineId'];
-          cacheSet($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
-        } else {
-          $this->is_community_valid = false;
-          if (!empty($info['error']) && $info['error'] == 'couldnt_find_magazine') {
-            $log->error("The requested Mbin magazine $this->slug does not exist at the $this->instance instance");
-          } else {
-            $log->error("Error retrieving data for the requested Mbin magazine $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
-          }
-          return;
-        }
+      if (!$this->is_instance_valid) {
+        $log->error("The Mbin instance $this->instance is not reachable");
+        return;
       }
-    }
-    if ($this->is_community_valid) {
-      $url = "https://$this->instance/api/magazine/$this->magazine_id";
+      // Get community info
+      $this->instance = rtrim(preg_replace('/^https?:\/\//', '', $this->instance), '/');
+      $url = "https://$this->instance/api/magazine/name/$this->slug";
       $curl_response = curlURL($url);
-      if (!$curl_response) {
-        $log->error("Error retrieving data for the Mbin magazine $this->slug at the $this->instance instance");
+      if (empty($curl_response)) {
+        $log->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
         return;
       }
-      $community = json_decode($curl_response, true);
-      if (empty($community)) {
-        $log->error("Failed to decode JSON response for the Mbin magazine $this->slug at the $this->instance instance");
+      $info = json_decode($curl_response, true);
+      if (empty($info)) {
+        $log->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
         return;
       }
-      $description = $community['description'] ?? '';
-      $icon_url = $community['icon']['storageUrl'] ?? '';
-      if (empty($icon_url) || !remote_file_exists($icon_url)) {
-        $icon_url = $community['icon']['sourceUrl'] ?? '';
+      if (empty($info['magazineId'])) {
+        $log->error("The requested Mbin magazine $this->slug does not exist at the $this->instance instance");
+        return;
       }
-      if (empty($icon_url) || !remote_file_exists($icon_url)) {
-        $icon_url = $this->platform_icon;
+      if (!empty($info['error']) && $info['error'] === 'couldnt_find_magazine') {
+        $log->warning("Mbin magazine $this->slug not found at the $this->instance instance");
+        return;
       }
-      if($description) {
-        $description = preg_replace('/\[(.*?)\]\((.*?)\)/', "$1", $description);
-        $description = strip_tags($description);
-        $description = str_replace(["\n", "\r"], '', $description);
-        $description = preg_replace('/\s+/', ' ', $description);
-        $description = trim($description);
-        $description = preg_replace('/((\w+\W+){80}(\w+))(.*)/', '${1}' . '…', $description);
+      if (!empty($info['error'])) {
+        $log->error("Error retrieving data for the requested Mbin magazine $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
+        return;
       }
-      $this->name             = $community['name'] ?? $this->slug;
-      $this->title            = $community['title'] ?? $this->slug;
-      $this->description      = $description;
-      $this->url              = "https://$this->instance/m/$this->slug";
-      $this->icon             = $icon_url;
-      $this->nsfw             = $community['isAdult'] ?? false;
-      $this->subscribers      = $community['subscriptionsCount'] ?? 0;
-      $this->created          = normalizeTimestamp($community['createdAt'] ?? 0);
-      $this->feed_title       = "Mbin - " . $this->title;
-      $this->feed_description = "Hot posts at " . $this->url;
+      $this->is_community_valid = true;
+      $this->magazine_id = $info['magazineId'];
+      $log->info("Mbin magazine $this->slug found at the $this->instance instance with ID $this->magazine_id");
+      if (!empty($info['icon']['storageUrl']) && !remote_file_exists($info['icon']['storageUrl'])) {
+        $log->warning("Mbin magazine $this->slug icon not found at the $this->instance instance. Falling back to source URL.");
+        $info['icon']['storageUrl'] = $info['icon']['sourceUrl'];
+      }
+      if (!empty($info['icon']['storageUrl']) && !remote_file_exists($info['icon']['storageUrl'])) {
+        $log->warning("Mbin magazine $this->slug icon not found at the $this->instance instance");
+        $info['icon']['storageUrl'] = '';
+      }
+      cacheSet($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
     }
+    // Set community properties
+    $description = $info['description'] ?? '';
+    if($description) {
+      $description = preg_replace('/\[(.*?)\]\((.*?)\)/', "$1", $description);
+      $description = strip_tags($description);
+      $description = str_replace(["\n", "\r"], '', $description);
+      $description = preg_replace('/\s+/', ' ', $description);
+      $description = trim($description);
+      $description = preg_replace('/((\w+\W+){80}(\w+))(.*)/', '${1}' . '…', $description);
+    }
+    $this->name             = $info['name'] ?? $this->slug;
+    $this->title            = $info['title'] ?? $this->slug;
+    $this->description      = $description;
+    $this->url              = "https://$this->instance/m/$this->slug";
+    $this->icon             = $info['icon']['storageUrl'] ?? '';
+    $this->nsfw             = $info['isAdult'] ?? false;
+    $this->subscribers      = $info['subscriptionsCount'] ?? 0;
+    $this->created          = normalizeTimestamp($info['createdAt'] ?? 0);
+    $this->feed_title       = "Mbin - " . $this->title;
+    $this->feed_description = "Hot posts at " . $this->url;
   }
 
 

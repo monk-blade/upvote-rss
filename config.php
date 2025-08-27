@@ -27,9 +27,9 @@ const DEFAULT_LOBSTERS_COMMUNITY    = 'all';
 const DEFAULT_LOBSTERS_CATEGORY     = 'compsci';
 const DEFAULT_LOBSTERS_TAG          = 'programming';
 const DEFAULT_LOBSTERS_SCORE        = 50;
-const DEFAULT_MBIN_INSTANCE         = 'fedia.io';
-const DEFAULT_MBIN_COMMUNITY        = 'photography';
-const DEFAULT_MBIN_SCORE            = 10;
+const DEFAULT_MBIN_INSTANCE         = 'kbin.earth';
+const DEFAULT_MBIN_COMMUNITY        = 'technology@lemmy.world';
+const DEFAULT_MBIN_SCORE            = 100;
 const DEFAULT_SUBREDDIT             = 'technology';
 const DEFAULT_REDDIT_SCORE          = 100;
 
