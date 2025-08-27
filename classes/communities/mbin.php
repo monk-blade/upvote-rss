@@ -198,22 +198,29 @@ class Mbin extends Community
         $top_posts = array_merge($top_posts, cacheGet($page_cache_object_key, $cache_directory));
       } else {
         $curl_response = curlURL($url);
-        $curl_data = json_decode($curl_response, true);
-        if (!empty($curl_data['items'])) {
-          $paged_top_posts = [];
-          foreach ($curl_data['items'] as $post) {
-            if (empty($post['entryId']) || empty($post['favourites'])) {
-              continue;
-            }
-            $post_min = [
-              'id' => $post['entryId'],
-              'score' => $post['favourites']
-            ];
-            $paged_top_posts[] = $post_min;
-            $top_posts[] = $post_min;
-          }
-          cacheSet($page_cache_object_key, $paged_top_posts, $cache_directory, TOP_POSTS_EXPIRATION);
+        if (empty($curl_response)) {
+          $message = "Failed to get top posts for Mbin community $this->slug at the $this->instance instance";
+          $log->error($message);
+          return ['error' => $message];
         }
+        $curl_data = json_decode($curl_response, true);
+        if (empty($curl_data['items'])) {
+          $log->info("No items found for $url");
+          continue;
+        }
+        $paged_top_posts = [];
+        foreach ($curl_data['items'] as $post) {
+          if (empty($post['entryId']) || empty($post['favourites'])) {
+            continue;
+          }
+          $post_min = [
+            'id' => $post['entryId'],
+            'score' => $post['favourites']
+          ];
+          $paged_top_posts[] = $post_min;
+          $top_posts[] = $post_min;
+        }
+        cacheSet($page_cache_object_key, $paged_top_posts, $cache_directory, TOP_POSTS_EXPIRATION);
       }
     }
     $top_posts = array_slice($top_posts, 0, $limit);
