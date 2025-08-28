@@ -187,6 +187,10 @@
 										<input type="number" id="comments" name="comments" placeholder="Comments" min="1" pattern="[0-9]*" v-model="comments" />
 									</div>
 								</div>
+								<div class="form-group checkbox" v-if="includeComments && pinnedCommentsFilterAvailable">
+									<input type="checkbox" id="filter-pinned-comments" name="filter-pinned-comments" v-model="filterPinnedComments" />
+									<label for="filter-pinned-comments">Filter pinned comments</label>
+								</div>
 								<div class="row cutoff-row">
 									<div class="form-group checkbox">
 										<input type="checkbox" id="filter-old-posts" name="filter-old-posts" v-model="filterOldPosts" />
@@ -404,6 +408,8 @@
 	const includeSummary = <?php echo INCLUDE_SUMMARY ? "true" : "false"; ?>;
 	const includeComments = <?php echo INCLUDE_COMMENTS ? "true" : "false"; ?>;
 	const comments = <?php echo COMMENTS; ?>;
+	const pinnedCommentsFilterAvailablePlatforms = <?php echo json_encode(PINNED_COMMENTS_AVAILABLE_PLATFORMS); ?>;
+	const filterPinnedComments = <?php echo FILTER_PINNED_COMMENTS ? "true" : "false"; ?>;
 	const filterNSFW = <?php echo FILTER_NSFW ? "true" : "false"; ?>;
 	const blurNSFW = <?php echo BLUR_NSFW ? "true" : "false"; ?>;
 	const filterOldPosts = <?php echo FILTER_OLD_POSTS ? "true" : "false"; ?>;

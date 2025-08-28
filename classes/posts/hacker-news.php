@@ -6,6 +6,7 @@ class HackerNews extends Post {
 
   // Properties
 	public $post_data = null;
+  public $max_items_per_request = 500;
 
   // Constructor
   public function __construct($post_data) {
@@ -107,59 +108,96 @@ class HackerNews extends Post {
 		return $curl_data;
 	}
 
+  // Check if comment should be filtered out
+  protected function shouldFilterComment($comment): bool {
+    return match (true) {
+      empty($comment['text']) => true,
+      !empty($comment['deleted']) => true,
+      !empty($comment['dead']) => true,
+      default => false
+    };
+  }
+
   // Get comments
-	public function getComments() {
+	public function getComments(): array {
     $log = \CustomLogger::getLogger();
-		$cache_object_key = $this->id . "_limit_" . COMMENTS;
-		$cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/comments/";
-		if (cacheGet($cache_object_key, $cache_directory)) {
-			return cacheGet($cache_object_key, $cache_directory);
-    }
-		$comment_ids = [];
-		$individual_post_cache_directory = $_SERVER['DOCUMENT_ROOT'] . "/cache/communities/hacker_news/individual_posts/";
-		if (cacheGet($this->id, $individual_post_cache_directory)) {
-			$post = cacheGet($this->id, $individual_post_cache_directory);
-			foreach ($post->kids as $comment_id) {
-				$comment_ids[] = $comment_id;
-			}
-		} else {
-			$url = "https://hacker-news.firebaseio.com/v0/item/$this->id.json";
-			$curl_response = curlURL($url);
-      if (empty($curl_response)) {
-        $log->error("Failed to get comments for Hacker News post $this->id");
+    $buffer_comments = max(5, (int)(COMMENTS * 1.5)); // Add some wiggle room
+    $number_of_comments_to_fetch = min(COMMENTS + $buffer_comments, $this->max_items_per_request);
+		$cache_object_key = $this->id . "_limit_" . $number_of_comments_to_fetch;
+		$cache_directory = "communities/hacker_news/comments";
+    $comments = $this->getCachedComments($cache_directory, $cache_object_key, $number_of_comments_to_fetch) ?? [];
+
+    if (empty($comments)) {
+      $comment_ids = [];
+      $individual_post_cache_directory = "communities/hacker_news/individual_posts";
+      if (cacheGet($this->id, $individual_post_cache_directory)) {
+        $post = cacheGet($this->id, $individual_post_cache_directory) ?? [];
+        if (is_object($post)) {
+          $post = (array)$post;
+        }
+        if (!empty($post['kids'])) {
+          foreach ($post['kids'] as $comment_id) {
+            $comment_ids[] = $comment_id;
+          }
+        }
+      } else {
+        $url = "https://hacker-news.firebaseio.com/v0/item/$this->id.json";
+        $curl_response = curlURL($url);
+        if (empty($curl_response)) {
+          $log->error("Failed to get comments for Hacker News post $this->id");
+          return [];
+        }
+        $curl_data = json_decode($curl_response, true);
+        cacheSet($this->id, $curl_data, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
+        $comment_ids = $curl_data['kids'];
+      }
+      if (empty($comment_ids)) {
         return [];
       }
-			$curl_data = json_decode($curl_response, true);
-			cacheSet($this->id, $curl_data, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
-			$comment_ids = $curl_data['kids'];
-			$comment_ids = array_slice($comment_ids, 0, COMMENTS);
-		}
-		$comment_ids = array_slice($comment_ids, 0, COMMENTS);
-		if (empty($comment_ids)) {
-      return [];
+      $comment_id_count = 0;
+      foreach ($comment_ids as $comment_id) {
+        if ($comment_id_count >= $number_of_comments_to_fetch) {
+          break;
+        }
+        $comment = $this->getComment($comment_id);
+        if (!empty($comment['error'])) {
+          $log->error("Comment $comment_id for Hacker News post $this->id returned an error: " . $comment['error']);
+          continue;
+        }
+        $comments[] = $comment;
+        $comment_id_count++;
+      }
+      if (empty($comments)) {
+        return [];
+      }
+      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
-		$comments = [];
-		foreach ($comment_ids as $comment_id) {
-			$comment = $this->getComment($comment_id);
-			if (!empty($comment['error'])) {
-        $log->error("Comment $comment_id for Hacker News post $this->id returned an error: " . $comment['error']);
+
+		$comments_min = [];
+    $comment_count = 0;
+
+		foreach ($comments as $comment) {
+      if ($comment_count >= COMMENTS) {
+        break;
+      }
+      if ($this->shouldFilterComment($comment)) {
         continue;
       }
       $comment_id          = $comment['id'] ?? '';
-      $comment_author      = $comment['by'] ?? '[deleted]';
-      $comment_body        = $comment['text'] ?? '[deleted]';
-      $comment_created_utc = $comment['time'] ?? '';
+      $comment_author      = $comment['by'] ?? '';
+      $comment_body        = $comment['text'] ?? '';
+      $comment_created_utc = $comment['time'] ?? 0;
       $comment_permalink   = 'https://news.ycombinator.com/item?id=' . $comment_id;
-			$comments[] = [
+			$comments_min[] = [
 				'id'          => $comment_id,
 				'author'      => $comment_author,
 				'body'        => $comment_body,
 				'created_utc' => $comment_created_utc,
 				'permalink'   => $comment_permalink,
 			];
+      $comment_count++;
 		}
-		cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
-		return $comments;
+		return $comments_min;
 	}
 
 }

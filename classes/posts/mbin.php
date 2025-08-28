@@ -5,10 +5,11 @@ namespace Post;
 class Mbin extends Post {
 
   // Properties
-	public $post_data         = null;
-	public $instance          = null;
-  public $slug              = null;
-  public $entry_slug        = null;
+  public  $post_data             = null;
+  public  $instance              = null;
+  public  $slug                  = null;
+  public  $entry_slug            = null;
+  private $max_items_per_request = 50;
 
   // Constructor
   public function __construct($post_data, $instance, $slug) {
@@ -147,42 +148,69 @@ class Mbin extends Post {
     $this->nsfw = $post_is_nsfw;
   }
 
+  // Check if comment should be filtered out
+  protected function shouldFilterComment($comment): bool {
+    return match (true) {
+      empty($comment['body']) => true,
+      isset($comment['visibility']) && $comment['visibility'] !== 'visible' => true,
+      FILTER_NSFW && !empty($comment['isAdult']) => true,
+      default => false
+    };
+  }
+
   // Get comments
-	public function getComments() {
+	public function getComments(): array {
     $log = \CustomLogger::getLogger();
-    $cache_object_key = $this->id . "_limit_" . COMMENTS;
+    $buffer_comments = max(5, (int)(COMMENTS * 1.5)); // Add some wiggle room
+    $number_of_comments_to_fetch = min(COMMENTS + $buffer_comments, $this->max_items_per_request);
+    $cache_object_key = $this->id . "_limit_" . $number_of_comments_to_fetch;
     $cache_directory = "communities/mbin/comments";
-    if (cacheGet($cache_object_key, $cache_directory)) {
-      return cacheGet($cache_object_key, $cache_directory);
+    $comments = $this->getCachedComments($cache_directory, $cache_object_key, $number_of_comments_to_fetch) ?? [];
+
+    if (empty($comments)) {
+      $url = "https://$this->instance/api/entry/$this->id/comments?sortBy=top&perPage=" . $number_of_comments_to_fetch . "&d=0";
+      $curl_response = curlURL($url);
+      if (empty($curl_response)) {
+        $message = "Failed to get comments for Mbin post $this->id";
+        $log->error($message);
+        return ['error' => $message];
+      }
+      $curl_data = json_decode($curl_response, true);
+      if (empty($curl_data) || !empty($curl_data['status'])) {
+        $message = "Failed to get comments for Mbin post $this->id";
+        $log->error($message);
+        return ['error' => $message];
+      }
+      if (empty($curl_data["items"])) {
+        $log->info("No comments found for Mbin post $this->id");
+        return [];
+      }
+      $comments = $curl_data["items"];
+      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
-    $url = "https://$this->instance/api/entry/$this->id/comments?sortBy=top&perPage=" . COMMENTS . "&d=0";
-    $curl_response = curlURL($url);
-    $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['status'])) {
-      $message = "Failed to get comments for Mbin post $this->id";
-      $log->error($message);
-      return ['error' => $message];
-    }
-    if (empty($curl_data["items"])) {
-      return false;
-    }
-    $comments = $curl_data["items"];
-    $comments = array_slice($comments, 0, COMMENTS);
+
     $comments_min = [];
+    $comment_count = 0;
     $Parsedown = new \Parsedown();
     $Parsedown->setSafeMode(true);
     foreach ($comments as $comment) {
-      $body = $Parsedown->text($comment['body']);
+      if ($comment_count >= COMMENTS) {
+        break;
+      }
+      if ($this->shouldFilterComment($comment)) {
+        continue;
+      }
+      $body = $Parsedown->text($comment['body'] ?? '');
       $body = str_replace('href="/m/', 'href="https://' . $this->instance . '/m/', $body);
       $comments_min[] = [
-        'id' => $comment['commentId'],
-        'author' => $comment['user']['userId'] ?? 'Unknown',
-        'body' => $body,
-        'created_utc' => normalizeTimestamp($comment['createdAt']),
-        'permalink' => $this->permalink . 'comment/' . $comment['commentId'] . '#entry-comment-' . $comment['commentId'],
+        'id'          => $comment['commentId'] ?? 0,
+        'author'      => $comment['user']['userId'] ?? 0,
+        'body'        => $body,
+        'created_utc' => normalizeTimestamp(($comment['createdAt']) ?? 0),
+        'permalink'   => $this->permalink . 'comment/' . ($comment['commentId'] ?? 0) . '#entry-comment-' . ($comment['commentId'] ?? 0),
       ];
+      $comment_count++;
     }
-    cacheSet($cache_object_key, $comments_min, $cache_directory, COMMENTS_EXPIRATION);
     return $comments_min;
   }
 }

@@ -5,10 +5,11 @@ namespace Post;
 class Lobsters extends Post {
 
   // Properties
-	public $post_data         = null;
-	public $instance          = null;
-  public $slug              = null;
-  public $community_type    = null;
+	public  $post_data             = null;
+	public  $instance              = null;
+  public  $slug                  = null;
+  public  $community_type        = null;
+  private $max_items_per_request = 25;
 
   // Constructor
   public function __construct($post_data, $instance, $slug, $community_type) {
@@ -121,31 +122,58 @@ class Lobsters extends Post {
     $this->nsfw = false;
   }
 
+  // Check if comment should be filtered out
+  protected function shouldFilterComment($comment): bool {
+    return match (true) {
+      empty($comment['comment_plain']) && empty($comment['comment']) => true,
+      str_contains($comment['comment_plain'], '[Comment removed by') => true,
+      str_contains($comment['comment'], '[Comment removed by') => true,
+      default => false
+    };
+  }
+
   // Get comments
-	public function getComments() {
+	public function getComments(): array {
     $log = \CustomLogger::getLogger();
-    $cache_object_key = $this->id . "_limit_" . COMMENTS;
-    $comments = cacheGet($cache_object_key, $cache_directory);
-    if ($comments) {
-      return array_slice($comments, 0, COMMENTS);
+    $buffer_comments = max(5, (int)(COMMENTS * 1.5)); // Add some wiggle room
+    $number_of_comments_to_fetch = min(COMMENTS + $buffer_comments, $this->max_items_per_request);
+    $cache_object_key = $this->id . "_limit_" . $number_of_comments_to_fetch;
     $cache_directory = "communities/lobsters/comments";
+    $comments = $this->getCachedComments($cache_directory, $cache_object_key, $number_of_comments_to_fetch) ?? [];
+
+    if (empty($comments)) {
+      $url = $this->permalink . '.json';
+      $curl_response = curlURL($url);
+      if (empty($curl_response)) {
+        $message = "Empty response when trying to get comments for Lobsters post $this->id";
+        $log->error($message);
+        return [];
+      }
+      $curl_data = json_decode($curl_response, true);
+      if (empty($curl_data) || !empty($curl_data['status'])) {
+        $message = "Failed to get comments for Lobsters post $this->id";
+        $log->error($message);
+        return [];
+      }
+      if (empty($curl_data["comments"])) {
+        $log->info("No comments found for Lobsters post $this->id");
+        return [];
+      }
+      $comments = $curl_data["comments"];
+      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
-    $url = $this->permalink . '.json';
-    $curl_response = curlURL($url);
-    $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['status'])) {
-      $message = "Failed to get comments for Lobsters post $this->id";
-      $log->error($message);
-      return [];
-    }
-    if (empty($curl_data["comments"])) {
-      return [];
-    }
-    $comments = $curl_data["comments"];
+
     $comments_min = [];
+    $comment_count = 0;
     $Parsedown = new \Parsedown();
     $Parsedown->setSafeMode(true);
     foreach ($comments as $comment) {
+      if ($comment_count >= COMMENTS) {
+        break;
+      }
+      if ($this->shouldFilterComment($comment)) {
+        continue;
+      }
       if (!empty($comment['parent_comment'])) {
         continue;
       }
@@ -154,16 +182,17 @@ class Lobsters extends Post {
         $body = $Parsedown->text($comment['comment']);
       }
       $body = trim($body);
-      $date = $comment['created_at'] ? strtotime($comment['created_at']) : null;
+      $date = !empty($comment['created_at']) ? strtotime($comment['created_at']) : 0;
       $comments_min[] = [
-        'id'          => $comment['short_id'],
-        'author'      => $comment['commenting_user'] ?? 'Unknown',
+        'id'          => $comment['short_id'] ?? '',
+        'author'      => $comment['commenting_user'] ?? '',
         'body'        => $body,
+        'score'       => $comment['score'] ?? 0,
         'created_utc' => normalizeTimestamp($date),
-        'permalink'   => $comment['short_id_url'],
+        'permalink'   => $comment['short_id_url'] ?? ($comment['short_id'] ? 'https://' . $this->instance . '/s/' . $comment['short_id'] : ''),
       ];
+      $comment_count++;
     }
-    cacheSet($cache_object_key, $comments_min, $cache_directory, COMMENTS_EXPIRATION);
-    return array_slice($comments_min, 0, COMMENTS);
+    return $comments_min;
   }
 }

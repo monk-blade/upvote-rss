@@ -56,6 +56,8 @@ createApp({
       includeSummary: includeSummary || false,
       includeComments: includeComments || false,
       comments: comments || 0,
+      pinnedCommentsFilterAvailablePlatforms: pinnedCommentsFilterAvailablePlatforms,
+      filterPinnedComments: filterPinnedComments || false,
       filterNSFW: filterNSFW || false,
       blurNSFW: blurNSFW || false,
       filterOldPosts: filterOldPosts || false,
@@ -132,6 +134,9 @@ createApp({
       if(this.comments > 0) {
         newURL.searchParams.set('comments', this.comments);
       }
+      if(this.filterPinnedComments) {
+        newURL.searchParams.append('filterPinnedComments', '');
+      }
       if(this.filterNSFW) {
         newURL.searchParams.append('filterNSFW', '');
       } else if(this.blurNSFW) {
@@ -178,6 +183,7 @@ createApp({
           averagePostsPerDay: this.averagePostsPerDay,
           includeComments: this.includeComments,
           comments: this.comments,
+          filterPinnedComments: this.filterPinnedComments,
           filterNSFW: this.filterNSFW,
           blurNSFW: this.blurNSFW,
           filterOldPosts: this.filterOldPosts,
@@ -334,7 +340,10 @@ createApp({
     },
     averagePostsPerDayFilterAvailable() {
       return this.averagePostsPerDayFilterAvailablePlatforms.includes(this.platform);
-    }
+    },
+    pinnedCommentsFilterAvailable() {
+      return this.pinnedCommentsFilterAvailablePlatforms.includes(this.platform);
+    },
   },
   created() {
     this.getPosts();
@@ -487,6 +496,9 @@ createApp({
       this.updateURL();
     },
     comments() {
+      this.updateURL();
+    },
+    filterPinnedComments() {
       this.updateURL();
     },
     filterNSFW() {

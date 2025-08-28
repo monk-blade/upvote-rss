@@ -370,6 +370,10 @@ if (!empty($_GET["comments"])) {
 }
 define('INCLUDE_COMMENTS', $include_comments);
 define('COMMENTS', $comments);
+define('PINNED_COMMENTS_AVAILABLE_PLATFORMS', ['lemmy', 'piefed', 'reddit']);
+$filter_pinned_comments = false;
+if (isset($_GET["filterPinnedComments"])) $filter_pinned_comments = true;
+define('FILTER_PINNED_COMMENTS', $filter_pinned_comments);
 
 
 // NSFW

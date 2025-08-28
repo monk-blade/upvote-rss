@@ -50,6 +50,7 @@ abstract class Post {
   private ?string $separator_after_selftext = '';
   private ?string $separator_before_parsed_content = '';
   private ?string $separator_before_comments = '';
+  private ?array  $comments = [];
 
 
 	// Constructor
@@ -576,48 +577,98 @@ abstract class Post {
   }
 
 
+  // Check if comment should be filtered out
+  abstract protected function shouldFilterComment($comment): bool;
+
+
   // Get comments
-	abstract function getComments();
+	abstract function getComments(): array;
+
+
+  // Get cached comments
+  protected function getCachedComments($cache_directory, $cache_object_key, $number_of_comments_to_fetch): array {
+    $comments = [];
+
+    if (empty($cache_directory) || empty($cache_object_key || empty($number_of_comments_to_fetch))) {
+      return $comments;
+    }
+
+    // Check for existing cache with exact limit
+    if (cacheGet($cache_object_key, $cache_directory)) {
+      $comments = cacheGet($cache_object_key, $cache_directory);
+    }
+
+    // Check for cached items with higher limits
+    elseif (REDIS) {
+      $cache_object_key = null;
+      $client = new \Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
+      $keys_prefix = 'upvote_rss:' . str_replace('/', ':', $cache_directory);
+      $keys_prefix = str_replace(['.'], '_', $keys_prefix);
+      $keys_prefix = str_replace('::', ':', $keys_prefix);
+      $keys = $client->keys($keys_prefix . ':*');
+      foreach ($keys as $key) {
+        if (preg_match('/^' . preg_quote($keys_prefix . ':' . $this->id . '_limit_', '/') . '(\d+)$/', $key, $matches)) {
+          $cached_limit = (int)$matches[1];
+          if ($cached_limit > $number_of_comments_to_fetch) {
+            $cache_object_key = $this->id . "_limit_" . $cached_limit;
+            break;
+          }
+        }
+      }
+    }
+    elseif (is_dir(UPVOTE_RSS_CACHE_ROOT . $cache_directory)) {
+      $files = scandir(UPVOTE_RSS_CACHE_ROOT . $cache_directory);
+      $cache_object_key = null;
+      foreach ($files as $file) {
+        if (preg_match('/^' . preg_quote($this->id, '/') . '_limit_(\d+)$/', $file, $matches)) {
+          $cached_limit = (int)$matches[1];
+          if ($cached_limit > $number_of_comments_to_fetch) {
+            $cache_object_key = $this->id . "_limit_" . $cached_limit;
+            break;
+          }
+        }
+      }
+    }
+
+    if ($cache_object_key && cacheGet($cache_object_key, $cache_directory)) {
+      $comments = cacheGet($cache_object_key, $cache_directory);
+    }
+
+    return $comments;
+  }
 
 
 	// Get comments HTML
-  public function getCommentsHTML() {
+  public function getCommentsHTML(): string {
+    if (!INCLUDE_COMMENTS || COMMENTS < 1) {
+      return '';
+    }
     $comments_html = '';
-    if (INCLUDE_COMMENTS && COMMENTS > 0) {
-      $comments = $this->getComments();
-      if (!empty($comments) && count($comments)) {
-        $comments_html .= "<section class='comments'>";
-        if (count($comments) == 1) {
-          $comments_html .= "<p>Top comment</p>";
-        } elseif (count($comments) > 1) {
-          $comments_html .= "<p>Top comments</p>";
-        }
-        $comments_html .= "<ol>";
-        $iterator = 1;
-        foreach ($comments as $comment) {
-          $spacer = "";
-          if ($iterator != count($comments)) {
-            $spacer = "<p>&nbsp;</p>";
-          }
-          $comments_html .= "<li>" . str_replace(["\r", "\n"], '', html_entity_decode($comment["body"])) . "<p><a href='" . $comment["permalink"] . "'><small>Comment permalink</small></a></p>$spacer</li>";
-          $iterator++;
-        }
-        $comments_html .= "</ol>";
-        $comments_html .= "</section>";
-        $comments_html = tidy($comments_html);
+    // Use cached comments if available, otherwise fetch them
+    if (empty($this->comments)) {
+      $this->comments = $this->getComments();
+    }
+    if (!empty($this->comments) && count($this->comments)) {
+      $comments_html .= "<section class='comments'>";
+      if (count($this->comments) == 1) {
+        $comments_html .= "<p>Top comment</p>";
+      } elseif (count($this->comments) > 1) {
+        $comments_html .= "<p>Top comments</p>";
       }
+      $comments_html .= "<ol>";
+      $iterator = 1;
+      foreach ($this->comments as $comment) {
+        $spacer = "";
+        if ($iterator != count($this->comments)) {
+          $spacer = "<p>&nbsp;</p>";
+        }
+        $comments_html .= "<li>" . str_replace(["\r", "\n"], '', html_entity_decode($comment["body"])) . "<p><a href='" . $comment["permalink"] . "'><small>Comment permalink</small></a></p>$spacer</li>";
+        $iterator++;
+      }
+      $comments_html .= "</ol>";
+      $comments_html .= "</section>";
+      $comments_html = tidy($comments_html);
     }
     return $comments_html;
   }
-
 }
-
-
-
-// Include platform-specific post classes
-include_once "posts/hacker-news.php";
-include_once "posts/lemmy.php";
-include_once "posts/lobsters.php";
-include_once "posts/mbin.php";
-include_once "posts/piefed.php";
-include_once "posts/reddit.php";

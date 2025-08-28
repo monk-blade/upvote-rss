@@ -5,8 +5,9 @@ namespace Post;
 class Reddit extends Post {
 
   // Properties
-	public $post_data = null;
-  public $subreddit = null;
+  private $post_data             = null;
+  private $subreddit             = null;
+  private $max_items_per_request = 100;
 
   // Constructor
   public function __construct($post_data, $subreddit = null) {
@@ -251,8 +252,26 @@ class Reddit extends Post {
     }
   }
 
+  // Check if comment should be filtered out
+  protected function shouldFilterComment($comment): bool {
+    return match (true) {
+      empty($comment['data']['body']) => true,
+      !empty($comment['data']['removal_reason']) => true,
+      !empty($comment['data']['collapsed_reason_code']) && $comment['data']['collapsed_reason_code'] === 'DELETED' => true,
+      $comment['data']['body'] === '[removed]' => true,
+      $comment['data']['body'] === '[deleted]' => true,
+      FILTER_PINNED_COMMENTS &&
+        isset($comment['data']['stickied']) &&
+        $comment['data']['stickied'] &&
+        isset($comment['data']['distinguished']) &&
+        $comment['data']['distinguished'] === 'moderator' => true,
+      FILTER_NSFW && !empty($comment['data']['over_18']) => true,
+      default => false
+    };
+  }
+
   // Get comments
-	public function getComments() {
+	public function getComments(): array {
     $log = \CustomLogger::getLogger();
     $reddit_auth = new \Auth\Reddit();
     if (!$reddit_auth->getToken()) {
@@ -260,41 +279,60 @@ class Reddit extends Post {
       $log->error($message);
       return ['error' => $message];
     }
-    $cache_object_key = $this->id . "_limit_" . COMMENTS;
-    $url = "https://oauth.reddit.com/comments/$this->id.json?depth=1&showmore=0&limit=" . COMMENTS;
+    $buffer_comments = max(5, (int)(COMMENTS * 1.5)); // Add some wiggle room
+    $number_of_comments_to_fetch = min(COMMENTS + $buffer_comments, $this->max_items_per_request);
+    $cache_object_key = $this->id . "_limit_" . $number_of_comments_to_fetch;
     $cache_directory = "communities/reddit/comments";
-    if (cacheGet($cache_object_key, $cache_directory)) {
-      return cacheGet($cache_object_key, $cache_directory);
+    $comments = $this->getCachedComments($cache_directory, $cache_object_key, $number_of_comments_to_fetch) ?? [];
+
+    if (empty($comments)) {
+      $url = "https://oauth.reddit.com/comments/$this->id.json?depth=1&showmore=0&limit=" . $number_of_comments_to_fetch;
+      $curl_response = curlURL($url, [
+        CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $reddit_auth->getToken()),
+        CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')'
+      ]);
+      if (empty($curl_response)) {
+        $message = "Failed to get comments for Reddit post $this->id";
+        $log->error($message);
+        return ['error' => $message];
+      }
+      $curl_data = json_decode($curl_response, true);
+      if (empty($curl_data) || !empty($curl_data['error'])) {
+        $message = "Error in Reddit comments response: " . json_encode($curl_data['error'] ?? 'Unknown error');
+        $log->error($message);
+        return ['error' => $message];
+      }
+      if (empty($curl_data[1]["data"]["children"])) {
+        $log->info("No comments found for Reddit post $this->id");
+        return [];
+      }
+      $comments = $curl_data[1]["data"]["children"];
+      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
-    $curl_response = curlURL($url, [
-      CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $reddit_auth->getToken()),
-      CURLOPT_USERAGENT => 'web:Upvote RSS:' . UPVOTE_RSS_VERSION . ' (by /u/' . REDDIT_USER . ')'
-    ]);    $curl_data = json_decode($curl_response, true);
-    if (empty($curl_data) || !empty($curl_data['error'])) {
-      $message = "Error in Reddit comments response: " . json_encode($curl_data['error'] ?? 'Unknown error');
-      $log->error($message);
-      return ['error' => $message];
-    }
-    if (empty($curl_data[1]["data"]["children"])) {
-      return false;
-    }
-    $comments = $curl_data[1]["data"]["children"];
+
     $comments_min = [];
+    $comment_count = 0;
     foreach ($comments as $comment) {
-      $body = $comment['data']['body_html'];
+      if ($comment_count >= COMMENTS) {
+        break;
+      }
+      if ($this->shouldFilterComment($comment)) {
+        continue;
+      }
+      $body = $comment['data']['body_html'] ?? '';
       $body = str_replace('href="/r/', 'href="https://www.reddit.com/r/', $body);
       $body = str_replace('href="/u/', 'href="https://www.reddit.com/u/', $body);
       $body = str_replace('href="/message/', 'href="https://www.reddit.com/message/', $body);
       $comments_min[] = [
-        'id' => $comment['data']['id'],
-        'author' => $comment['data']['author'],
-        'body' => $body,
-        'score' => $comment['data']['score'],
-        'created_utc' => $comment['data']['created_utc'],
-        'permalink' => 'https://www.reddit.com' . $comment['data']['permalink'],
+        'id'          => $comment['data']['id'] ?? '',
+        'author'      => $comment['data']['author'] ?? '',
+        'body'        => $body,
+        'score'       => $comment['data']['score'] ?? 0,
+        'created_utc' => $comment['data']['created_utc'] ?? 0,
+        'permalink'   => 'https://www.reddit.com' . ($comment['data']['permalink'] ?? ''),
       ];
+      $comment_count++;
     }
-    cacheSet($cache_object_key, $comments_min, $cache_directory, COMMENTS_EXPIRATION);
     return $comments_min;
   }
 

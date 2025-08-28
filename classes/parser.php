@@ -79,7 +79,3 @@ abstract class Parser {
   }
 
 }
-
-include_once 'parsers/mercury.php';
-include_once 'parsers/readability-php.php';
-include_once 'parsers/readability-js.php';
