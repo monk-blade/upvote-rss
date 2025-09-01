@@ -75,7 +75,7 @@ class Mbin extends Community
     $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = "communities/mbin/$this->instance/$this->slug/about";
-    $info = cacheGet($this->slug, $info_directory);
+    $info = cache()->get($this->slug, $info_directory);
     if (!empty($info)) {
       $this->is_instance_valid = true;
       $this->is_community_valid = true;
@@ -122,7 +122,7 @@ class Mbin extends Community
         $log->warning("Mbin magazine $this->slug icon not found at the $this->instance instance");
         $info['icon']['storageUrl'] = '';
       }
-      cacheSet($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
+      cache()->set($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
     }
     // Set community properties
     $description = $info['description'] ?? '';
@@ -173,7 +173,7 @@ class Mbin extends Community
       $period = $period === 'month' ? '1m' : '1d';
       $base_url .= "&time=$period";
     }
-    if ($top_posts = cacheGet($cache_object_key, $cache_directory)) {
+    if ($top_posts = cache()->get($cache_object_key, $cache_directory)) {
       if (count($top_posts) >= $limit) {
         return array_slice($top_posts, 0, $limit);
       }
@@ -182,7 +182,7 @@ class Mbin extends Community
     $progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
     $progress_cache_directory = "progress";
     if (INCLUDE_PROGRESS) {
-      cacheDelete($progress_cache_object_key, $progress_cache_directory);
+      cache()->delete($progress_cache_object_key, $progress_cache_directory);
     }
     for ($i = 1; $i <= $number_of_requests; $i++) {
       $progress = [
@@ -190,12 +190,12 @@ class Mbin extends Community
         'total' => $number_of_requests + 1
       ];
       if (INCLUDE_PROGRESS) {
-        cacheSet($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+        cache()->set($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
       }
       $url = $base_url . "&p=$i";
       $page_cache_object_key = "$this->slug-top-$period-limit-$this->max_items_per_request-page-$i";
-      if (cacheGet($page_cache_object_key, $cache_directory)) {
-        $top_posts = array_merge($top_posts, cacheGet($page_cache_object_key, $cache_directory));
+      if (cache()->get($page_cache_object_key, $cache_directory)) {
+        $top_posts = array_merge($top_posts, cache()->get($page_cache_object_key, $cache_directory));
       } else {
         $curl_response = curlURL($url);
         if (empty($curl_response)) {
@@ -220,16 +220,16 @@ class Mbin extends Community
           $paged_top_posts[] = $post_min;
           $top_posts[] = $post_min;
         }
-        cacheSet($page_cache_object_key, $paged_top_posts, $cache_directory, TOP_POSTS_EXPIRATION);
+        cache()->set($page_cache_object_key, $paged_top_posts, $cache_directory, TOP_POSTS_EXPIRATION);
       }
     }
     $top_posts = array_slice($top_posts, 0, $limit);
     usort($top_posts, function ($a, $b) {
       return $b['score'] <=> $a['score'];
     });
-    cacheSet($cache_object_key, $top_posts, $cache_directory, $cache_expiration);
+    cache()->set($cache_object_key, $top_posts, $cache_directory, $cache_expiration);
     if (INCLUDE_PROGRESS)
-      cacheSet($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
+      cache()->set($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
     return $top_posts;
   }
 
@@ -246,8 +246,8 @@ class Mbin extends Community
     $cache_directory = "communities/mbin/$this->instance/$this->slug/hot_posts";
     // Get posts documentation: https://docs.joinmbin.org/api/#tag/magazine/operation/get_api_magazine_entries_retrieve
     $url = "https://" . $this->instance . "/api/magazine/" . $this->magazine_id . "/entries?perPage=" . $this->max_items_per_request . "&sort=hot";
-    if (cacheGet($cache_object_key, $cache_directory)) {
-      return cacheGet($cache_object_key, $cache_directory);
+    if (cache()->get($cache_object_key, $cache_directory)) {
+      return cache()->get($cache_object_key, $cache_directory);
     }
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
@@ -256,13 +256,13 @@ class Mbin extends Community
       $log->error($message);
       return ['error' => $message];
     }
-    cacheSet($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
+    cache()->set($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
     $hot_posts_min = array();
     foreach ($curl_data['items'] as $post) {
       $post = new \Post\Mbin($post, $this->instance, $this->slug);
       $hot_posts_min[] = $post;
     }
-    cacheSet($cache_object_key, $hot_posts_min, $cache_directory, HOT_POSTS_EXPIRATION);
+    cache()->set($cache_object_key, $hot_posts_min, $cache_directory, HOT_POSTS_EXPIRATION);
     return $hot_posts_min;
   }
 
@@ -277,8 +277,8 @@ class Mbin extends Community
     $cache_object_key = "$this->slug-month-average-top-score";
     $cache_directory = "communities/mbin/$this->instance/$this->slug/top_posts_month";
     // Use cached score if present
-    if (cacheGet($cache_object_key, $cache_directory)) {
-      return cacheGet($cache_object_key, $cache_directory);
+    if (cache()->get($cache_object_key, $cache_directory)) {
+      return cache()->get($cache_object_key, $cache_directory);
     }
     $top_posts = $this->getTopPosts($this->max_items_per_request, 'month');
     $total_score = 0;
@@ -290,7 +290,7 @@ class Mbin extends Community
     }
     $average_score = floor($total_score / count($top_posts));
     $log->info("Monthly average top score calculated for $this->instance community $this->slug: $average_score");
-    cacheSet($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
+    cache()->set($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }
 }

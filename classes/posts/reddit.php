@@ -107,6 +107,7 @@ class Reddit extends Post {
   // Set Score
   private function setScore() {
     $this->score = $this->post_data['score'] ?? null;
+    $this->score_formatted = $this->formatScore($this->score);
   }
 
   // Set Media Embed
@@ -307,7 +308,7 @@ class Reddit extends Post {
         return [];
       }
       $comments = $curl_data[1]["data"]["children"];
-      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
+      cache()->set($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
 
     $comments_min = [];

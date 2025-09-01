@@ -1,107 +1,12 @@
 <?php
 
-// Cache root directory
-const UPVOTE_RSS_CACHE_ROOT = __DIR__ . '/cache/';
-
 /**
- * Get cached data
- * @param string $cache_object_key The key of the cached object
- * @param string $cache_directory The directory where the cache is stored
- * @return mixed The cached object
+ * Get Cache instance for direct access to Cache methods
+ * @return Cache The Cache instance
  */
-function cacheGet($cache_object_key, $cache_directory = '')
+function cache(): Cache
 {
-	if (empty($cache_object_key)) {
-		return null;
-	}
-
-	$cache_directory = ltrim($cache_directory, '/');
-	$cache_directory = rtrim($cache_directory, '/');
-
-	// Use Redis if available
-	if (REDIS) {
-		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
-		$key = 'upvote_rss:' . str_replace('/', ':', $cache_directory) . ':' . $cache_object_key;
-		$key = str_replace(['.'], '_', $key);
-		$key = str_replace('::', ':', $key);
-		if ($client->exists($key)) {
-			return unserialize($client->get($key));
-		}
-		return null;
-	}
-	$cache_directory = UPVOTE_RSS_CACHE_ROOT . $cache_directory . '/';
-	@include $cache_directory . urlencode($cache_object_key);
-	return isset($val) ? $val : false;
-}
-
-
-/**
- * Set cached data
- * @param string $cache_object_key The key of the cached object
- * @param mixed $cache_object_value The value of the cached object
- * @param string $cache_directory The directory where the cache is stored
- * @param int $cache_expiration The expiration time of the cache in seconds
- */
-function cacheSet($cache_object_key, $cache_object_value, $cache_directory = '', $cache_expiration = 0)
-{
-	if (empty($cache_object_key) || empty($cache_object_value)) {
-		return;
-	}
-
-	$cache_directory = ltrim($cache_directory, '/');
-	$cache_directory = rtrim($cache_directory, '/');
-
-	$log = \CustomLogger::getLogger();
-	// Use Redis if available
-	if (REDIS) {
-		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
-		$key = 'upvote_rss:' . str_replace('/', ':', $cache_directory) . ':' . $cache_object_key;
-		$key = str_replace(['.'], '_', $key);
-		$key = str_replace('::', ':', $key);
-		$client->set($key, serialize($cache_object_value), 'EX', $cache_expiration);
-		return;
-	}
-	$cache_directory = UPVOTE_RSS_CACHE_ROOT . $cache_directory . '/';
-	if (!is_dir($cache_directory)) {
-		try {
-			mkdir($cache_directory, 0755, true);
-		} catch (\Exception $e) {
-			$log->error("Failed to create cache directory: " . $e->getMessage());
-			return;
-		}
-	}
-	$cache_object_value = var_export($cache_object_value, true);
-	$file_path = $cache_directory . urlencode($cache_object_key);
-	try {
-		if (file_put_contents($file_path, '<?php $val = ' . $cache_object_value . ';', LOCK_SH) === false) {
-			throw new \Exception("Failed to write cache file: $file_path");
-		}
-	} catch (\Exception $e) {
-		$log->error($e->getMessage());
-	}
-}
-
-
-/**
- * Delete cached data
- * @param string $cache_object_key The key of the cached object
- * @param string $cache_directory The directory where the cache is stored
- */
-function cacheDelete($cache_object_key, $cache_directory = '')
-{
-	// Use Redis if available
-	if (REDIS) {
-		$client = new Predis\Client('tcp://' . REDIS_HOST . ':' . REDIS_PORT);
-		$key = 'upvote_rss:' . str_replace('/', ':', $cache_directory) . ':' . $cache_object_key;
-		$key = str_replace(['.'], '_', $key);
-		$key = str_replace('::', ':', $key);
-		$client->del($key);
-		return;
-	} else {
-		$cache_directory = UPVOTE_RSS_CACHE_ROOT . $cache_directory . '/';
-		$cache_file = $cache_directory . urlencode($cache_object_key);
-		if (file_exists($cache_file)) unlink($cache_file);
-	}
+	return Cache::getInstance();
 }
 
 
@@ -114,25 +19,6 @@ function dd($data)
 	echo '<pre>';
 	die(var_dump($data));
 	echo '</pre>';
-}
-
-
-/**
- * Write to log file
- * @param string $log_message The message to write to the log file
- */
-function writeLog($log_message)
-{
-	if (is_array($log_message)) {
-		$log_message = print_r($log_message, true);
-	}
-	if (is_object($log_message)) {
-		$log_message = json_encode($log_message);
-	}
-	$log_file = fopen('debug.log', 'a');
-	$log_message = date('Y-m-d H:i:s') . ' ' . $log_message;
-	fwrite($log_file, $log_message . "\n");
-	fclose($log_file);
 }
 
 
@@ -485,75 +371,6 @@ function getRemoteFileSize($url)
 
 
 /**
- * Get estimated reading time in minutes
- * @param int $word_count The word count
- * @return int The estimated reading time in minutes
- */
-function getEstimatedReadingTime($word_count)
-{
-	if ($word_count && is_numeric($word_count)) {
-		$reading_minutes = $word_count / 200;
-		if ($word_count < 20) $reading_minutes = 0;
-		elseif (0.3 <= $reading_minutes && $reading_minutes < 1) $reading_minutes = 1;
-		elseif ($reading_minutes < 2) $reading_minutes = ceil($reading_minutes);
-		else $reading_minutes = round($reading_minutes);
-		return $reading_minutes;
-	} else {
-		return false;
-	}
-}
-
-
-/**
- * Get directory size in bytes
- * @param string $dir The directory path
- * @return int The directory size in bytes
- * @link https://www.a2zwebhelp.com/folder-size-php
- */
-function directorySize($dir)
-{
-	if (!is_dir($dir)) return 0;
-	$count_size = 0;
-	$count = 0;
-	$directory_array = scandir($dir);
-	foreach ($directory_array as $key => $filename) {
-		if ($filename != ".." && $filename != ".") {
-			if (is_dir($dir . "/" . $filename)) {
-				$new_folder_size = directorySize($dir . "/" . $filename);
-				$count_size = $count_size + $new_folder_size;
-			} elseif (is_file($dir . "/" . $filename)) {
-				$count_size = $count_size + filesize($dir . "/" . $filename);
-				$count++;
-			}
-		}
-	}
-	return $count_size;
-}
-
-
-/**
- * Delete directory contents
- * @param string $src The directory path
- */
-function deleteDirectoryContents($src, $exclude = [])
-{
-	if (!is_dir($src)) return;
-	$directory = opendir($src);
-	while (false !== ($file = readdir($directory))) {
-		if (($file != '.') && ($file != '..') && !in_array($file, $exclude)) {
-			$full = $src . '/' . $file;
-			if (is_dir($full)) {
-				deleteDirectoryContents($full, $exclude);
-			} else {
-				unlink($full);
-			}
-		}
-	}
-	closedir($directory);
-}
-
-
-/**
  * Normalize to a Unix timestamp
  * @param mixed $timestamp The timestamp to normalize
  * @return int The normalized timestamp
@@ -592,46 +409,6 @@ function timeElapsedString($date)
 			$r = round($d);
 			return $r . ' ' . $str . ($r > 1 ? 's' : '') . ' ago';
 		}
-	}
-}
-
-
-/**
- * Sort an array of objects or arrays by a key or property
- * @param mixed  $a     The first object or array
- * @param mixed  $b     The second object or array
- * @param string $key   The key or property to sort by
- * @param string $order The order to sort by (asc or desc)
- * @return int          The sorted array
- */
-function sortByKeyOrProperty($a, $b, $key, $order = 'asc') {
-	if (is_array($a)) {
-		if ($order == 'asc') {
-			return $a[$key] <=> $b[$key];
-		} else {
-			return $b[$key] <=> $a[$key];
-		}
-	} elseif (is_object($a)) {
-		if ($order == 'asc') {
-			return $a->$key <=> $b->$key;
-		} else {
-			return $b->$key <=> $a->$key;
-		}
-	}
-}
-
-
-/**
- * Format score
- * @param int $score The score to format
- * @return string The formatted score
- */
-function formatScore($score)
-{
-	if ($score >= 1000) {
-		return round($score / 1000, 1) . "k";
-	} else {
-		return $score;
 	}
 }
 

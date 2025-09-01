@@ -414,7 +414,7 @@
 	const blurNSFW = <?php echo BLUR_NSFW ? "true" : "false"; ?>;
 	const filterOldPosts = <?php echo FILTER_OLD_POSTS ? "true" : "false"; ?>;
 	const postCutoffDays = <?php echo POST_CUTOFF_DAYS; ?>;
-	const cacheSize = '<?php echo getCacheSize(); ?>';
+	const cacheSize = '<?php echo cache()->getTotalCacheSize(); ?>';
 	<?php include 'js/lib/vue.global.prod.js'; ?>
 	<?php include 'js/script.js'; ?>
 	</script>

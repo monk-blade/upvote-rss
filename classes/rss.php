@@ -48,9 +48,9 @@ class RSS {
 	}
 
 	private function checkCache() {
-		if ($this->request_uri && cacheGet($this->request_uri, $this->rss_directory)) {
+		if ($this->request_uri && cache()->get($this->request_uri, $this->rss_directory)) {
 			$this->log->info("RSS feed served from cache: " . $this->request_uri);
-			echo cacheGet($this->request_uri, $this->rss_directory);
+			echo cache()->get($this->request_uri, $this->rss_directory);
 			exit;
 		} else {
 			$this->log->info("Starting RSS feed generation: $this->request_uri");
@@ -226,7 +226,7 @@ class RSS {
 	}
 
 	private function cacheFeed() {
-		cacheSet($this->request_uri, $this->xml->saveXML(), $this->rss_directory, RSS_EXPIRATION);
+		cache()->set($this->request_uri, $this->xml->saveXML(), $this->rss_directory, RSS_EXPIRATION);
 	}
 
 	private function outputXml() {

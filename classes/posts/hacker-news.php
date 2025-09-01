@@ -82,6 +82,7 @@ class HackerNews extends Post {
   // Set Score
   private function setScore() {
     $this->score = $this->post_data['score'] ?? null;
+    $this->score_formatted = $this->formatScore($this->score);
   }
 
   // Set Selftext HTML
@@ -98,13 +99,13 @@ class HackerNews extends Post {
   // Get single comment
   private function getComment($comment_id = null) {
 		$cache_directory = "communities/hacker_news/comments";
-		if (cacheGet($comment_id, $cache_directory)) {
-			return cacheGet($comment_id, $cache_directory);
+		if (cache()->get($comment_id, $cache_directory)) {
+			return cache()->get($comment_id, $cache_directory);
     }
 		$url = "https://hacker-news.firebaseio.com/v0/item/$comment_id.json";
 		$curl_response = curlURL($url);
 		$curl_data = json_decode($curl_response, true);
-		cacheSet($comment_id, $curl_data, $cache_directory, COMMENTS_EXPIRATION);
+		cache()->set($comment_id, $curl_data, $cache_directory, COMMENTS_EXPIRATION);
 		return $curl_data;
 	}
 
@@ -130,8 +131,8 @@ class HackerNews extends Post {
     if (empty($comments)) {
       $comment_ids = [];
       $individual_post_cache_directory = "communities/hacker_news/individual_posts";
-      if (cacheGet($this->id, $individual_post_cache_directory)) {
-        $post = cacheGet($this->id, $individual_post_cache_directory) ?? [];
+      if (cache()->get($this->id, $individual_post_cache_directory)) {
+        $post = cache()->get($this->id, $individual_post_cache_directory) ?? [];
         if (is_object($post)) {
           $post = (array)$post;
         }
@@ -148,7 +149,7 @@ class HackerNews extends Post {
           return [];
         }
         $curl_data = json_decode($curl_response, true);
-        cacheSet($this->id, $curl_data, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
+        cache()->set($this->id, $curl_data, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
         $comment_ids = $curl_data['kids'];
       }
       if (empty($comment_ids)) {
@@ -170,7 +171,7 @@ class HackerNews extends Post {
       if (empty($comments)) {
         return [];
       }
-      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
+      cache()->set($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
 
 		$comments_min = [];

@@ -15,7 +15,7 @@ abstract class Post {
 	public  ?string $relative_date;
 	public  ?string $time_rfc_822;
 	public  ?int    $score;
-	public  ?string $score_formatted;
+	public  ?string $score_formatted = '0';
 	public  ?string $domain;
 	public  ?array  $kids;
 	public  ?array  $media_embed;
@@ -71,6 +71,22 @@ abstract class Post {
       $link = cleanURL($this->permalink) ?? '';
     }
     $this->feed_Link = $link;
+  }
+
+
+  /**
+ * Format score
+ * @param int $score The score to format
+ * @return string The formatted score
+ */
+  protected function formatScore($score): string {
+    if (empty($score) || !is_numeric($score) || $score < 0) {
+      return '0';
+    }
+    if ($score >= 1000) {
+      return round($score / 1000, 1) . 'k';
+    }
+    return (string)$score;
   }
 
 
@@ -197,8 +213,8 @@ abstract class Post {
       $cache_object_key = $gallery_id;
       $cache_directory = "galleries/reddit";
       $gallery = '';
-      if (cacheGet($cache_object_key, $cache_directory)) {
-        $gallery = cacheGet($cache_object_key, $cache_directory);
+      if (cache()->get($cache_object_key, $cache_directory)) {
+        $gallery = cache()->get($cache_object_key, $cache_directory);
       } else {
         $url = "https://oauth.reddit.com/comments/$gallery_id.json";
         $reddit_auth = new \Auth\Reddit();
@@ -215,7 +231,7 @@ abstract class Post {
           return;
         }
         $gallery = $curl_data[0]['data']['children'][0]['data'];
-        cacheSet($cache_object_key, $gallery, $cache_directory, GALLERY_EXPIRATION);
+        cache()->set($cache_object_key, $gallery, $cache_directory, GALLERY_EXPIRATION);
       }
       if (empty($gallery)) {
         return;
@@ -594,8 +610,8 @@ abstract class Post {
     }
 
     // Check for existing cache with exact limit
-    if (cacheGet($cache_object_key, $cache_directory)) {
-      $comments = cacheGet($cache_object_key, $cache_directory);
+    if (cache()->get($cache_object_key, $cache_directory)) {
+      $comments = cache()->get($cache_object_key, $cache_directory);
     }
 
     // Check for cached items with higher limits
@@ -630,8 +646,8 @@ abstract class Post {
       }
     }
 
-    if ($cache_object_key && cacheGet($cache_object_key, $cache_directory)) {
-      $comments = cacheGet($cache_object_key, $cache_directory);
+    if ($cache_object_key && cache()->get($cache_object_key, $cache_directory)) {
+      $comments = cache()->get($cache_object_key, $cache_directory);
     }
 
     return $comments;

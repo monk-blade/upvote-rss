@@ -73,6 +73,7 @@ class ComposerStaticInit6188c44f206e5aee3751b8c341687db9
     public static $classMap = array (
         'Auth\\Auth' => __DIR__ . '/../..' . '/classes/auth.php',
         'Auth\\Reddit' => __DIR__ . '/../..' . '/classes/auth/reddit.php',
+        'Cache' => __DIR__ . '/../..' . '/classes/cache.php',
         'Community\\Community' => __DIR__ . '/../..' . '/classes/community.php',
         'Community\\HackerNews' => __DIR__ . '/../..' . '/classes/communities/hacker-news.php',
         'Community\\Lemmy' => __DIR__ . '/../..' . '/classes/communities/lemmy.php',

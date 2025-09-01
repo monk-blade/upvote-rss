@@ -10,4 +10,4 @@ include 'config.php';
 include 'functions.php';
 
 // Cache
-include 'cache.php';
+cache()->cleanUpExpired();

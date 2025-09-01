@@ -8,6 +8,7 @@ $baseDir = dirname($vendorDir);
 return array(
     'Auth\\Auth' => $baseDir . '/classes/auth.php',
     'Auth\\Reddit' => $baseDir . '/classes/auth/reddit.php',
+    'Cache' => $baseDir . '/classes/cache.php',
     'Community\\Community' => $baseDir . '/classes/community.php',
     'Community\\HackerNews' => $baseDir . '/classes/communities/hacker-news.php',
     'Community\\Lemmy' => $baseDir . '/classes/communities/lemmy.php',

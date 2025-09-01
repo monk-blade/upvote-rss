@@ -16,7 +16,7 @@ class Reddit extends Auth {
       throw new \Exception($message);
     }
     $auth_directory = "auth/reddit";
-    $token = cacheGet(REDDIT_CLIENT_ID_ENCRYPTED, $auth_directory);
+    $token = cache()->get(REDDIT_CLIENT_ID_ENCRYPTED, $auth_directory);
     if ($token) {
       return openssl_decrypt($token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
     }
@@ -37,7 +37,7 @@ class Reddit extends Auth {
     $this->log->info("New token received from Reddit for user " . REDDIT_USER);
     $access_token = $curl_data['access_token'];
     $access_token_encrypted = openssl_encrypt($access_token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
-    cacheSet(REDDIT_CLIENT_ID_ENCRYPTED, $access_token_encrypted, $auth_directory, AUTH_EXPIRATION);
+    cache()->set(REDDIT_CLIENT_ID_ENCRYPTED, $access_token_encrypted, $auth_directory, AUTH_EXPIRATION);
     return $access_token;
   }
 }

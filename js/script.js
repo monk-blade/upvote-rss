@@ -382,11 +382,13 @@ createApp({
             if (json.progress > this.progress) {
               this.progress = json.progress;
             }
+            if (json.cacheSize) {
+              this.cacheSize = json.cacheSize;
+            }
           })
           .catch((error) => {
             console.error('Error:', error);
-          }
-          );
+          });
         }, 500);
       } else {
         clearInterval(this.interval);

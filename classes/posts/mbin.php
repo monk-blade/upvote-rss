@@ -112,6 +112,7 @@ class Mbin extends Post {
   // Set Score
   private function setScore() {
     $this->score = $this->post_data['favourites'] ?? null;
+    $this->score_formatted = $this->formatScore($this->score);
   }
 
   // Set Thumbnail
@@ -186,7 +187,7 @@ class Mbin extends Post {
         return [];
       }
       $comments = $curl_data["items"];
-      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
+      cache()->set($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
 
     $comments_min = [];

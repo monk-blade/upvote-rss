@@ -59,8 +59,8 @@ class WebpageAnalyzer {
 
   // Get properties from cache
   public function getPropertiesFromCache() {
-    if (cacheGet($this->cache_object_key, $this->cache_directory)) {
-      $properties = cacheGet($this->cache_object_key, $this->cache_directory);
+    if (cache()->get($this->cache_object_key, $this->cache_directory)) {
+      $properties = cache()->get($this->cache_object_key, $this->cache_directory);
       $this->domain                       = $properties['domain'] ?? '';
       $this->status                       = $properties['status'] ?? 0;
       $this->title                        = $properties['title'] ?? '';
@@ -133,7 +133,7 @@ class WebpageAnalyzer {
       'summary_unix_time'            => $this->summary_unix_time,
       'summary_total_time'           => $this->summary_total_time
     ];
-    cacheSet($this->cache_object_key, $properties, $this->cache_directory, WEBPAGE_EXPIRATION);
+    cache()->set($this->cache_object_key, $properties, $this->cache_directory, WEBPAGE_EXPIRATION);
     $this->log->info('Webpage cache updated for ' . $this->url);
   }
 

@@ -71,8 +71,8 @@ class HackerNews extends Community
 		$limit = $limit ?? $this->max_items_per_request;
 		$cache_object_key = $this->slug . '_limit_' . $limit;
 		$cache_directory = "communities/hacker_news/top_posts";
-		if (cacheGet($cache_object_key, $cache_directory)) {
-			return cacheGet($cache_object_key, $cache_directory);
+		if (cache()->get($cache_object_key, $cache_directory)) {
+			return cache()->get($cache_object_key, $cache_directory);
 		}
 		$progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
 		$progress_cache_directory = "progress";
@@ -80,7 +80,7 @@ class HackerNews extends Community
 		$top_post_ids = array_slice($top_post_ids, 0, $limit);
 		$posts = [];
 		if (INCLUDE_PROGRESS) {
-			cacheDelete($progress_cache_object_key, $progress_cache_directory);
+			cache()->delete($progress_cache_object_key, $progress_cache_directory);
 		}
 		foreach ($top_post_ids as $index => $post_id) {
 			$progress = [
@@ -88,11 +88,11 @@ class HackerNews extends Community
 				'total' => count($top_post_ids) + 1
 			];
 			if (INCLUDE_PROGRESS) {
-				cacheSet($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+				cache()->set($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
 			}
 			$individual_post_cache_directory = "communities/hacker_news/individual_posts";
-			if (cacheGet($post_id, $individual_post_cache_directory)) {
-				$posts[] = cacheGet($post_id, $individual_post_cache_directory);
+			if (cache()->get($post_id, $individual_post_cache_directory)) {
+				$posts[] = cache()->get($post_id, $individual_post_cache_directory);
 			} else {
 				$url = "https://hacker-news.firebaseio.com/v0/item/$post_id.json";
 				$curl_response = curlURL($url);
@@ -102,12 +102,12 @@ class HackerNews extends Community
 				}
 				$post = new \Post\HackerNews($post, $this);
 				$posts[] = $post;
-				cacheSet($post->id, $post, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
+				cache()->set($post->id, $post, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
 			}
 		}
-		cacheSet($cache_object_key, $posts, $cache_directory, HOT_POSTS_EXPIRATION);
+		cache()->set($cache_object_key, $posts, $cache_directory, HOT_POSTS_EXPIRATION);
 		if (INCLUDE_PROGRESS) {
-			cacheSet($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
+			cache()->set($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
 		}
 		return $posts;
 	}
@@ -123,8 +123,8 @@ class HackerNews extends Community
 	private function getTopCategoryPostIDs() {
 		$log = \CustomLogger::getLogger();
 		$cache_directory = "communities/hacker_news/category_post_ids";
-		if (cacheGet($this->slug, $cache_directory)) {
-			return cacheGet($this->slug, $cache_directory);
+		if (cache()->get($this->slug, $cache_directory)) {
+			return cache()->get($this->slug, $cache_directory);
 		}
 		$url = "https://hacker-news.firebaseio.com/v0/$this->slug.json";
 		$curl_response = curlURL($url);
@@ -134,7 +134,7 @@ class HackerNews extends Community
 			$log->error($message);
 			return ['error' => $message];
 		}
-		cacheSet($this->slug, $curl_data, $cache_directory, TOP_POSTS_EXPIRATION);
+		cache()->set($this->slug, $curl_data, $cache_directory, TOP_POSTS_EXPIRATION);
 		return $curl_data;
 	}
 

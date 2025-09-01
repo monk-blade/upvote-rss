@@ -49,7 +49,7 @@ class Reddit extends Community
     $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = "communities/reddit/$this->slug/about";
-    $info = cacheGet($this->slug, $info_directory);
+    $info = cache()->get($this->slug, $info_directory);
     if (empty($info)) {
       if ($this->slug === 'all') {
         $url = "https://oauth.reddit.com/r/all.json";
@@ -66,7 +66,7 @@ class Reddit extends Community
             'icon_img'           => $this->platform_icon
           ]
         ];
-        cacheSet($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
+        cache()->set($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
       }
       // Get authenticated
       elseif ($this->auth_token) {
@@ -86,7 +86,7 @@ class Reddit extends Community
             return;
           }
           $this->is_community_valid = true;
-          cacheSet($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
+          cache()->set($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
         }
       }
     }
@@ -153,7 +153,7 @@ class Reddit extends Community
       $cache_directory = "communities/reddit/$this->slug/top_posts_$period";
       $base_url = "https://oauth.reddit.com/r/$this->slug/top/.json?t=$period&limit=$limit";
     }
-    if ($top_posts = cacheGet($cache_object_key, $cache_directory)) {
+    if ($top_posts = cache()->get($cache_object_key, $cache_directory)) {
       if (count($top_posts) >= $limit) {
         return array_slice($top_posts, 0, $limit);
       }
@@ -162,7 +162,7 @@ class Reddit extends Community
     $progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
     $progress_cache_directory = "progress";
     if (INCLUDE_PROGRESS) {
-      cacheDelete($progress_cache_object_key, $progress_cache_directory);
+      cache()->delete($progress_cache_object_key, $progress_cache_directory);
     }
     for ($i = 1; $i <= $number_of_requests; $i++) {
       $progress = [
@@ -170,15 +170,15 @@ class Reddit extends Community
         'total' => $number_of_requests + 1
       ];
       if (INCLUDE_PROGRESS) {
-        cacheSet($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+        cache()->set($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
       }
       $url = $base_url;
       if ($i > 1) {
         $url .= "&after=" . end($top_posts)['name'];
       }
       $page_cache_object_key = "$this->slug-top-$period-limit-$this->max_items_per_request-page-$i";
-      if (cacheGet($page_cache_object_key, $cache_directory)) {
-        $top_posts = array_merge($top_posts, cacheGet($page_cache_object_key, $cache_directory));
+      if (cache()->get($page_cache_object_key, $cache_directory)) {
+        $top_posts = array_merge($top_posts, cache()->get($page_cache_object_key, $cache_directory));
       } else {
         $curl_response = curlURL($url, [
           CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $this->auth_token),
@@ -198,7 +198,7 @@ class Reddit extends Community
             $paged_top_posts[] = $post_min;
             $top_posts[] = $post_min;
           }
-          cacheSet($page_cache_object_key, $paged_top_posts, $cache_directory, TOP_POSTS_EXPIRATION);
+          cache()->set($page_cache_object_key, $paged_top_posts, $cache_directory, TOP_POSTS_EXPIRATION);
         }
       }
       // if ($i < $number_of_requests) sleep(1);
@@ -207,9 +207,9 @@ class Reddit extends Community
     usort($top_posts, function ($a, $b) {
       return $b['score'] <=> $a['score'];
     });
-    cacheSet($cache_object_key, $top_posts, $cache_directory, $cache_expiration);
+    cache()->set($cache_object_key, $top_posts, $cache_directory, $cache_expiration);
     if (INCLUDE_PROGRESS)
-      cacheSet($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
+      cache()->set($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
     return $top_posts;
   }
 
@@ -230,8 +230,8 @@ class Reddit extends Community
     $limit = $limit ?? $this->max_items_per_request;
     $cache_object_key = "$this->slug-hot-limit-$limit-min";
     $cache_directory = "communities/reddit/$this->slug/hot_posts";
-    if (cacheGet($cache_object_key, $cache_directory))
-      return cacheGet($cache_object_key, $cache_directory);
+    if (cache()->get($cache_object_key, $cache_directory))
+      return cache()->get($cache_object_key, $cache_directory);
     $url = "https://oauth.reddit.com/r/$this->slug/hot/.json?limit=$limit";
     $curl_response = curlURL($url, [
       CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $this->auth_token),
@@ -240,7 +240,7 @@ class Reddit extends Community
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data) || !empty($curl_data['error']))
       return ['error' => "There was an error communicating with Reddit."];
-    cacheSet($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
+    cache()->set($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
     if (empty($curl_data['data']['children']))
       return false;
     $hot_posts = $curl_data['data']['children'];
@@ -255,7 +255,7 @@ class Reddit extends Community
       }
       $hot_posts_min[] = $post;
     }
-    cacheSet($cache_object_key, $hot_posts_min, $cache_directory, HOT_POSTS_EXPIRATION);
+    cache()->set($cache_object_key, $hot_posts_min, $cache_directory, HOT_POSTS_EXPIRATION);
     return $hot_posts_min;
   }
 
@@ -270,7 +270,7 @@ class Reddit extends Community
     $cache_object_key = "$this->slug-month-average-top-score";
     $cache_directory = "communities/reddit/$this->slug/top_posts_month";
     // Use cached score if present
-    if ($cached_score = cacheGet($cache_object_key, $cache_directory)) {
+    if ($cached_score = cache()->get($cache_object_key, $cache_directory)) {
       return $cached_score;
     }
     $top_posts = $this->getTopPosts($this->max_items_per_request, 'month');
@@ -282,7 +282,7 @@ class Reddit extends Community
     }
     $average_score = floor($total_score / count($top_posts));
     $log->info("Monthly average top score calculated for subreddit $this->slug: $average_score");
-    cacheSet($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
+    cache()->set($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }
 

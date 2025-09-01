@@ -105,6 +105,7 @@ class Lobsters extends Post {
   // Set Score
   private function setScore() {
     $this->score = $this->post_data['score'] ?? 0;
+    $this->score_formatted = $this->formatScore($this->score);
   }
 
   // Set Selftext HTML
@@ -160,7 +161,7 @@ class Lobsters extends Post {
         return [];
       }
       $comments = $curl_data["comments"];
-      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
+      cache()->set($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
 
     $comments_min = [];

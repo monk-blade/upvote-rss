@@ -140,6 +140,7 @@ class PieFed extends Post {
   // Set Score
   private function setScore() {
     $this->score = $this->post_data['counts']['score'] ?? null;
+    $this->score_formatted = $this->formatScore($this->score);
   }
 
   // Set Thumbnail
@@ -208,8 +209,8 @@ class PieFed extends Post {
 
     if (empty($comments)) {
       $url = "https://$this->instance/api/alpha/comment/list?post_id=$this->id&max_depth=0&sort=Top&type_=All&limit=" . $number_of_comments_to_fetch;
-      if (cacheGet($cache_object_key, $cache_directory)) {
-        return cacheGet($cache_object_key, $cache_directory);
+      if (cache()->get($cache_object_key, $cache_directory)) {
+        return cache()->get($cache_object_key, $cache_directory);
       }
       $url = "https://$this->instance/api/alpha/comment/list?post_id=$this->id&max_depth=0&sort=Top&type_=All&limit=" . COMMENTS;
       $curl_response = curlURL($url);
@@ -229,7 +230,7 @@ class PieFed extends Post {
         return [];
       }
       $comments = $curl_data["comments"];
-      cacheSet($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
+      cache()->set($cache_object_key, $comments, $cache_directory, COMMENTS_EXPIRATION);
     }
 
     $comments_min = [];

@@ -16,31 +16,10 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 // Run clearCache if requested
 if ($data['clearCache'] ?? false) {
-	if (REDIS) {
-		$keys = $client->keys('upvote_rss*');
-		foreach ($keys as $key) {
-			if (CLEAR_WEBPAGES_WITH_CACHE || strpos($key, 'upvote_rss:webpages') === false) {
-				$client->del($key);
-			}
-		}
-	}
-	$exclude = [];
-	if (!CLEAR_WEBPAGES_WITH_CACHE) {
-		$exclude[] = 'webpages';
-	}
-	deleteDirectoryContents('cache', $exclude);
-	if (function_exists('opcache_reset')) {
-		opcache_reset();
-	}
-	$log_message = 'Cache cleared';
-	if (!CLEAR_WEBPAGES_WITH_CACHE) {
-		$log_message .= ' (excluding webpages)';
-	}
-	$log->info($log_message);
-
+	cache()->clear();
 	header('Content-Type: application/json');
 	echo json_encode(array(
-		"cacheSize" => getCacheSize(),
+		"cacheSize" => cache()->getTotalCacheSize()
 	));
 	exit;
 }
@@ -56,7 +35,7 @@ if ($data['getProgress'] ?? false) {
 	}
 	$progress_cache_object_key = "progress_" . $platform . "_" . $community;
 	$progress_cache_directory  = "progress";
-	$progress                  = cacheGet($progress_cache_object_key, $progress_cache_directory);
+	$progress                  = cache()->get($progress_cache_object_key, $progress_cache_directory);
 	if (empty($progress)) {
 		$progress = [
 			"current" => 1,
@@ -69,6 +48,7 @@ if ($data['getProgress'] ?? false) {
 	header('Content-Type: application/json');
 	echo json_encode(array(
 		"progress" => $progress,
+		"cacheSize" => cache()->getTotalCacheSize(),
 	));
 	exit;
 }
@@ -226,7 +206,6 @@ if ($data['getPosts'] ?? false) {
 		if (!empty($posts)) {
 			foreach ($posts as $post) {
 				if (!empty($post->score)) {
-					$post->score_formatted = formatScore($post->score);
 					$time_unix             = !empty($post->time) ? timeElapsedString(normalizeTimestamp($post->time)) : null;
 					$post->relative_date   = $time_unix;
 					$post->time_rfc_822    = !empty($post->time) ? gmdate(DATE_RFC2822, normalizeTimestamp($post->time)) : null;
@@ -234,7 +213,6 @@ if ($data['getPosts'] ?? false) {
 				}
 			}
 		}
-		$cache_size = getCacheSize();
 		header('Content-Type: application/json');
 		echo json_encode(array(
 			'filtered_posts'        => $filtered_posts,
@@ -250,7 +228,7 @@ if ($data['getPosts'] ?? false) {
 			'community_title'       => $community->title,
 			'community_name'        => $community->name,
 			'platform_icon'         => $community->platform_icon,
-			'cacheSize'             => $cache_size,
+			'cacheSize'             => cache()->getTotalCacheSize(),
 		));
 		exit;
 	}
