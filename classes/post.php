@@ -581,7 +581,7 @@ abstract class Post {
     $score = '';
     $reading_time = '';
     if (SHOW_SCORE && !empty($this->score)) {
-      $score = 'Score: ' . formatScore($this->score) . ' | ';
+      $score = 'Score: ' . $this->formatScore($this->score) . ' | ';
     }
     $permalink = !empty($this->permalink) ? "<a href='" . $this->permalink . "'>Post permalink</a>" : '';
     $original_permalink = !empty($this->original_permalink) ? "<a href='" . $this->original_permalink . "'>Original post</a>" : '';
