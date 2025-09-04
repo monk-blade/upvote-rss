@@ -7,7 +7,7 @@
 /logs
 /node_modules
 /package-lock.json
-/views/test.php
+/test.php
 
 
 #------------------------

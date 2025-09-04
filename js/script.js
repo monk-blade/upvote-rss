@@ -253,10 +253,11 @@ createApp({
         console.log(this.error);
         return;
       } else {
+        const subredditSet = new Set(this.subreddits);
         for (let i = 0; i < json.subreddits.length; i++) {
-          this.subreddits.push(json.subreddits[i]['name']);
+          subredditSet.add(json.subreddits[i]['name']);
         }
-        this.subreddits = [...new Set(this.subreddits)].sort();
+        this.subreddits = Array.from(subredditSet).sort();
       }
     },
     async clearCache() {
