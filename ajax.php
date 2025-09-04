@@ -53,6 +53,41 @@ if ($data['getProgress'] ?? false) {
 	exit;
 }
 
+// Run cleanupProgress if requested
+if ($data['cleanupProgress'] ?? false) {
+	// Get parameters from request
+	$platform = $data['platform'] ?? null;
+	$instance = $data['instance'] ?? null;
+	$community = $data['community'] ?? null;
+	$subreddit = $data['subreddit'] ?? null;
+
+	if ($platform == 'reddit') {
+		$community = $subreddit;
+	}
+
+	if (!empty($platform) && !empty($community)) {
+		$progress_cache_object_key = "progress_" . str_replace('-', '', $platform) . "_" . $community;
+		$progress_cache_directory = "progress";
+
+		// Delete the progress cache entry
+		cache()->delete($progress_cache_object_key, $progress_cache_directory);
+
+		header('Content-Type: application/json');
+		echo json_encode([
+			'success' => true,
+			'message' => 'Progress data cleaned up',
+			'cacheSize' => cache()->getTotalCacheSize()
+		]);
+	} else {
+		header('Content-Type: application/json');
+		echo json_encode([
+			'success' => false,
+			'error' => 'Missing platform or community parameter'
+		]);
+	}
+	exit;
+}
+
 // Run getSubreddits if requested
 if ($data['getSubreddits'] ?? false) {
 	$subreddit = $data['subreddit'] ?? null;

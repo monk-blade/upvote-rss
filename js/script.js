@@ -73,6 +73,7 @@ createApp({
       progressCircumference: 0,
       progressStrokeDashOffset: 0,
       darkMode: 'auto',
+      eventSource: null,
     }
   },
   methods: {
@@ -153,6 +154,12 @@ createApp({
       setTimeout(() => {
         this.loading = true;
       }, 1);
+
+      setTimeout(() => {
+        if (this.loading) {
+          this.startProgressSSE();
+        }
+      }, 550);
       // Normalize instance URL
       if(this.instance.includes('://')) {
         this.instance = this.instance.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
@@ -331,6 +338,95 @@ createApp({
         this.copied = false;
       }, 1500);
     },
+    startProgressSSE() {
+      // Close any existing connection
+      this.stopProgressSSE();
+
+      const params = new URLSearchParams({
+        platform: this.platform,
+        instance: this.instance,
+        community: this.community,
+        subreddit: this.subreddit
+      });
+
+      if(typeof(EventSource) === "undefined") {
+        console.warn('EventSource progress SSE not supported by this browser');
+        return;
+      }
+
+      this.progress = 1;
+      const eventSourceURL = `progress-sse.php?${params.toString()}`;
+      this.eventSource = new EventSource(eventSourceURL);
+
+      this.eventSource.addEventListener('connect', (event) => {
+        const data = JSON.parse(event.data);
+      });
+
+      this.eventSource.addEventListener('progress', (event) => {
+        const data = JSON.parse(event.data);
+        if (data.progress !== undefined && data.progress > this.progress) {
+          this.progress = Math.min(data.progress, 99);
+        }
+        if (data.cacheSize !== undefined) {
+          this.cacheSize = data.cacheSize;
+        }
+      });
+
+      this.eventSource.addEventListener('complete', (event) => {
+        const data = JSON.parse(event.data);
+        if (data.progress !== undefined) {
+          this.progress = Math.min(data.progress, 99);
+        }
+        if (data.cacheSize !== undefined) {
+          this.cacheSize = data.cacheSize;
+        }
+        this.stopProgressSSE();
+      });
+
+      this.eventSource.addEventListener('timeout', (event) => {
+        console.warn('Progress SSE timed out');
+        this.stopProgressSSE();
+      });
+
+      this.eventSource.addEventListener('error', (event) => {
+        console.error('SSE error event:', event);
+        this.stopProgressSSE();
+      });
+
+      this.eventSource.onerror = (event) => {
+        console.error('SSE connection error:', event);
+        // Don't automatically reconnect on error to avoid infinite loops
+        this.stopProgressSSE();
+      };
+    },
+    stopProgressSSE() {
+      if (this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+
+        // Clean up progress data on server
+        fetch('ajax.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({
+            cleanupProgress: true,
+            platform: this.platform,
+            instance: this.instance,
+            community: this.community,
+            subreddit: this.subreddit
+          })
+        }).catch(error => {
+          console.warn('Failed to clean up progress data:', error);
+        });
+
+        setTimeout(() => {
+          this.progress = 1;
+        }, 100);
+      }
+    },
   },
   computed: {
     scoreFilterAvailable() {
@@ -356,43 +452,16 @@ createApp({
       document.querySelector('#app').classList.add('initialized');
     }, 1200);
   },
+  beforeUnmount() {
+    // Clean up SSE connection when component is destroyed
+    this.stopProgressSSE();
+  },
   watch: {
     loading() {
       if(this.loading) {
         this.progress = 1;
-        this.interval = setInterval(() => {
-          fetch('ajax.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify({
-              getProgress: true,
-              platform: this.platform,
-              instance: this.instance,
-              community: this.community,
-              subreddit: this.subreddit
-            })
-          })
-          .then(response => response.json())
-          .then(json => {
-            if(json.progress == 100) {
-              clearInterval(this.interval);
-            }
-            if (json.progress > this.progress) {
-              this.progress = json.progress;
-            }
-            if (json.cacheSize) {
-              this.cacheSize = json.cacheSize;
-            }
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-          });
-        }, 500);
       } else {
-        clearInterval(this.interval);
+        this.stopProgressSSE();
         setTimeout(() => {
           this.progress = 1;
         }, 1000);
