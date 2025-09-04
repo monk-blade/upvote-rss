@@ -6,12 +6,16 @@ class HackerNews extends Community
 {
 
 	// Properties
-	public $platform = 'hacker-news';
-	public $instance = 'news.ycombinator.com';
-	public $is_instance_valid = true;
-	public $platform_icon = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/256px-Y_Combinator_logo.svg.png';
-	public $slug_title;
-	public $max_items_per_request = 50;
+	public  $platform              = 'hacker-news';
+	public  $instance              = 'news.ycombinator.com';
+	public  $is_instance_valid     = true;
+	public  $platform_icon         = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/256px-Y_Combinator_logo.svg.png';
+	public  $slug_title;
+	public  $max_items_per_request = 1000;
+	private $top_posts_timeframe   = 60 * 60 * 24 * 30; // 30 days
+	private $hot_posts_timeframe   = 60 * 60 * 24 * 7;  // 7 days
+	private $new_stories_timeframe = 60 * 60 * 3;       // 3 hours
+
 
 	// Constructor
 	function __construct(
@@ -25,7 +29,7 @@ class HackerNews extends Community
 
 	// Enable loading from cache
 	static function __set_state($array) {
-		$community = new Community\HackerNews();
+		$community = new self();
 		foreach ($array as $key => $value) {
 			$community->{$key} = $value;
 		}
@@ -38,19 +42,19 @@ class HackerNews extends Community
 
 	protected function getCommunityInfo() {
 		$log = \CustomLogger::getLogger();
-		if (!in_array($this->slug, ['beststories', 'topstories', 'newstories', 'askstories', 'showstories'])) {
+		if (!$this->validateSlug()) {
 			$message = "The requested Hacker News category $this->slug does not exist";
 			$log->error($message);
 			return ['error' => $message];
 		}
 		$api_slug_map = [
 			'beststories' => ['Best', 'https://news.ycombinator.com/best'],
-			'topstories'  => ['Top', 'https://news.ycombinator.com/'],
+			'frontpage'   => ['Front page', 'https://news.ycombinator.com/'],
 			'newstories'  => ['New', 'https://news.ycombinator.com/newest'],
 			'askstories'  => ['Ask', 'https://news.ycombinator.com/ask'],
 			'showstories' => ['Show', 'https://news.ycombinator.com/show'],
 		];
-		$this->platform             = "hackernews";
+		$this->platform             = "hacker-news";
 		$this->name                 = "Hacker News";
 		$this->title                = $this->name . " - " . $api_slug_map[$this->slug][0];
 		$this->slug_title           = $api_slug_map[$this->slug][0];
@@ -66,140 +70,159 @@ class HackerNews extends Community
 	}
 
 
-	public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
+	// Validate slug
+	private function validateSlug(): bool {
 		$log = \CustomLogger::getLogger();
-		$limit = $limit ?? $this->max_items_per_request;
-		$cache_object_key = $this->slug . '_limit_' . $limit;
-		$cache_directory = "communities/hacker_news/top_posts";
-		if (cache()->get($cache_object_key, $cache_directory)) {
-			return cache()->get($cache_object_key, $cache_directory);
+		$this->slug = $this->slug == 'topstories' ? 'frontpage' : $this->slug;
+		if (!in_array($this->slug, ['beststories', 'frontpage', 'newstories', 'askstories', 'showstories'])) {
+			$message = "The requested Hacker News category $this->slug does not exist";
+			$log->error($message);
+			return false;
 		}
-		$progress_cache_object_key = "progress_" . $this->platform . "_" . $this->slug;
-		$progress_cache_directory = "progress";
-		$top_post_ids = $this->getTopCategoryPostIDs($this->slug);
-		$top_post_ids = array_slice($top_post_ids, 0, $limit);
-		$posts = [];
-		if (INCLUDE_PROGRESS) {
-			cache()->delete($progress_cache_object_key, $progress_cache_directory);
-		}
-		foreach ($top_post_ids as $index => $post_id) {
-			$progress = [
-				'current' => $index + 1,
-				'total' => count($top_post_ids) + 1
-			];
-			if (INCLUDE_PROGRESS) {
-				cache()->set($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
-			}
-			$individual_post_cache_directory = "communities/hacker_news/individual_posts";
-			if (cache()->get($post_id, $individual_post_cache_directory)) {
-				$posts[] = cache()->get($post_id, $individual_post_cache_directory);
-			} else {
-				$url = "https://hacker-news.firebaseio.com/v0/item/$post_id.json";
-				$curl_response = curlURL($url);
-				$post = json_decode($curl_response, true);
-				if (empty($post) || empty($post['id'])) {
-					continue;
-				}
-				$post = new \Post\HackerNews($post, $this);
-				$posts[] = $post;
-				cache()->set($post->id, $post, $individual_post_cache_directory, HOT_POSTS_EXPIRATION);
-			}
-		}
-		cache()->set($cache_object_key, $posts, $cache_directory, HOT_POSTS_EXPIRATION);
-		if (INCLUDE_PROGRESS) {
-			cache()->set($progress_cache_object_key, ['current' => 99, 'total' => 100], $progress_cache_directory, 1);
-		}
-		return $posts;
+		return true;
 	}
 
 
 	// Get top posts
 	public function getTopPosts($limit, $period = null) {
-		$limit = $limit ?? $this->max_items_per_request;
-		return $this->getHotPosts($limit);
-	}
-
-
-	private function getTopCategoryPostIDs() {
 		$log = \CustomLogger::getLogger();
-		$cache_directory = "communities/hacker_news/category_post_ids";
-		if (cache()->get($this->slug, $cache_directory)) {
-			return cache()->get($this->slug, $cache_directory);
+		$limit = $limit ?? $this->max_items_per_request;
+		$slug_tags_map = [
+			'beststories' => 'story',
+			'frontpage'   => 'story',
+			'newstories'  => 'story',
+			'askstories'  => 'ask_hn',
+			'showstories' => 'show_hn',
+		];
+		$cache_object_key = $slug_tags_map[$this->slug] . '_limit_' . $limit;
+		$cache_directory = "communities/hacker_news/{$slug_tags_map[$this->slug]}/top_posts";
+		if (cache()->get($cache_object_key, $cache_directory)) {
+			return cache()->get($cache_object_key, $cache_directory);
 		}
-		$url = "https://hacker-news.firebaseio.com/v0/$this->slug.json";
+		$cache_expiration = TOP_MONTHLY_POSTS_EXPIRATION;
+
+		$top_posts = [];
+
+		$url = "http://hn.algolia.com/api/v1/search?tags={$slug_tags_map[$this->slug]}&hitsPerPage=$limit&numericFilters=created_at_i>" . (time() - $this->top_posts_timeframe);
 		$curl_response = curlURL($url);
-		$curl_data = json_decode($curl_response, true);
-		if (empty($curl_data) || !empty($curl_data['error'])) {
-			$message = 'There was an error communicating with Hacker News';
+		if (empty($curl_response)) {
+			$message = 'Empty response when trying to get top posts for Hacker News category ' . $this->slug . ' at ' . $url;
 			$log->error($message);
 			return ['error' => $message];
 		}
-		cache()->set($this->slug, $curl_data, $cache_directory, TOP_POSTS_EXPIRATION);
-		return $curl_data;
+
+		$curl_data = json_decode($curl_response, true);
+		if (empty($curl_data) || !empty($curl_data['error'])) {
+			$message = 'There was an error communicating with Hacker News: ' . ($curl_data['error'] ?? 'Unknown error');
+			$log->error($message);
+			return ['error' => $message];
+		}
+
+		// Set progress
+		$progress_cache_object_key = "progress_" . str_replace('-', '', $this->platform) . "_" . $this->slug;
+    $progress_cache_directory = "progress";
+		$progress = [ 'current' => 50, 'total' => 100 ];
+		if (INCLUDE_PROGRESS) {
+			cache()->set($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+    }
+
+		if (empty($curl_data['hits'])) {
+			$log->info('No top posts found for Hacker News category ' . $this->slug);
+			return [];
+		}
+
+		usort($curl_data['hits'], function ($a, $b) {
+			return $b['points'] <=> $a['points'];
+		});
+
+		foreach ($curl_data['hits'] as $post_data) {
+			$top_posts[] = [
+				'id'         => $post_data['story_id'] ?? 0,
+				'title'      => $post_data['title'] ?? '',
+				'score'      => $post_data['points'] ?? 0,
+				'url'        => $post_data['url'] ?? '',
+				'created_at' => $post_data['created_at_i'] ?? 0,
+			];
+		}
+
+		cache()->set($cache_object_key, $top_posts, $cache_directory, $cache_expiration);
+		return $top_posts;
+	}
+
+
+	// Get hot posts
+	public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
+		$log = \CustomLogger::getLogger();
+		$limit = $limit ?? $this->max_items_per_request;
+
+		$slug_tags_map = [
+			'beststories' => 'story',
+			'frontpage'   => 'front_page',
+			'newstories'  => 'story',
+			'askstories'  => 'ask_hn',
+			'showstories' => 'show_hn',
+		];
+		$cache_object_key = $this->slug . '_limit_' . $limit;
+		$cache_directory = "communities/hacker_news/{$this->slug}/hot_posts";
+		if (cache()->get($cache_object_key, $cache_directory)) {
+			return cache()->get($cache_object_key, $cache_directory);
+		}
+		$cache_expiration = HOT_POSTS_EXPIRATION;
+
+		$hot_posts = [];
+
+		$url = "http://hn.algolia.com/api/v1/search_by_date?tags={$slug_tags_map[$this->slug]}&hitsPerPage=$limit&numericFilters=created_at_i>" . (time() - $this->hot_posts_timeframe);
+		if ($this->slug == 'newstories') {
+			$url = "http://hn.algolia.com/api/v1/search_by_date?tags={$slug_tags_map[$this->slug]}&hitsPerPage=$limit&numericFilters=created_at_i>" . (time() - $this->new_stories_timeframe);
+		}
+		$curl_response = curlURL($url);
+		if (empty($curl_response)) {
+			$message = 'Empty response when trying to get hot posts for Hacker News category ' . $this->slug . ' at ' . $url;
+			$log->error($message);
+			return ['error' => $message];
+		}
+
+		$curl_data = json_decode($curl_response, true);
+		if (empty($curl_data) || !empty($curl_data['error'])) {
+			$message = 'There was an error communicating with Hacker News: ' . ($curl_data['error'] ?? 'Unknown error');
+			$log->error($message);
+			return ['error' => $message];
+		}
+
+		// Set progress
+		$progress_cache_object_key = "progress_" . str_replace('-', '', $this->platform) . "_" . $this->slug;
+    $progress_cache_directory = "progress";
+		$progress = [ 'current' => 99, 'total' => 100 ];
+		if (INCLUDE_PROGRESS) {
+			cache()->set($progress_cache_object_key, $progress, $progress_cache_directory, PROGRESS_EXPIRATION);
+    }
+
+		if (empty($curl_data['hits'])) {
+			$log->info('No hot posts found for Hacker News category ' . $this->slug);
+			return [];
+		}
+
+		foreach ($curl_data['hits'] as $post_data) {
+			$post = new \Post\HackerNews($post_data);
+			$hot_posts[] = $post;
+		}
+
+		cache()->set($cache_object_key, $hot_posts, $cache_directory, $cache_expiration);
+		return $hot_posts;
 	}
 
 
 	// Get monthly average top score
-	public function getMonthlyAverageTopScore() {}
-
-
-	public function getFilteredPostsByValue(
-		$filter_type = FILTER_TYPE,
-		$filter_value = FILTER_VALUE,
-		$filter_nsfw = FILTER_NSFW,
-		$blur_nsfw = BLUR_NSFW,
-		$filter_old_posts = FILTER_OLD_POSTS,
-		$post_cutoff_days = POST_CUTOFF_DAYS
-	) {
+	public function getMonthlyAverageTopScore() {
 		$log = \CustomLogger::getLogger();
-
-		// Check if community is valid
-		if (!$this->is_community_valid) {
-			$log->error("The requested Hacker News category $this->slug does not exist");
-			return [];
+		$top_posts = $this->getTopPosts($this->max_items_per_request);
+		if (empty($top_posts)) {
+			$log->info('No top posts found for monthly average score calculation');
+			return 0;
 		}
-
-		// Filter by score
-		if ($filter_type == 'score') :
-			return $this->getHotPostsByScore($filter_type, $filter_value, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
-
-		// Filter by threshold
-		elseif (
-			$filter_type == 'threshold'
-		) :
-			$message = 'The filter type "threshold" is not supported for Hacker News';
-			$log->error($message);
-			return ['error' => $message];
-
-		// Filter by average posts per day
-		elseif (
-			$filter_type == 'averagePostsPerDay'
-		) :
-			$threshold_score                         = 0;
-			$top_posts                               = $this->getHotPosts(100);
-			usort($top_posts, function ($a, $b) {
-				return $b->time <=> $a->time;
-			});
-			$returned_number_of_posts                = count($top_posts);
-			$oldest_post_time                        = $top_posts[$returned_number_of_posts - 1]->time;
-			$newest_post_time                        = $top_posts[0]->time;
-			$time_range                              = $newest_post_time - $oldest_post_time;
-			$days_between_oldest_and_newest_posts    = $time_range / 86400;
-			$requested_posts_per_day                 = $filter_value;
-			usort($top_posts, function ($a, $b) {
-				return $b->score <=> $a->score;
-			});
-			$number_of_posts_that_meet_the_cutoff    = floor($days_between_oldest_and_newest_posts * $requested_posts_per_day);
-			$ratio_of_cutoff_posts_to_returned_posts = $number_of_posts_that_meet_the_cutoff / $returned_number_of_posts;
-			if ($number_of_posts_that_meet_the_cutoff == 0) return [];
-			if ($number_of_posts_that_meet_the_cutoff <= $returned_number_of_posts) {
-				$threshold_score = $top_posts[$number_of_posts_that_meet_the_cutoff - 1]->score;
-			} else {
-				$lowest_score = $top_posts[$returned_number_of_posts - 1]->score;
-				$threshold_score = $lowest_score / $ratio_of_cutoff_posts_to_returned_posts;
-			}
-			return $this->getHotPostsByScore($filter_type, $threshold_score, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
-
-		endif;
+		$total_score = array_sum(array_column($top_posts, 'score'));
+		$average_score = $total_score / count($top_posts);
+		$log->info('Monthly average top score for Hacker News category ' . $this->slug . ': ' . $average_score);
+		return $average_score;
 	}
 }

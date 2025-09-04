@@ -17,7 +17,6 @@ abstract class Post {
 	public  ?int    $score;
 	public  ?string $score_formatted = '0';
 	public  ?string $domain;
-	public  ?array  $kids;
 	public  ?array  $media_embed;
 	public  ?array  $secure_media_embed;
 	public  ?array  $secure_media;

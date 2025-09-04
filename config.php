@@ -216,7 +216,7 @@ define('QUERY', $query);
 
 // Filters Available
 define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'piefed', 'reddit']);
-define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['lemmy', 'mbin', 'piefed', 'reddit']);
+define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
 define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
 
 

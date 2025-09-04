@@ -77,6 +77,7 @@ abstract class Community
           return [];
         }
         $monthly_average_top_score = $this->getMonthlyAverageTopScore(0);
+        $log->info("Monthly average top score for " . $this->slug . " is " . $monthly_average_top_score);
         $threshold_score = $monthly_average_top_score * $filter_value / 100;
         return $this->getHotPostsByScore($filter_type, $threshold_score, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
         break;
@@ -141,6 +142,9 @@ abstract class Community
         $return_post = false;
       }
       if ($return_post) {
+        if (strpos($_SERVER['REQUEST_URI'], 'view=rss') !== false && method_exists($post, 'getDetailedPostData')) {
+          $post->getDetailedPostData();
+        }
         $hot_posts_filtered[] = $post;
       }
     }

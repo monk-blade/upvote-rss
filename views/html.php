@@ -74,8 +74,8 @@
 						<div v-if="platform === 'hacker-news'" class="form-group">
 							<label for="type">Type</label>
 							<select name="type" id="type" v-model="community" @change="debouncedSearch(10, $event)">
+								<option value="frontpage">Front page</option>
 								<option value="beststories">Best</option>
-								<option value="topstories">Top</option>
 								<option value="newstories">New</option>
 								<option value="askstories">Ask</option>
 								<option value="showstories">Show</option>
