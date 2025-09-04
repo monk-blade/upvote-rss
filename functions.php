@@ -150,6 +150,7 @@ function curlURL($url, $options = [])
 		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_USERAGENT, $user_agents[array_rand($user_agents)]);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		if (!empty($options)) {
 			foreach ($options as $option => $value) {
 				curl_setopt($ch, $option, $value);
