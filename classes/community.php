@@ -42,7 +42,6 @@ abstract class Community
     $filter_old_posts = FILTER_OLD_POSTS,
     $post_cutoff_days = POST_CUTOFF_DAYS
   ) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
       $log_message = $this->slug . " is not a valid community";
       if (PLATFORM === 'lemmy') {
@@ -57,7 +56,7 @@ abstract class Community
       if (PLATFORM === 'reddit') {
         $log_message .= ". Please check if the subreddit exists and is public.";
       }
-      $log->error($log_message);
+      logger()->error($log_message);
       throw new \Exception($log_message);
     }
 
@@ -65,7 +64,7 @@ abstract class Community
     switch ($filter_type) {
       case 'score':
         if (!in_array(PLATFORM, SCORE_FILTER_AVAILABLE_PLATFORMS)) {
-          $log->error("Score filter is not available for " . PLATFORM . " community " . $this->slug);
+          logger()->error("Score filter is not available for " . PLATFORM . " community " . $this->slug);
           return [];
         }
         return $this->getHotPostsByScore($filter_type, $filter_value, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
@@ -73,18 +72,18 @@ abstract class Community
 
       case 'threshold':
         if (!in_array(PLATFORM, THRESHOLD_FILTER_AVAILABLE_PLATFORMS)) {
-          $log->error("Threshold filter is not available for " . PLATFORM . " community " . $this->slug);
+          logger()->error("Threshold filter is not available for " . PLATFORM . " community " . $this->slug);
           return [];
         }
         $monthly_average_top_score = $this->getMonthlyAverageTopScore(0);
-        $log->info("Monthly average top score for " . $this->slug . " is " . $monthly_average_top_score);
+        logger()->info("Monthly average top score for " . $this->slug . " is " . $monthly_average_top_score);
         $threshold_score = $monthly_average_top_score * $filter_value / 100;
         return $this->getHotPostsByScore($filter_type, $threshold_score, $filter_nsfw, $blur_nsfw, $filter_old_posts, $post_cutoff_days);
         break;
 
       case 'averagePostsPerDay':
         if (!in_array(PLATFORM, AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS)) {
-          $log->error("Average posts per day filter is not available for " . PLATFORM . " community " . $this->slug);
+          logger()->error("Average posts per day filter is not available for " . PLATFORM . " community " . $this->slug);
           return [];
         }
         $threshold_score = 0;
@@ -124,9 +123,8 @@ abstract class Community
     if (empty($hot_posts)) {
       return [];
     }
-    $log = \CustomLogger::getLogger();
     if (!empty($hot_posts['error'])) {
-      $log->error($hot_posts['error']);
+      logger()->error($hot_posts['error']);
       return $hot_posts;
     }
     $hot_posts_filtered = array();

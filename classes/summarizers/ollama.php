@@ -27,12 +27,12 @@ class Ollama extends Summarizer {
     }
 
     if (!empty($this->api_url) && empty($this->model_name)) {
-      $this->log->warning("$this->provider_name URL is set but model is not. The $this->provider_name summarizer will be disabled for this session.");
+      logger()->warning("$this->provider_name URL is set but model is not. The $this->provider_name summarizer will be disabled for this session.");
       return false;
     }
 
     if (empty($this->api_url) && !empty($this->model_name)) {
-      $this->log->warning("$this->provider_name model is set but URL is not. The $this->provider_name summarizer will be disabled for this session.");
+      logger()->warning("$this->provider_name model is set but URL is not. The $this->provider_name summarizer will be disabled for this session.");
       return false;
     }
 
@@ -50,11 +50,11 @@ class Ollama extends Summarizer {
       return [];
     }
 
-    $this->log->info("Trying to get summary from $this->provider_name API for $url");
+    logger()->info("Trying to get summary from $this->provider_name API for $url");
 
     // Test if the API is reachable
     if (getHttpStatus($this->api_url) !== 200) {
-      $this->log->error("$this->provider_name API URL is not reachable");
+      logger()->error("$this->provider_name API URL is not reachable");
       $this->is_summarizer_available = false;
       return [];
     }
@@ -81,14 +81,14 @@ class Ollama extends Summarizer {
     $curl_response = curlURL($api_url, $curl_options) ?? '';
 
     if (!$curl_response) {
-      $this->log->error("$this->provider_name API response is empty or invalid");
+      logger()->error("$this->provider_name API response is empty or invalid");
       return [];
     }
 
     $response = json_decode($curl_response, true);
 
     if (!$response) {
-      $this->log->error("$this->provider_name API response is not valid JSON");
+      logger()->error("$this->provider_name API response is not valid JSON");
       return [];
     }
 
@@ -96,25 +96,25 @@ class Ollama extends Summarizer {
       is_string($response['error']) &&
       strpos($response['error'], 'model') !== false &&
       strpos($response['error'], 'not found') !== false) {
-      $this->log->error("$this->provider_name model '{$this->model_name}' not found. Please check if the model is installed and the name is correct. The $this->provider_name summarizer will be disabled for this session.");
+      logger()->error("$this->provider_name model '{$this->model_name}' not found. Please check if the model is installed and the name is correct. The $this->provider_name summarizer will be disabled for this session.");
       $this->is_model_available = false;
       return [];
     }
 
     if (!empty($response['error']) && is_string($response['error'])) {
-      $this->log->error("$this->provider_name API error: " . $response['error']);
+      logger()->error("$this->provider_name API error: " . $response['error']);
       return [];
     }
 
     if (!empty($response['eval_count']) && $response['eval_count'] === $this->max_tokens) {
-      $this->log->warning("$this->provider_name API response is most likely truncated due to reaching the maximum token limit of " . $this->max_tokens);
+      logger()->warning("$this->provider_name API response is most likely truncated due to reaching the maximum token limit of " . $this->max_tokens);
     }
 
     if (!empty($response['response'])) {
       return ['summary' => $response['response']];
     }
 
-    $this->log->error("$this->provider_name API response does not contain valid summary content");
+    logger()->error("$this->provider_name API response does not contain valid summary content");
     return [];
   }
 }

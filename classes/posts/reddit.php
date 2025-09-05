@@ -273,11 +273,10 @@ class Reddit extends Post {
 
   // Get comments
 	public function getComments(): array {
-    $log = \CustomLogger::getLogger();
     $reddit_auth = \Auth\Reddit::getInstance();
     if (!$reddit_auth->getToken()) {
       $message = "Reddit auth token not found";
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     $buffer_comments = max(5, (int)(COMMENTS * 1.5)); // Add some wiggle room
@@ -294,17 +293,17 @@ class Reddit extends Post {
       ]);
       if (empty($curl_response)) {
         $message = "Failed to get comments for Reddit post $this->id";
-        $log->error($message);
+        logger()->error($message);
         return ['error' => $message];
       }
       $curl_data = json_decode($curl_response, true);
       if (empty($curl_data) || !empty($curl_data['error'])) {
         $message = "Error in Reddit comments response: " . json_encode($curl_data['error'] ?? 'Unknown error');
-        $log->error($message);
+        logger()->error($message);
         return ['error' => $message];
       }
       if (empty($curl_data[1]["data"]["children"])) {
-        $log->info("No comments found for Reddit post $this->id");
+        logger()->info("No comments found for Reddit post $this->id");
         return [];
       }
       $comments = $curl_data[1]["data"]["children"];

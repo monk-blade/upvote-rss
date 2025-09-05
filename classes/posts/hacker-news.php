@@ -92,7 +92,6 @@ class HackerNews extends Post {
 
 	// Get detailed post data
 	public function getDetailedPostData(): void {
-		$log = \CustomLogger::getLogger();
 
 		if (empty($this->id)) {
 			return;
@@ -110,7 +109,7 @@ class HackerNews extends Post {
 			$curl_data = json_decode($curl_response, true);
 			if (empty($curl_data) || !empty($curl_data['error'])) {
 				$message = 'There was an error communicating with Hacker News';
-				$log->error($message);
+				logger()->error($message);
 				return;
 			}
 			// Remove extraneous data from the response
@@ -139,12 +138,12 @@ class HackerNews extends Post {
 		$curl_data = json_decode($curl_response, true);
 		if (empty($curl_data) || !empty($curl_data['error'])) {
 			$message = 'There was an error communicating with Hacker News';
-			$log->error($message);
+			logger()->error($message);
 			return;
 		}
 		$this->kids_ids = $curl_data['kids'] ?? [];
 		if (empty($this->kids_ids)) {
-			$log->info("No comments found for Hacker News post $this->id");
+			logger()->info("No comments found for Hacker News post $this->id");
 			return;
 		}
 
@@ -195,8 +194,6 @@ class HackerNews extends Post {
 		if ($this->num_kids === 0 || empty($this->all_comments)) {
 			return [];
 		}
-
-		$log = \CustomLogger::getLogger();
 
 		$comments_min = [];
 		$comment_count = 0;

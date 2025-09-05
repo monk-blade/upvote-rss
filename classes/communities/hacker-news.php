@@ -41,10 +41,9 @@ class HackerNews extends Community
 
 
 	protected function getCommunityInfo() {
-		$log = \CustomLogger::getLogger();
 		if (!$this->validateSlug()) {
 			$message = "The requested Hacker News category $this->slug does not exist";
-			$log->error($message);
+			logger()->error($message);
 			return ['error' => $message];
 		}
 		$api_slug_map = [
@@ -72,11 +71,10 @@ class HackerNews extends Community
 
 	// Validate slug
 	private function validateSlug(): bool {
-		$log = \CustomLogger::getLogger();
 		$this->slug = $this->slug == 'topstories' ? 'frontpage' : $this->slug;
 		if (!in_array($this->slug, ['beststories', 'frontpage', 'newstories', 'askstories', 'showstories'])) {
 			$message = "The requested Hacker News category $this->slug does not exist";
-			$log->error($message);
+			logger()->error($message);
 			return false;
 		}
 		return true;
@@ -85,7 +83,6 @@ class HackerNews extends Community
 
 	// Get top posts
 	public function getTopPosts($limit, $period = null) {
-		$log = \CustomLogger::getLogger();
 		$limit = $limit ?? $this->max_items_per_request;
 		$slug_tags_map = [
 			'beststories' => 'story',
@@ -107,14 +104,14 @@ class HackerNews extends Community
 		$curl_response = curlURL($url);
 		if (empty($curl_response)) {
 			$message = 'Empty response when trying to get top posts for Hacker News category ' . $this->slug . ' at ' . $url;
-			$log->error($message);
+			logger()->error($message);
 			return ['error' => $message];
 		}
 
 		$curl_data = json_decode($curl_response, true);
 		if (empty($curl_data) || !empty($curl_data['error'])) {
 			$message = 'There was an error communicating with Hacker News: ' . ($curl_data['error'] ?? 'Unknown error');
-			$log->error($message);
+			logger()->error($message);
 			return ['error' => $message];
 		}
 
@@ -127,7 +124,7 @@ class HackerNews extends Community
     }
 
 		if (empty($curl_data['hits'])) {
-			$log->info('No top posts found for Hacker News category ' . $this->slug);
+			logger()->info('No top posts found for Hacker News category ' . $this->slug);
 			return [];
 		}
 
@@ -152,7 +149,6 @@ class HackerNews extends Community
 
 	// Get hot posts
 	public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-		$log = \CustomLogger::getLogger();
 		$limit = $limit ?? $this->max_items_per_request;
 
 		$slug_tags_map = [
@@ -178,14 +174,14 @@ class HackerNews extends Community
 		$curl_response = curlURL($url);
 		if (empty($curl_response)) {
 			$message = 'Empty response when trying to get hot posts for Hacker News category ' . $this->slug . ' at ' . $url;
-			$log->error($message);
+			logger()->error($message);
 			return ['error' => $message];
 		}
 
 		$curl_data = json_decode($curl_response, true);
 		if (empty($curl_data) || !empty($curl_data['error'])) {
 			$message = 'There was an error communicating with Hacker News: ' . ($curl_data['error'] ?? 'Unknown error');
-			$log->error($message);
+			logger()->error($message);
 			return ['error' => $message];
 		}
 
@@ -198,7 +194,7 @@ class HackerNews extends Community
     }
 
 		if (empty($curl_data['hits'])) {
-			$log->info('No hot posts found for Hacker News category ' . $this->slug);
+			logger()->info('No hot posts found for Hacker News category ' . $this->slug);
 			return [];
 		}
 
@@ -214,15 +210,14 @@ class HackerNews extends Community
 
 	// Get monthly average top score
 	public function getMonthlyAverageTopScore() {
-		$log = \CustomLogger::getLogger();
 		$top_posts = $this->getTopPosts($this->max_items_per_request);
 		if (empty($top_posts)) {
-			$log->info('No top posts found for monthly average score calculation');
+			logger()->info('No top posts found for monthly average score calculation');
 			return 0;
 		}
 		$total_score = array_sum(array_column($top_posts, 'score'));
 		$average_score = $total_score / count($top_posts);
-		$log->info('Monthly average top score for Hacker News category ' . $this->slug . ': ' . $average_score);
+		logger()->info('Monthly average top score for Hacker News category ' . $this->slug . ': ' . $average_score);
 		return $average_score;
 	}
 }

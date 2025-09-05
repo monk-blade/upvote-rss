@@ -11,6 +11,16 @@ function cache(): Cache
 
 
 /**
+ * Get logger instance for direct access to log methods
+ * @return Monolog\Logger The Logger instance
+ */
+function logger(): Monolog\Logger
+{
+	return \CustomLogger::getLogger();
+}
+
+
+/**
  * Dump and die
  * @param mixed $data The data to dump
  */
@@ -175,7 +185,6 @@ function resizeImage($image_url, $max_width, $max_height) {
 	if (empty($image_url)) {
 		return [];
 	}
-	$log = \CustomLogger::getLogger();
 	// Get the image extension
 	$image_extension = pathinfo($image_url, PATHINFO_EXTENSION);
 	// If the image exists in the cache, return the URL of the cached image file as the first element of the array
@@ -238,7 +247,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 	if (!function_exists('imagecreatefromstring')) {
 		return [$image_url, '', ''];
 	}
-	$log->info("RSS feed channel image is too big: $image_url. Attempting to resize image.");
+	logger()->info("RSS feed channel image is too big: $image_url. Attempting to resize image.");
 	// Get the image data
 	$image_data = file_get_contents($image_url);
 	// Create an image from the image data
@@ -286,7 +295,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 		try {
 			mkdir($cache_directory, 0755, true);
 		} catch (\Exception $e) {
-			$log->error("Failed to create cache directory: " . $e->getMessage());
+			logger()->error("Failed to create cache directory: " . $e->getMessage());
 			return [$image_url, '', ''];
 		}
 	}
@@ -308,7 +317,7 @@ function resizeImage($image_url, $max_width, $max_height) {
 	imagedestroy($image);
 	imagedestroy($new_image);
 	// Log that the image was resized
-	$log->info("Successfully resized image: $image_url");
+	logger()->info("Successfully resized image: $image_url");
 	// Return the URL of the new image
 	return [
 		$url_to_cache_file,

@@ -46,23 +46,22 @@ class Mbin extends Community
 
 
   protected function getInstanceInfo() {
-    $log = \CustomLogger::getLogger();
     $url = "https://$this->instance/api/instance";
     $curl_response = curlURL($url);
     if (empty($curl_response)) {
       $message = "The Mbin instance $this->instance is not reachable";
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data)) {
       $message = "The Mbin instance $this->instance is not reachable";
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     if (!empty($curl_data['error'])) {
       $message = "Error retrieving data for the Mbin instance $this->instance: " . ($curl_data['error'] ?? 'Unknown error');
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     if (!empty($curl_data['about']) && empty($curl_data['error'])) {
@@ -72,7 +71,6 @@ class Mbin extends Community
 
 
   protected function getCommunityInfo() {
-    $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = "communities/mbin/$this->instance/$this->slug/about";
     $info = cache()->get($this->slug, $info_directory);
@@ -83,7 +81,7 @@ class Mbin extends Community
       // Check if instance is valid
       $this->getInstanceInfo();
       if (!$this->is_instance_valid) {
-        $log->error("The Mbin instance $this->instance is not reachable");
+        logger()->error("The Mbin instance $this->instance is not reachable");
         return;
       }
       // Get community info
@@ -91,35 +89,35 @@ class Mbin extends Community
       $url = "https://$this->instance/api/magazine/name/$this->slug";
       $curl_response = curlURL($url);
       if (empty($curl_response)) {
-        $log->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
+        logger()->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
         return;
       }
       $info = json_decode($curl_response, true);
       if (empty($info)) {
-        $log->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
+        logger()->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
         return;
       }
       if (empty($info['magazineId'])) {
-        $log->error("The requested Mbin magazine $this->slug does not exist at the $this->instance instance");
+        logger()->error("The requested Mbin magazine $this->slug does not exist at the $this->instance instance");
         return;
       }
       if (!empty($info['error']) && $info['error'] === 'couldnt_find_magazine') {
-        $log->warning("Mbin magazine $this->slug not found at the $this->instance instance");
+        logger()->warning("Mbin magazine $this->slug not found at the $this->instance instance");
         return;
       }
       if (!empty($info['error'])) {
-        $log->error("Error retrieving data for the requested Mbin magazine $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
+        logger()->error("Error retrieving data for the requested Mbin magazine $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
         return;
       }
       $this->is_community_valid = true;
       $this->magazine_id = $info['magazineId'];
-      $log->info("Mbin magazine $this->slug found at the $this->instance instance with ID $this->magazine_id");
+      logger()->info("Mbin magazine $this->slug found at the $this->instance instance with ID $this->magazine_id");
       if (!empty($info['icon']['storageUrl']) && !remote_file_exists($info['icon']['storageUrl'])) {
-        $log->warning("Mbin magazine $this->slug icon not found at the $this->instance instance. Falling back to source URL.");
+        logger()->warning("Mbin magazine $this->slug icon not found at the $this->instance instance. Falling back to source URL.");
         $info['icon']['storageUrl'] = $info['icon']['sourceUrl'];
       }
       if (!empty($info['icon']['storageUrl']) && !remote_file_exists($info['icon']['storageUrl'])) {
-        $log->warning("Mbin magazine $this->slug icon not found at the $this->instance instance");
+        logger()->warning("Mbin magazine $this->slug icon not found at the $this->instance instance");
         $info['icon']['storageUrl'] = '';
       }
       cache()->set($this->slug, $info, $info_directory, ABOUT_EXPIRATION);
@@ -149,9 +147,8 @@ class Mbin extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = null) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
+      logger()->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
       return [];
     }
     if (empty($limit) || $limit < $this->max_items_per_request) {
@@ -200,12 +197,12 @@ class Mbin extends Community
         $curl_response = curlURL($url);
         if (empty($curl_response)) {
           $message = "Failed to get top posts for Mbin community $this->slug at the $this->instance instance";
-          $log->error($message);
+          logger()->error($message);
           return ['error' => $message];
         }
         $curl_data = json_decode($curl_response, true);
         if (empty($curl_data['items'])) {
-          $log->info("No items found for $url");
+          logger()->info("No items found for $url");
           continue;
         }
         $paged_top_posts = [];
@@ -236,9 +233,8 @@ class Mbin extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
+      logger()->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
       return [];
     }
     $limit = $limit ?? $this->max_items_per_request;
@@ -253,7 +249,7 @@ class Mbin extends Community
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data) || !empty($curl_data['error'])) {
       $message = "Error communicating with the $this->instance instance: " . ($curl_data['error'] ?? 'Unknown error');
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     cache()->set($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
@@ -269,9 +265,8 @@ class Mbin extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
+      logger()->error("The requested Mbin community $this->slug does not exist at the $this->instance instance");
       return 0;
     }
     $cache_object_key = "$this->slug-month-average-top-score";
@@ -289,7 +284,7 @@ class Mbin extends Community
       return 0;
     }
     $average_score = floor($total_score / count($top_posts));
-    $log->info("Monthly average top score calculated for $this->instance community $this->slug: $average_score");
+    logger()->info("Monthly average top score calculated for $this->instance community $this->slug: $average_score");
     cache()->set($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }

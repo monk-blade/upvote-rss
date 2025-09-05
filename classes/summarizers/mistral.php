@@ -36,7 +36,7 @@ class Mistral extends Summarizer {
       return [];
     }
 
-    $this->log->info("Trying to get summary from $this->provider_name API for $url");
+    logger()->info("Trying to get summary from $this->provider_name API for $url");
 
     $curl_options = array(
       CURLOPT_CUSTOMREQUEST => 'POST',
@@ -65,31 +65,31 @@ class Mistral extends Summarizer {
     $curl_response = curlURL($this->api_url, $curl_options);
 
     if (!$curl_response) {
-      $this->log->error("$this->provider_name API response is empty or invalid");
+      logger()->error("$this->provider_name API response is empty or invalid");
       return [];
     }
 
     $response = json_decode($curl_response, true);
 
     if (!$response) {
-      $this->log->error("$this->provider_name API response is not valid JSON");
+      logger()->error("$this->provider_name API response is not valid JSON");
       return [];
     }
 
     if(!empty($response['detail']) && $response['detail'] === 'Unauthorized') {
-      $this->log->error("$this->provider_name API key is invalid. You can find your API key at https://console.mistral.ai/api-keys. The $this->provider_name summarizer will be disabled for this session.");
+      logger()->error("$this->provider_name API key is invalid. You can find your API key at https://console.mistral.ai/api-keys. The $this->provider_name summarizer will be disabled for this session.");
       $this->is_summarizer_available = false;
       return [];
     }
 
     if(!empty($response['type']) && $response['type'] === 'invalid_model') {
-      $this->log->error("$this->provider_name API model $this->model_name not found. View https://docs.mistral.ai/getting-started/models/models_overview/ for a list of available models. The $this->provider_name summarizer will be disabled for this session.");
+      logger()->error("$this->provider_name API model $this->model_name not found. View https://docs.mistral.ai/getting-started/models/models_overview/ for a list of available models. The $this->provider_name summarizer will be disabled for this session.");
       $this->is_model_available = false;
       return [];
     }
 
     if (!empty($response['error']['message'])) {
-      $this->log->error("$this->provider_name API response contains an error: " . $response['error']['message']);
+      logger()->error("$this->provider_name API response contains an error: " . $response['error']['message']);
       return [];
     }
 
@@ -98,14 +98,14 @@ class Mistral extends Summarizer {
     !empty($response['choices'][0]['finish_reason']) &&
     $response['choices'][0]['finish_reason'] === 'length'
     ) {
-      $this->log->warning("$this->provider_name API response is most likely truncated due to reaching the maximum token limit of " . $this->max_tokens);
+      logger()->warning("$this->provider_name API response is most likely truncated due to reaching the maximum token limit of " . $this->max_tokens);
     }
 
     if (!empty($response['choices'][0]['message']['content'])) {
       return ['summary' => $response['choices'][0]['message']['content']];
     }
 
-    $this->log->error("$this->provider_name API response does not contain valid summary content");
+    logger()->error("$this->provider_name API response does not contain valid summary content");
     return [];
   }
 }

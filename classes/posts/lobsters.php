@@ -135,7 +135,6 @@ class Lobsters extends Post {
 
   // Get comments
 	public function getComments(): array {
-    $log = \CustomLogger::getLogger();
     $buffer_comments = max(5, (int)(COMMENTS * 1.5)); // Add some wiggle room
     $number_of_comments_to_fetch = min(COMMENTS + $buffer_comments, $this->max_items_per_request);
     $cache_object_key = $this->id . "_limit_" . $number_of_comments_to_fetch;
@@ -147,17 +146,17 @@ class Lobsters extends Post {
       $curl_response = curlURL($url);
       if (empty($curl_response)) {
         $message = "Empty response when trying to get comments for Lobsters post $this->id";
-        $log->error($message);
+        logger()->error($message);
         return [];
       }
       $curl_data = json_decode($curl_response, true);
       if (empty($curl_data) || !empty($curl_data['status'])) {
         $message = "Failed to get comments for Lobsters post $this->id";
-        $log->error($message);
+        logger()->error($message);
         return [];
       }
       if (empty($curl_data["comments"])) {
-        $log->info("No comments found for Lobsters post $this->id");
+        logger()->info("No comments found for Lobsters post $this->id");
         return [];
       }
       $comments = $curl_data["comments"];

@@ -39,27 +39,25 @@ class PieFed extends Community
 
 
   protected function getInstanceInfo() {
-    $log = \CustomLogger::getLogger();
     $url = "https://$this->instance/api/alpha/site";
     $curl_response = curlURL($url);
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data)) {
       $message = "The PieFed instance $this->instance is not reachable";
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     if (!empty($curl_data['site']) && empty($curl_data['error'])) {
       $this->is_instance_valid = true;
     } elseif (!empty($curl_data['error'])) {
       $message = "Error retrieving data for the PieFed instance $this->instance: " . ($curl_data['error'] ?? 'Unknown error');
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
   }
 
 
   protected function getCommunityInfo() {
-    $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = "communities/piefed/$this->instance/$this->slug/about";
     $info = cache()->get($this->slug, $info_directory);
@@ -81,9 +79,9 @@ class PieFed extends Community
         } else {
           $this->is_community_valid = false;
           if (!empty($info['error']) && $info['error'] == 'couldnt_find_community') {
-            $log->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
+            logger()->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
           } else {
-            $log->error("Error retrieving data for the requested PieFed community $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
+            logger()->error("Error retrieving data for the requested PieFed community $this->slug at the $this->instance instance: " . ($info['error'] ?? 'Unknown error'));
           }
           return;
         }
@@ -120,9 +118,8 @@ class PieFed extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = null) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
+      logger()->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
       return [];
     }
     if (empty($limit) || $limit < $this->max_items_per_request) {
@@ -202,9 +199,8 @@ class PieFed extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
+      logger()->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
       return [];
     }
     $limit = $limit ?? $this->max_items_per_request;
@@ -220,7 +216,7 @@ class PieFed extends Community
     $curl_data = json_decode($curl_response, true);
     if (empty($curl_data) || !empty($curl_data['error'])) {
       $message = "Error communicating with the $this->instance instance: " . ($curl_data['error'] ?? 'Unknown error');
-      $log->error($message);
+      logger()->error($message);
       return ['error' => $message];
     }
     cache()->set($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
@@ -236,9 +232,8 @@ class PieFed extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
+      logger()->error("The requested PieFed community $this->slug does not exist at the $this->instance instance");
       return 0;
     }
     $cache_object_key = "$this->slug-month-average-top-score";
@@ -256,7 +251,7 @@ class PieFed extends Community
       return 0;
     }
     $average_score = floor($total_score / count($top_posts));
-    $log->info("Monthly average top score calculated for $this->instance community $this->slug: $average_score");
+    logger()->info("Monthly average top score calculated for $this->instance community $this->slug: $average_score");
     cache()->set($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }

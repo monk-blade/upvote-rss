@@ -16,7 +16,6 @@ abstract class Summarizer {
 
   // Constructor
   public function __construct() {
-    $this->log                     = \CustomLogger::getLogger();
     $this->is_summarizer_available = null;
     $this->temperature             = SUMMARY_TEMPERATURE;
     $this->max_tokens              = SUMMARY_MAX_TOKENS;
@@ -34,7 +33,7 @@ abstract class Summarizer {
   public function generateSummary(string $content, string $url): array {
     // Validate content length
     if (str_word_count($content) < 200) {
-      $this->log->info("Content for URL $url is too short to generate a summary (" . str_word_count($content) . " words)");
+      logger()->info("Content for URL $url is too short to generate a summary (" . str_word_count($content) . " words)");
       return ['summary' => '', 'provider' => '', 'model' => ''];
     }
 
@@ -47,7 +46,7 @@ abstract class Summarizer {
 
     // Check if provided summary is too short
     if (!empty($summary_data['summary']) && strlen($summary_data['summary']) <= 100) {
-      $this->log->warning("Summary for URL $url from " . $this->provider_name . " is too short (" . strlen($summary_data['summary']) . " characters)");
+      logger()->warning("Summary for URL $url from " . $this->provider_name . " is too short (" . strlen($summary_data['summary']) . " characters)");
       return ['summary' => '', 'provider' => '', 'model' => ''];
     }
 

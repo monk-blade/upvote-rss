@@ -39,10 +39,9 @@ class Lobsters extends Community
 
 
 	protected function getCommunityInfo() {
-		$log = \CustomLogger::getLogger();
 		if (!in_array($this->community_type, ['all', 'category', 'tag'])) {
 			$message = "The requested Lobsters community type $this->community_type does not exist";
-			$log->error($message);
+			logger()->error($message);
 			return ['error' => $message];
 		}
     // Check cache directory first
@@ -78,7 +77,7 @@ class Lobsters extends Community
       }
       // Check if the community exists
       if (!remote_file_exists($url)) {
-        $log->error("The requested Lobsters community type $this->slug does not exist");
+        logger()->error("The requested Lobsters community type $this->slug does not exist");
         return;
       }
       $info = [
@@ -108,9 +107,8 @@ class Lobsters extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = null) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested Lobsters community $this->slug does not exist");
+      logger()->error("The requested Lobsters community $this->slug does not exist");
       return [];
     }
     if (empty($limit) || $limit < $this->max_items_per_request) {
@@ -177,7 +175,7 @@ class Lobsters extends Community
                 continue;
               }
               if (in_array($id, $seen_ids)) {
-                $log->info("Duplicate story ID $id detected, breaking the loop.");
+                logger()->info("Duplicate story ID $id detected, breaking the loop.");
                 break 2; // Break out of both foreach and for loops
               }
               $seen_ids[] = $id;
@@ -190,7 +188,7 @@ class Lobsters extends Community
               $date = $dateNode ? $dateNode->getAttribute('title') : null;
               $date = strtotime($date);
               if ($date && $date < $cutoff_date) {
-                $log->info("Story ID $id is older than $cutoff_days days, breaking the loop.");
+                logger()->info("Story ID $id is older than $cutoff_days days, breaking the loop.");
                 break 2; // Break out of both foreach and for loops
               }
               $post_min = [
@@ -214,7 +212,7 @@ class Lobsters extends Community
           $curl_data = json_decode($curl_response, true);
           if (empty($curl_data)) {
             $message = "Error communicating with Lobsters: " . ($curl_data['error'] ?? 'Unknown error');
-            $log->error($message);
+            logger()->error($message);
             return ['error' => $message];
           }
           $paged_top_posts = [];
@@ -222,7 +220,7 @@ class Lobsters extends Community
             $domain = $post['url'] ? parse_url($post['url'], PHP_URL_HOST) : null;
             $date = $post['created_at'] ? strtotime($post['created_at']) : null;
             if ($date && $date < $cutoff_date) {
-              $log->info("Story ID " . $post['short_id'] . " is older than 30 days, breaking the loop.");
+              logger()->info("Story ID " . $post['short_id'] . " is older than 30 days, breaking the loop.");
               break 2; // Break out of both foreach and for loops
             }
             $post_min = [
@@ -263,9 +261,8 @@ class Lobsters extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested Lobsters community $this->slug does not exist");
+      logger()->error("The requested Lobsters community $this->slug does not exist");
       return [];
     }
     $limit = $limit ?? $this->max_items_per_request;
@@ -281,7 +278,7 @@ class Lobsters extends Community
       $curl_data = json_decode($curl_response, true);
       if (empty($curl_data)) {
         $message = "Error communicating with Lobsters: " . ($curl_data['error'] ?? 'Unknown error');
-        $log->error($message);
+        logger()->error($message);
         return ['error' => $message];
       }
       $hot_posts_min = array();
@@ -329,7 +326,6 @@ class Lobsters extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = \CustomLogger::getLogger();
     $cache_object_key = "$this->slug-month-average-top-score";
     $cache_directory = "communities/lobsters/$this->slug";
     if ($this->community_type === 'category') {
@@ -358,7 +354,7 @@ class Lobsters extends Community
     if ($this->community_type === 'tag') {
       $message = "Monthly average top score calculated for $this->instance community tag $this->slug: $average_score";
     }
-    $log->info($message);
+    logger()->info($message);
     cache()->set($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }

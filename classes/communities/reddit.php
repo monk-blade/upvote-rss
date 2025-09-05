@@ -46,7 +46,6 @@ class Reddit extends Community
 
   // Get subreddit info
   protected function getCommunityInfo() {
-    $log = \CustomLogger::getLogger();
     // Check cache directory first
     $info_directory = "communities/reddit/$this->slug/about";
     $info = cache()->get($this->slug, $info_directory);
@@ -82,7 +81,7 @@ class Reddit extends Community
         $info = json_decode($curl_response, true);
         if (isset($info['data'])) {
           if (!empty($info['kind']) && $info['kind'] == 'Listing') {
-            $log->error("The requested subreddit $this->slug does not exist");
+            logger()->error("The requested subreddit $this->slug does not exist");
             return;
           }
           $this->is_community_valid = true;
@@ -92,10 +91,10 @@ class Reddit extends Community
     }
     if (!empty($info['reason']) && $info['reason'] == "private") {
       $this->is_private = true;
-      $log->error("The requested subreddit $this->slug is private");
+      logger()->error("The requested subreddit $this->slug is private");
     }
     if (empty($info['data'])) {
-      $log->error("The requested subreddit $this->slug does not exist");
+      logger()->error("The requested subreddit $this->slug does not exist");
       return;
     }
     $this->is_community_valid = true;
@@ -131,9 +130,8 @@ class Reddit extends Community
 
   // Get top posts
   public function getTopPosts($limit, $period = '') {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested subreddit $this->slug does not exist");
+      logger()->error("The requested subreddit $this->slug does not exist");
       return [];
     }
     if (empty($limit) || $limit < $this->max_items_per_request) {
@@ -216,9 +214,8 @@ class Reddit extends Community
 
   // Get hot posts
   public function getHotPosts($limit, $filter_nsfw = FILTER_NSFW, $blur_nsfw = BLUR_NSFW) {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested subreddit $this->slug does not exist");
+      logger()->error("The requested subreddit $this->slug does not exist");
       return [];
     }
     if(
@@ -262,9 +259,8 @@ class Reddit extends Community
 
   // Get monthly average top score
   public function getMonthlyAverageTopScore() {
-    $log = \CustomLogger::getLogger();
     if (!$this->is_community_valid) {
-      $log->error("The requested subreddit $this->slug does not exist");
+      logger()->error("The requested subreddit $this->slug does not exist");
       return 0;
     }
     $cache_object_key = "$this->slug-month-average-top-score";
@@ -281,7 +277,7 @@ class Reddit extends Community
       return 0;
     }
     $average_score = floor($total_score / count($top_posts));
-    $log->info("Monthly average top score calculated for subreddit $this->slug: $average_score");
+    logger()->info("Monthly average top score calculated for subreddit $this->slug: $average_score");
     cache()->set($cache_object_key, $average_score, $cache_directory, TOP_MONTHLY_POSTS_EXPIRATION);
     return $average_score;
   }

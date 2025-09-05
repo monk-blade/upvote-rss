@@ -12,7 +12,6 @@ class Mercury extends Parser {
     $url = null
   ) {
     if (!empty($url)) $this->url = $url;
-    $this->log = \CustomLogger::getLogger();
   }
 
   public function getParsedWebpage() {
@@ -23,14 +22,14 @@ class Mercury extends Parser {
 			CURLOPT_HTTPHEADER => ['Content-Type: application/json']
 		]);
     if (!$curled_content) {
-      $this->log->error("There was an error communicating with the Mercury parser at " . MERCURY_URL);
+      logger()->error("There was an error communicating with the Mercury parser at " . MERCURY_URL);
       return [
         'parser_error' => true
       ];
     }
     $mercury_object = json_decode($curled_content);
     if (empty($mercury_object)) {
-      $this->log->error("The response from Mercury was empty or invalid for URL " . $this->url);
+      logger()->error("The response from Mercury was empty or invalid for URL " . $this->url);
       return [
         'parser_error' => true
       ];
@@ -49,8 +48,8 @@ class Mercury extends Parser {
       $mercury_object->all_images = $readability_php_object['all_images'] ?? [];
       $mercury_object->lead_image_url = $mercury_object->lead_image_url ?? $readability_php_object['lead_image_url'] ?? '';
     }
-    $this->log->info("Mercury successfully parsed the webpage for URL " . $this->url);
-    $this->log->debug("Parsed data: ", [
+    logger()->info("Mercury successfully parsed the webpage for URL " . $this->url);
+    logger()->debug("Parsed data: ", [
       'title'          => $mercury_object->title ?? '',
       'word_count'     => $mercury_object->word_count ?? 0,
       'date_published' => $mercury_object->date_published ?? 0

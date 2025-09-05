@@ -36,7 +36,6 @@ abstract class Parser {
   abstract function getParsedWebpage();
 
   public function getBrowserlessPage($url = '') {
-    $log = \CustomLogger::getLogger();
     if (empty($url)) {
       return;
     }
@@ -44,7 +43,7 @@ abstract class Parser {
       return;
     }
     if (empty(BROWSERLESS_TOKEN)) {
-      $log->error("Browserless token is not set");
+      logger()->error("Browserless token is not set");
       return;
     }
     $curl = curl_init();
@@ -67,14 +66,14 @@ abstract class Parser {
     $err = curl_error($curl);
     curl_close($curl);
     if ($err) {
-      $log->error("Curl error encountered in Browserless for URL " . $url . ": " . $err);
+      logger()->error("Curl error encountered in Browserless for URL " . $url . ": " . $err);
       return;
     }
     if (strpos($response, 'HTTP ERROR 404') !== false) {
-      $log->error("404 error encountered in Browserless for URL " . $url);
+      logger()->error("404 error encountered in Browserless for URL " . $url);
       return;
     }
-    $log->info("Browserless successfully fetched the content for URL " . $url);
+    logger()->info("Browserless successfully fetched the content for URL " . $url);
     return $response;
   }
 

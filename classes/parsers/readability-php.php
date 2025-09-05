@@ -17,7 +17,6 @@ class ReadabilityPHP extends Parser {
     $url = null
   ) {
     if (!empty($url)) $this->url = $url;
-    $this->log = \CustomLogger::getLogger();
   }
 
   public function getParsedWebpage() {
@@ -36,7 +35,7 @@ class ReadabilityPHP extends Parser {
         $curled_content = curlURL($this->url);
       }
       if (!$curled_content) {
-        $this->log->error("There was an error grabbing the webpage content for URL $this->url for the ReadabilityPHP parser");
+        logger()->error("There was an error grabbing the webpage content for URL $this->url for the ReadabilityPHP parser");
         return [
           'parser_error' => true
         ];
@@ -56,21 +55,21 @@ class ReadabilityPHP extends Parser {
 			$readability_object->direction      = $readability->getDirection() ?? '';
 			$readability_object->word_count     = $readability->getContent() ? str_word_count($readability->getContent()) : 0;
 		} catch (\Throwable $e) {
-      $this->log->error("There was an error parsing the webpage content for URL $this->url with the ReadabilityPHP parser");
+      logger()->error("There was an error parsing the webpage content for URL $this->url with the ReadabilityPHP parser");
       return [
         'parser_error' => true
       ];
 		}
     if (!$readability_object) {
-      $this->log->error("The response from ReadabilityPHP was empty or invalid for URL " . $this->url);
+      logger()->error("The response from ReadabilityPHP was empty or invalid for URL " . $this->url);
       return [];
     }
     $this->readability = $readability_object;
     if(!empty($readability_object->content)) {
       $readability_object->content = preg_replace('/\n/', ' ', $readability_object->content);
     }
-    $this->log->info("ReadabilityPHP successfully parsed the webpage for URL " . $this->url);
-    $this->log->debug("Parsed data: ", [
+    logger()->info("ReadabilityPHP successfully parsed the webpage for URL " . $this->url);
+    logger()->debug("Parsed data: ", [
       'title'          => $readability_object->title ?? '',
       'word_count'     => $readability_object->word_count ?? 0
     ]);

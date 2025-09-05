@@ -12,7 +12,6 @@ class Cache {
 	private static $apcu_hits       = 0;
 	private static $apcu_requests   = 0;
 	private $cache_root;
-	private $log;
 
 	/**
 	 * Constructor
@@ -20,7 +19,6 @@ class Cache {
 	 */
 	private function __construct($cache_root = null) {
 		$this->cache_root = $cache_root ?? UPVOTE_RSS_CACHE_ROOT;
-		$this->log = \CustomLogger::getLogger();
 		$this->initializeRedis();
 		$this->initializeApcu();
 	}
@@ -47,7 +45,7 @@ class Cache {
 				$this->redis_client->ping();
 				$this->redis_connected = true;
 			} catch (\Exception $e) {
-				$this->log->warning("Redis connection failed: " . $e->getMessage());
+				logger()->warning("Redis connection failed: " . $e->getMessage());
 				$this->redis_connected = false;
 			}
 		}
@@ -140,7 +138,7 @@ class Cache {
 					return unserialize($this->redis_client->get($redis_key));
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("Redis get failed: " . $e->getMessage());
+				logger()->warning("Redis get failed: " . $e->getMessage());
 				// Fall through to APCu or file cache
 			}
 		}
@@ -153,11 +151,11 @@ class Cache {
 				$result = apcu_fetch($apcu_key, $success);
 				if ($success) {
 					self::$apcu_hits++;
-					// $this->log->info("APCu cache hit: " . $apcu_key);
+					// logger()->info("APCu cache hit: " . $apcu_key);
 					return $result;
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("APCu get failed: " . $e->getMessage());
+				logger()->warning("APCu get failed: " . $e->getMessage());
 				// Fall through to file cache
 			}
 		}
@@ -173,7 +171,7 @@ class Cache {
 				if (strpos($content, '<?php') === 0) {
 					// Delete old format file so it can be regenerated in new format
 					@unlink($cache_file);
-					$this->log->info("Deleted old cache file format: " . basename($cache_file));
+					logger()->info("Deleted old cache file format: " . basename($cache_file));
 					return null;
 				}
 
@@ -185,7 +183,7 @@ class Cache {
 
 				// If unserialize fails, delete corrupted file
 				@unlink($cache_file);
-				$this->log->warning("Deleted corrupted cache file: " . basename($cache_file));
+				logger()->warning("Deleted corrupted cache file: " . basename($cache_file));
 			}
 		}
 
@@ -214,7 +212,7 @@ class Cache {
 				$this->redis_client->set($redis_key, serialize($value), 'EX', $expiration);
 				return true;
 			} catch (\Exception $e) {
-				$this->log->error("Redis set failed: " . $e->getMessage());
+				logger()->error("Redis set failed: " . $e->getMessage());
 				// Fall through to APCu or file cache
 			}
 		}
@@ -228,7 +226,7 @@ class Cache {
 					return true;
 				}
 			} catch (\Exception $e) {
-				$this->log->error("APCu set failed: " . $e->getMessage());
+				logger()->error("APCu set failed: " . $e->getMessage());
 				// Fall through to file cache
 			}
 		}
@@ -240,7 +238,7 @@ class Cache {
 			try {
 				mkdir($cache_directory, 0755, true);
 			} catch (\Exception $e) {
-				$this->log->error("Failed to create cache directory: " . $e->getMessage());
+				logger()->error("Failed to create cache directory: " . $e->getMessage());
 				return false;
 			}
 		}
@@ -254,7 +252,7 @@ class Cache {
 			}
 			return true;
 		} catch (\Exception $e) {
-			$this->log->error($e->getMessage());
+			logger()->error($e->getMessage());
 			return false;
 		}
 	}
@@ -279,7 +277,7 @@ class Cache {
 				$this->redis_client->del($redis_key);
 				return true;
 			} catch (\Exception $e) {
-				$this->log->warning("Redis delete failed: " . $e->getMessage());
+				logger()->warning("Redis delete failed: " . $e->getMessage());
 				// Fall through to APCu or file cache
 			}
 		}
@@ -291,7 +289,7 @@ class Cache {
 				apcu_delete($apcu_key);
 				return true;
 			} catch (\Exception $e) {
-				$this->log->warning("APCu delete failed: " . $e->getMessage());
+				logger()->warning("APCu delete failed: " . $e->getMessage());
 				// Fall through to file cache
 			}
 		}
@@ -325,7 +323,7 @@ class Cache {
 					$this->redis_client->del($keys);
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("Redis clear directory failed: " . $e->getMessage());
+				logger()->warning("Redis clear directory failed: " . $e->getMessage());
 			}
 		}
 
@@ -338,7 +336,7 @@ class Cache {
 					apcu_delete($key);
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("APCu clear directory failed: " . $e->getMessage());
+				logger()->warning("APCu clear directory failed: " . $e->getMessage());
 			}
 		}
 
@@ -405,7 +403,7 @@ class Cache {
 				}
 			}
 		} catch (\Exception $e) {
-			$this->log->warning("Redis cleanup failed: " . $e->getMessage());
+			logger()->warning("Redis cleanup failed: " . $e->getMessage());
 		}
 	}
 
@@ -423,7 +421,7 @@ class Cache {
 		}
 
 		if (!is_dir(UPVOTE_RSS_CACHE_ROOT)) {
-			$this->log->error("Failed to create cache root directory");
+			logger()->error("Failed to create cache root directory");
 			return;
 		}
 
@@ -463,7 +461,7 @@ class Cache {
 			}
 
 		} catch (\Exception $e) {
-			$this->log->warning("File cache cleanup failed: " . $e->getMessage());
+			logger()->warning("File cache cleanup failed: " . $e->getMessage());
 		}
 	}
 
@@ -522,7 +520,7 @@ class Cache {
 				}
 			}
 		} catch (\Exception $e) {
-			$this->log->warning("Error deleting directory contents: " . $e->getMessage());
+			logger()->warning("Error deleting directory contents: " . $e->getMessage());
 		}
 	}
 
@@ -542,7 +540,7 @@ class Cache {
 					}
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("Redis cache clear failed: " . $e->getMessage());
+				logger()->warning("Redis cache clear failed: " . $e->getMessage());
 			}
 		}
 
@@ -571,7 +569,7 @@ class Cache {
 					}
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("APCu cache clear failed: " . $e->getMessage());
+				logger()->warning("APCu cache clear failed: " . $e->getMessage());
 			}
 		}
 
@@ -591,7 +589,7 @@ class Cache {
 		if (!CLEAR_WEBPAGES_WITH_CACHE) {
 			$log_message .= ' (excluding webpages)';
 		}
-		$this->log->info($log_message);
+		logger()->info($log_message);
 	}
 
 	/**
@@ -607,7 +605,7 @@ class Cache {
 					$cache_size += strlen($key) + strlen(serialize($value['value']));
 				}
 			} catch (\Exception $e) {
-				$this->log->warning("APCu cache size calculation failed: " . $e->getMessage());
+				logger()->warning("APCu cache size calculation failed: " . $e->getMessage());
 			}
 		}
 		return $cache_size;
