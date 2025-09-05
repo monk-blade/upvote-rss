@@ -3,7 +3,7 @@ FROM dunglas/frankenphp:1.9.0-php8.4.10-alpine AS build
 # Install required utilities and PHP extensions
 RUN apk add --no-cache --virtual .build-deps \
     build-base freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev && \
-    install-php-extensions gd opcache && \
+    install-php-extensions gd opcache apcu && \
     apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
@@ -12,7 +12,7 @@ FROM dunglas/frankenphp:1.9.0-php8.4.10-alpine
 
 # Install su-exec and opcache
 RUN apk add --no-cache su-exec && \
-    install-php-extensions gd opcache
+    install-php-extensions gd opcache apcu
 
 # Copy the application files
 COPY . /app
