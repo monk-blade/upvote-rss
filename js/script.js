@@ -421,10 +421,6 @@ createApp({
         }).catch(error => {
           console.warn('Failed to clean up progress data:', error);
         });
-
-        setTimeout(() => {
-          this.progress = 1;
-        }, 100);
       }
     },
   },

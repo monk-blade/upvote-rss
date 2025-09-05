@@ -1009,10 +1009,14 @@ header {
 			border-radius: 8px;
 			cursor: pointer;
 			transition: color var(--transition);
-			&:hover {
+			&:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+			&:not(:disabled):hover {
 				color: light-dark(var(--color__blue_600), var(--color__blue_400));
 			}
-			&:active {
+			&:not(:disabled):active {
 				color: light-dark(var(--color__orange_600), var(--color__blue_600));
 			}
 			svg {

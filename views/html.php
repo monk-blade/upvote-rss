@@ -319,7 +319,7 @@
 									<use xlink:href="#icon-copy"></use>
 								</svg> Copy RSS URL
 							</template>
-						<button v-if="!demoMode" class="clear-cache" @click="clearCache" :class="loading"><svg class="icon icon-cycle">
+						<button v-if="!demoMode" class="clear-cache" @click="clearCache" :class="loading" :disabled="loading"><svg class="icon icon-cycle">
 								<use xlink:href="#icon-cycle"></use>
 							</svg> Refresh cache ({{ cacheSize }})</button>
 					</div>
