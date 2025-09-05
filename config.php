@@ -458,6 +458,11 @@ if (!empty(REDIS_HOST) && !empty(REDIS_PORT)) {
 define('REDIS', $redis_available);
 
 
+// APCu
+$apcu_available = function_exists('apcu_enabled') && apcu_enabled();
+define('APCU', $apcu_available);
+
+
 // Progress caching
 $include_progress = !empty($include_progress) ? $include_progress : false;
 define('INCLUDE_PROGRESS', $include_progress);

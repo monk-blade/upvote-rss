@@ -1,13 +1,16 @@
 <?php
 
 /**
- * Cache class for handling both Redis and file-based caching
+ * Cache class for handling Redis, APCu, and file-based caching
  *
  */
 class Cache {
-	private static $instance  = null;
-	private $redis_client     = null;
-	private $redis_connected  = false;
+	private static $instance        = null;
+	private $redis_client           = null;
+	private $redis_connected        = false;
+	private $apcu_available         = false;
+	private static $apcu_hits       = 0;
+	private static $apcu_requests   = 0;
 	private $cache_root;
 	private $log;
 
@@ -19,6 +22,7 @@ class Cache {
 		$this->cache_root = $cache_root ?? UPVOTE_RSS_CACHE_ROOT;
 		$this->log = \CustomLogger::getLogger();
 		$this->initializeRedis();
+		$this->initializeApcu();
 	}
 
 	/**
@@ -50,6 +54,13 @@ class Cache {
 	}
 
 	/**
+	 * Initialize APCu availability
+	 */
+	private function initializeApcu(): void {
+		$this->apcu_available = defined('APCU') && APCU;
+	}
+
+	/**
 	 * Format Redis key
 	 * @param string $key The cache key
 	 * @param string $directory The cache directory
@@ -60,6 +71,41 @@ class Cache {
 		$redis_key = str_replace(['.'], '_', $redis_key);
 		$redis_key = str_replace('::', ':', $redis_key);
 		return $redis_key;
+	}
+
+	/**
+	 * Format APCu key
+	 * @param string $key The cache key
+	 * @param string $directory The cache directory
+	 * @return string The formatted APCu key
+	 */
+	private function formatApcuKey(string $key, string $directory): string {
+		$apcu_key = 'upvote_rss_' . str_replace('/', '_', $directory) . '_' . $key;
+		$apcu_key = str_replace(['.', ' ', ':'], '_', $apcu_key);
+		$apcu_key = str_replace('__', '_', $apcu_key);
+		return $apcu_key;
+	}
+
+	/**
+	 * Check if directory should use APCu (for auth tokens and progress indicators)
+	 * @param string $directory The cache directory
+	 * @return bool True if should use APCu
+	 */
+	private function shouldUseApcu(string $directory): bool {
+		$apcu_directories = [
+			'auth',
+			'progress'
+		];
+
+		$should_use = false;
+		foreach ($apcu_directories as $apcu_dir) {
+			if (strpos($directory, $apcu_dir) !== false) {
+				$should_use = true;
+				break;
+			}
+		}
+
+		return $should_use;
 	}
 
 	/**
@@ -95,6 +141,23 @@ class Cache {
 				}
 			} catch (\Exception $e) {
 				$this->log->warning("Redis get failed: " . $e->getMessage());
+				// Fall through to APCu or file cache
+			}
+		}
+
+		// Use APCu if available and directory qualifies
+		if ($this->apcu_available && $this->shouldUseApcu($directory)) {
+			self::$apcu_requests++;
+			try {
+				$apcu_key = $this->formatApcuKey($key, $directory);
+				$result = apcu_fetch($apcu_key, $success);
+				if ($success) {
+					self::$apcu_hits++;
+					// $this->log->info("APCu cache hit: " . $apcu_key);
+					return $result;
+				}
+			} catch (\Exception $e) {
+				$this->log->warning("APCu get failed: " . $e->getMessage());
 				// Fall through to file cache
 			}
 		}
@@ -152,6 +215,20 @@ class Cache {
 				return true;
 			} catch (\Exception $e) {
 				$this->log->error("Redis set failed: " . $e->getMessage());
+				// Fall through to APCu or file cache
+			}
+		}
+
+		// Use APCu if available and directory qualifies
+		if ($this->apcu_available && $this->shouldUseApcu($directory)) {
+			try {
+				$apcu_key = $this->formatApcuKey($key, $directory);
+				$ttl = $expiration > 0 ? $expiration : 0; // 0 means no expiration in APCu
+				if (apcu_store($apcu_key, $value, $ttl)) {
+					return true;
+				}
+			} catch (\Exception $e) {
+				$this->log->error("APCu set failed: " . $e->getMessage());
 				// Fall through to file cache
 			}
 		}
@@ -203,6 +280,18 @@ class Cache {
 				return true;
 			} catch (\Exception $e) {
 				$this->log->warning("Redis delete failed: " . $e->getMessage());
+				// Fall through to APCu or file cache
+			}
+		}
+
+		// Use APCu if available and directory qualifies
+		if ($this->apcu_available && $this->shouldUseApcu($directory)) {
+			try {
+				$apcu_key = $this->formatApcuKey($key, $directory);
+				apcu_delete($apcu_key);
+				return true;
+			} catch (\Exception $e) {
+				$this->log->warning("APCu delete failed: " . $e->getMessage());
 				// Fall through to file cache
 			}
 		}
@@ -237,6 +326,19 @@ class Cache {
 				}
 			} catch (\Exception $e) {
 				$this->log->warning("Redis clear directory failed: " . $e->getMessage());
+			}
+		}
+
+		// Clear APCu keys if directory qualifies
+		if ($this->apcu_available && $this->shouldUseApcu($directory)) {
+			try {
+				$pattern = '/^upvote_rss_' . str_replace('/', '_', $directory) . '_/';
+				$iterator = new \APCUIterator($pattern);
+				foreach ($iterator as $key => $value) {
+					apcu_delete($key);
+				}
+			} catch (\Exception $e) {
+				$this->log->warning("APCu clear directory failed: " . $e->getMessage());
 			}
 		}
 
@@ -444,6 +546,35 @@ class Cache {
 			}
 		}
 
+		// Clear APCu cache if enabled
+		if ($this->apcu_available) {
+			try {
+				$iterator = new \APCUIterator('/^upvote_rss_/');
+				foreach ($iterator as $key => $value) {
+					// Check if key should be excluded
+					$should_exclude = false;
+					if (!CLEAR_WEBPAGES_WITH_CACHE && strpos($key, 'upvote_rss_webpages_') !== false) {
+						$should_exclude = true;
+					}
+
+					// Check exclude directories
+					foreach ($exclude_dirs as $exclude_dir) {
+						$exclude_pattern = 'upvote_rss_' . str_replace('/', '_', $exclude_dir) . '_';
+						if (strpos($key, $exclude_pattern) !== false) {
+							$should_exclude = true;
+							break;
+						}
+					}
+
+					if (!$should_exclude) {
+						apcu_delete($key);
+					}
+				}
+			} catch (\Exception $e) {
+				$this->log->warning("APCu cache clear failed: " . $e->getMessage());
+			}
+		}
+
 		// Clear file cache
 		if (!CLEAR_WEBPAGES_WITH_CACHE) {
 			$exclude_dirs[] = 'webpages';
@@ -461,6 +592,25 @@ class Cache {
 			$log_message .= ' (excluding webpages)';
 		}
 		$this->log->info($log_message);
+	}
+
+	/**
+	 * Get APCu cache size
+	 * @return int Cache size in bytes
+	 */
+	private function getApcuCacheSize(): int {
+		$cache_size = 0;
+		if ($this->apcu_available) {
+			try {
+				$iterator = new \APCUIterator('/^upvote_rss_/');
+				foreach ($iterator as $key => $value) {
+					$cache_size += strlen($key) + strlen(serialize($value['value']));
+				}
+			} catch (\Exception $e) {
+				$this->log->warning("APCu cache size calculation failed: " . $e->getMessage());
+			}
+		}
+		return $cache_size;
 	}
 
 	/**
@@ -509,9 +659,25 @@ class Cache {
 		// Get size of Redis cache if available
 		$cache_size += $this->getRedisCacheSize();
 
+		// Get size of APCu cache if available
+		$cache_size += $this->getApcuCacheSize();
+
 		// Get size of cache directory if it exists
 		$cache_size += $this->getCacheDirectorySize();
 
 		return formatByteSize($cache_size);
+	}
+
+	/**
+	 * Get APCu cache statistics
+	 * @return array Cache hit statistics
+	 */
+	public function getApcuStats(): array {
+		$hit_rate = self::$apcu_requests > 0 ? round((self::$apcu_hits / self::$apcu_requests) * 100, 2) : 0;
+		return [
+			'hits' => self::$apcu_hits,
+			'requests' => self::$apcu_requests,
+			'hit_rate' => $hit_rate . '%'
+		];
 	}
 }
