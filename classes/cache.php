@@ -104,8 +104,26 @@ class Cache {
 		$cache_file = $cache_directory . urlencode($key);
 
 		if (file_exists($cache_file)) {
-			@include $cache_file;
-			return isset($val) ? $val : false;
+			$content = file_get_contents($cache_file);
+			if ($content !== false) {
+				// Check if this is an old var_export format file (starts with <?php)
+				if (strpos($content, '<?php') === 0) {
+					// Delete old format file so it can be regenerated in new format
+					@unlink($cache_file);
+					$this->log->info("Deleted old cache file format: " . basename($cache_file));
+					return null;
+				}
+
+				// Try to unserialize new format
+				$unserialized = @unserialize($content);
+				if ($unserialized !== false || $content === serialize(false)) {
+					return $unserialized;
+				}
+
+				// If unserialize fails, delete corrupted file
+				@unlink($cache_file);
+				$this->log->warning("Deleted corrupted cache file: " . basename($cache_file));
+			}
 		}
 
 		return null;
@@ -150,11 +168,11 @@ class Cache {
 			}
 		}
 
-		$cache_value = var_export($value, true);
+		$cache_value = serialize($value);
 		$file_path = $cache_directory . urlencode($key);
 
 		try {
-			if (file_put_contents($file_path, '<?php $val = ' . $cache_value . ';', LOCK_EX) === false) {
+			if (file_put_contents($file_path, $cache_value, LOCK_EX) === false) {
 				throw new \Exception("Failed to write cache file: $file_path");
 			}
 			return true;
