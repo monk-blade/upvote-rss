@@ -19,7 +19,7 @@ class Reddit extends Community
 
   // Constructor
   function __construct($slug = null) {
-    $this->auth = new \Auth\Reddit();
+    $this->auth = \Auth\Reddit::getInstance();
     $this->slug = !empty($slug) ? $slug : SUBREDDIT;
     try {
       $this->auth_token = $this->auth->getToken();

@@ -274,7 +274,7 @@ class Reddit extends Post {
   // Get comments
 	public function getComments(): array {
     $log = \CustomLogger::getLogger();
-    $reddit_auth = new \Auth\Reddit();
+    $reddit_auth = \Auth\Reddit::getInstance();
     if (!$reddit_auth->getToken()) {
       $message = "Reddit auth token not found";
       $log->error($message);

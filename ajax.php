@@ -103,7 +103,7 @@ if ($data['getSubreddits'] ?? false) {
 		exit;
 	}
 	try {
-		$reddit_auth = new \Auth\Reddit();
+		$reddit_auth = \Auth\Reddit::getInstance();
 		$auth_token = $reddit_auth->getToken();
 	} catch (\Exception $e) {
 		header('Content-Type: application/json');
@@ -194,7 +194,7 @@ if ($data['getPosts'] ?? false) {
 	// Check auth status
 	if ($platform === 'reddit') {
 		try {
-			$reddit_auth = new \Auth\Reddit();
+			$reddit_auth = \Auth\Reddit::getInstance();
 			$auth_token = $reddit_auth->getToken();
 		} catch (\Exception $e) {
 			returnJSONerror($e->getMessage());

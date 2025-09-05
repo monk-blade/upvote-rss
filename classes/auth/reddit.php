@@ -4,12 +4,29 @@ namespace Auth;
 
 class Reddit extends Auth {
   private $log;
+  private static ?string $cached_token = null; // Request-level cache
+  private static ?self   $instance     = null; // Singleton instance
 
   public function __construct() {
     $this->log = \CustomLogger::getLogger();
   }
 
+  /**
+   * Get singleton instance
+   */
+  public static function getInstance() {
+    if (self::$instance === null) {
+      self::$instance = new self();
+    }
+    return self::$instance;
+  }
+
   public function getToken() {
+    // Return cached token if available in this request
+    if (self::$cached_token !== null) {
+      return self::$cached_token;
+    }
+
     if (empty(REDDIT_USER) || empty(REDDIT_CLIENT_ID_ENCRYPTED) || empty(REDDIT_CLIENT_SECRET)) {
       $message = "Reddit credentials are not fully set";
       $this->log->error($message);
@@ -18,7 +35,10 @@ class Reddit extends Auth {
     $auth_directory = "auth/reddit";
     $token = cache()->get(REDDIT_CLIENT_ID_ENCRYPTED, $auth_directory);
     if ($token) {
-      return openssl_decrypt($token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
+      $decrypted_token = openssl_decrypt($token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
+      // Cache for this request
+      self::$cached_token = $decrypted_token;
+      return $decrypted_token;
     }
     $this->log->info("Requesting new token from Reddit for user " . REDDIT_USER);
     $auth_string = base64_encode(REDDIT_CLIENT_ID . ':' . REDDIT_CLIENT_SECRET);
@@ -38,6 +58,16 @@ class Reddit extends Auth {
     $access_token = $curl_data['access_token'];
     $access_token_encrypted = openssl_encrypt($access_token, CIPHERING, ENCRYPTION_KEY, ENCRYPTION_OPTIONS, ENCRYPTION_IV);
     cache()->set(REDDIT_CLIENT_ID_ENCRYPTED, $access_token_encrypted, $auth_directory, AUTH_EXPIRATION);
+    // Cache for this request
+    self::$cached_token = $access_token;
     return $access_token;
+  }
+
+  /**
+   * Clear the request-level token cache
+   * Useful if token becomes invalid during a request
+   */
+  public static function clearRequestCache() {
+    self::$cached_token = null;
   }
 }

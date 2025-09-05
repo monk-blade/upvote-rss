@@ -216,7 +216,7 @@ abstract class Post {
         $gallery = cache()->get($cache_object_key, $cache_directory);
       } else {
         $url = "https://oauth.reddit.com/comments/$gallery_id.json";
-        $reddit_auth = new \Auth\Reddit();
+        $reddit_auth = \Auth\Reddit::getInstance();
         $auth_token = $reddit_auth->getToken() ?? null;
         if(empty($auth_token)) {
           return;
