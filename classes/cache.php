@@ -255,44 +255,112 @@ class Cache {
 			"/webpages/"                => WEBPAGE_EXPIRATION,
 			"/images/"                  => IMAGE_EXPIRATION
 		];
-		if (!is_dir(UPVOTE_RSS_CACHE_ROOT)) mkdir(UPVOTE_RSS_CACHE_ROOT, 0755, true);
-		for ($i = 0; $i < 10; $i++) {
-			if (is_dir(UPVOTE_RSS_CACHE_ROOT)) break;
-			usleep(100000);
+
+		// Clean up Redis expired keys first
+		$this->cleanUpRedisExpired($directory_expirations);
+
+		// Clean up file cache
+		$this->cleanUpFileCache($directory_expirations);
+	}
+
+	/**
+	 * Clean up expired Redis cache entries
+	 */
+	private function cleanUpRedisExpired(array $directory_expirations): void {
+		if (!$this->redis_connected) {
+			return;
 		}
-		$cache_directory_iterator = new RecursiveDirectoryIterator(UPVOTE_RSS_CACHE_ROOT) ?? [];
-		foreach (new RecursiveIteratorIterator($cache_directory_iterator) as $item) {
-			if (is_file($item)) {
-				foreach ($directory_expirations as $search => $expiration) {
-					if (
-						is_file($item) &&
-						strpos($item->getPathname(), $search) !== false &&
-						time() - filemtime($item) >= $expiration
-					) {
-						unlink($item->getPathname());
+
+		try {
+			foreach ($directory_expirations as $directory => $expiration) {
+				$pattern = 'upvote_rss:' . str_replace('/', ':', trim($directory, '/')) . ':*';
+				$keys = $this->redis_client->keys($pattern);
+
+				foreach ($keys as $key) {
+					$ttl = $this->redis_client->ttl($key);
+					// If TTL is -1 (no expiration set) or key should have expired based on our rules
+					if ($ttl === -1) {
+						$this->redis_client->expire($key, $expiration);
 					}
-				}
-			} elseif (
-				!empty($item) &&
-				is_dir($item) &&
-				is_array(scandir($item)) &&
-				count(scandir($item)) == 2 &&
-				$item->getPathname() !== UPVOTE_RSS_CACHE_ROOT
-			) {
-				$parent = $item->getPathname();
-				while (
-					is_dir($parent) &&
-					count(scandir($parent)) == 2 &&
-					$parent !== UPVOTE_RSS_CACHE_ROOT &&
-					dirname($parent) !== UPVOTE_RSS_CACHE_ROOT
-				) {
-					if (!@rmdir($parent)) {
-						// Directory is busy, skip it
-						break;
-					}
-					$parent = dirname($parent);
 				}
 			}
+		} catch (\Exception $e) {
+			$this->log->warning("Redis cleanup failed: " . $e->getMessage());
+		}
+	}
+
+	/**
+	 * Clean up expired file cache entries
+	 */
+	private function cleanUpFileCache(array $directory_expirations): void {
+		if (!is_dir(UPVOTE_RSS_CACHE_ROOT)) {
+			mkdir(UPVOTE_RSS_CACHE_ROOT, 0755, true);
+		}
+
+		// Wait for directory creation with timeout
+		for ($i = 0; $i < 10 && !is_dir(UPVOTE_RSS_CACHE_ROOT); $i++) {
+			usleep(100000);
+		}
+
+		if (!is_dir(UPVOTE_RSS_CACHE_ROOT)) {
+			$this->log->error("Failed to create cache root directory");
+			return;
+		}
+
+		try {
+			$iterator = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator(UPVOTE_RSS_CACHE_ROOT, RecursiveDirectoryIterator::SKIP_DOTS),
+				RecursiveIteratorIterator::CHILD_FIRST
+			);
+
+			$empty_dirs = [];
+			$current_time = time();
+
+			foreach ($iterator as $item) {
+				$path = $item->getPathname();
+
+				if ($item->isFile()) {
+					// Check if file is expired
+					$file_time = filemtime($path);
+					foreach ($directory_expirations as $search => $expiration) {
+						if (strpos($path, $search) !== false &&
+							$current_time - $file_time >= $expiration) {
+							@unlink($path);
+							break;
+						}
+					}
+				} elseif ($item->isDir() && $path !== UPVOTE_RSS_CACHE_ROOT) {
+					// Check if directory is empty (only contains . and ..)
+					if ($this->isDirectoryEmpty($path)) {
+						$empty_dirs[] = $path;
+					}
+				}
+			}
+
+			// Remove empty directories in reverse order (deepest first)
+			foreach (array_reverse($empty_dirs) as $dir) {
+				@rmdir($dir);
+			}
+
+		} catch (\Exception $e) {
+			$this->log->warning("File cache cleanup failed: " . $e->getMessage());
+		}
+	}
+
+	/**
+	 * Check if directory is empty (contains only . and ..)
+	 */
+	private function isDirectoryEmpty(string $dir): bool {
+		try {
+			$iterator = new DirectoryIterator($dir);
+			foreach ($iterator as $item) {
+				if (!$item->isDot()) {
+					return false;
+				}
+			}
+			return true;
+		} catch (\Exception $e) {
+			return false;
 		}
 	}
 
@@ -304,19 +372,37 @@ class Cache {
 	private function deleteDirectoryContents($src, $exclude = []) {
 		if (!is_dir($src)) return;
 
-		$files = scandir($src);
-		foreach ($files as $file) {
-			if ($file == '.' || $file == '..') continue;
+		try {
+			$iterator = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator($src, RecursiveDirectoryIterator::SKIP_DOTS),
+				RecursiveIteratorIterator::CHILD_FIRST
+			);
 
-			$file_path = $src . '/' . $file;
-			if (is_dir($file_path)) {
-				if (!in_array($file, $exclude)) {
-					$this->deleteDirectoryContents($file_path, $exclude);
-					rmdir($file_path);
+			$excluded_paths = array_map(function($dir) use ($src) {
+				return rtrim($src, '/') . '/' . $dir;
+			}, $exclude);
+
+			foreach ($iterator as $fileInfo) {
+				$path = $fileInfo->getRealPath();
+
+				// Skip excluded directories and their contents
+				$skip = false;
+				foreach ($excluded_paths as $excluded_path) {
+					if (strpos($path, $excluded_path) === 0) {
+						$skip = true;
+						break;
+					}
 				}
-			} else {
-				unlink($file_path);
+				if ($skip) continue;
+
+				if ($fileInfo->isDir()) {
+					@rmdir($path);
+				} else {
+					@unlink($path);
+				}
 			}
+		} catch (\Exception $e) {
+			$this->log->warning("Error deleting directory contents: " . $e->getMessage());
 		}
 	}
 
