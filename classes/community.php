@@ -95,12 +95,12 @@ abstract class Community
         if ($number_of_returned_posts == 0) return [];
         $ratio_of_wanted_posts_to_returned_posts = $average_posts_per_month / $number_of_returned_posts;
         if ($ratio_of_wanted_posts_to_returned_posts <= 1) {
-          $lowest_score = $top_posts[$average_posts_per_month - 1]['score'];
-          $second_lowest_score = $top_posts[$average_posts_per_month - 2]['score'];
+          $lowest_score = isset($top_posts[$average_posts_per_month - 1]) && $top_posts[$average_posts_per_month - 1] !== null ? $top_posts[$average_posts_per_month - 1]['score'] : 0;
+          $second_lowest_score = isset($top_posts[$average_posts_per_month - 2]) && $top_posts[$average_posts_per_month - 2] !== null ? $top_posts[$average_posts_per_month - 2]['score'] : $lowest_score;
           $threshold_score = $lowest_score < $second_lowest_score / 2 ? $second_lowest_score : $lowest_score;
         } else {
-          $lowest_score = $top_posts[$number_of_returned_posts - 1]['score'];
-          $second_lowest_score = count($top_posts) > 1 ? $top_posts[$number_of_returned_posts - 2]['score'] : $lowest_score;
+          $lowest_score = isset($top_posts[$number_of_returned_posts - 1]) && $top_posts[$number_of_returned_posts - 1] !== null ? $top_posts[$number_of_returned_posts - 1]['score'] : 0;
+          $second_lowest_score = count($top_posts) > 1 && isset($top_posts[$number_of_returned_posts - 2]) && $top_posts[$number_of_returned_posts - 2] !== null ? $top_posts[$number_of_returned_posts - 2]['score'] : $lowest_score;
           if ($lowest_score < $second_lowest_score / 2) $lowest_score = $second_lowest_score;
           $threshold_score = floor($lowest_score / $ratio_of_wanted_posts_to_returned_posts);
         }
