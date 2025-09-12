@@ -246,7 +246,7 @@ class Mbin extends Community
       return cache()->get($cache_object_key, $cache_directory);
     }
     $curl_response = curlURL($url);
-    $curl_data = json_decode($curl_response, true);
+    $curl_data = json_decode($curl_response, true) ?? [];
     if (empty($curl_data) || !empty($curl_data['error'])) {
       $message = "Error communicating with the $this->instance instance: " . ($curl_data['error'] ?? 'Unknown error');
       logger()->error($message);
@@ -254,6 +254,10 @@ class Mbin extends Community
     }
     cache()->set($cache_object_key, $curl_data, $cache_directory, HOT_POSTS_EXPIRATION);
     $hot_posts_min = array();
+    if (empty($curl_data['items'])) {
+      logger()->info("No items found for hot posts from $url");
+      return $hot_posts_min;
+    }
     foreach ($curl_data['items'] as $post) {
       $post = new \Post\Mbin($post, $this->instance, $this->slug);
       $hot_posts_min[] = $post;
