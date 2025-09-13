@@ -69,9 +69,7 @@ class Lobsters extends Post {
     if($add_domain) {
       $title = $title . ' (' . $this->domain . ')';
     }
-    $title = htmlspecialchars($title);
-    $title = str_replace(["\r", "\n"], "", $title);
-    $title = trim($title);
+    $title = $this->normalize_title($title);
     $this->title = $title ?? '';
   }
 

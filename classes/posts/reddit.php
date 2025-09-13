@@ -202,9 +202,7 @@ class Reddit extends Post {
     ) {
       $title .= ' [NSFW]';
     }
-    $title = htmlspecialchars($title);
-    $title = str_replace(["\r", "\n"], "", $title);
-    $title = trim($title);
+    $title = $this->normalize_title($title);
     $this->title = $title ?? '';
   }
 

@@ -60,6 +60,55 @@ abstract class Post {
 	}
 
 
+  // Normalize title
+  protected function normalize_title(string $string): string {
+    // Fast empty check
+    if ($string === '') {
+      return '';
+    }
+
+    // Unify newlines -> space (preserve word boundaries)
+    $string = str_replace(["\r", "\n"], ' ', $string);
+
+    // Decode HTML entities (first pass)
+    $decoded_once = html_entity_decode($string, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $string = $decoded_once;
+
+    // Decode a second time if still contains encodable sequences (&amp;quot; etc.)
+    if (strpos($string, '&') !== false) {
+      $decoded_twice = html_entity_decode($string, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+      if ($decoded_twice !== $string) {
+        $string = $decoded_twice;
+      }
+    }
+
+    // Remove zero-width / soft hyphen / BOM characters & other invisible formatting artifacts
+    $string = preg_replace('/[\x{200B}\x{200C}\x{200D}\x{2060}\x{00AD}\x{FEFF}]/u', '', $string);
+
+    // 0x00–0x08, 0x0B–0x1F, plus 0x7F (DEL). Keeps tab so later \s+ collapse can treat it as spacing.
+    $string = preg_replace('/[\x00-\x08\x0B-\x1F\x7F]/u', '', $string);
+
+    // Normalize fancy punctuation to ASCII equivalents for consistency
+    $replacements = [
+      "\u{2018}" => "'", "\u{2019}" => "'", "\u{201A}" => "'", "\u{201B}" => "'",
+      "\u{201C}" => '"', "\u{201D}" => '"', "\u{201E}" => '"', "\u{201F}" => '"',
+      "\u{00AB}" => '"', "\u{00BB}" => '"',
+      "\u{2013}" => '-', "\u{2014}" => '-', "\u{2212}" => '-',
+    ];
+    $string = strtr($string, $replacements);
+
+    // Collapse all internal whitespace to a single space & trim
+    $string = preg_replace('/\s+/u', ' ', trim($string));
+
+    // Apply Unicode NFC normalization when intl Normalizer available
+    if (class_exists('Normalizer')) {
+      try { $string = \Normalizer::normalize($string, \Normalizer::FORM_C) ?: $string; } catch (\Throwable $e) {}
+    }
+
+    return $string;
+  }
+
+
 	// Set Feed Link
   protected function setFeedLink() {
     $link = '';
