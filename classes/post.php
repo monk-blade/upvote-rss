@@ -187,18 +187,13 @@ abstract class Post {
     // Determine if the URL is an image
     $url_extension = pathinfo($this->url, PATHINFO_EXTENSION);
     if (in_array($url_extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-      // $this->preview_image_url = $this->url;
-      // $this->preview_image_html .= "<img src='" . $this->url . "' alt='' />";
       $this->url_is_image = true;
       $this->post_link_image_url = $this->url;
     }
     // Reddit preview image
     if (!empty($this->preview['images'][0]['source']['url'])) {
       $this->reddit_preview_image_url = $this->preview['images'][0]['source']['url'];
-      if (remote_file_exists($this->reddit_preview_image_url)) {
-        $this->reddit_preview_image_html = "<img src='" . $this->reddit_preview_image_url . "' alt='' width='" . $this->preview['images'][0]['source']['width'] . "' height='" . $this->preview['images'][0]['source']['height'] . "' />";
-        // $this->preview_image_html = $this->reddit_preview_image_html;
-      }
+      $this->reddit_preview_image_url = str_replace("amp;", "", $this->reddit_preview_image_url);
     }
     // Thumbnail
     if (
@@ -221,8 +216,6 @@ abstract class Post {
       remote_file_exists($this->url . '.jpg')
     ) {
       $imgur_image_url  = $this->url . '.jpg';
-      // $this->preview_image_html = "<img src='" . $this->url . '.jpg' . "' alt='' />";
-      // $this->get_parsed_content = false;
     }
     // Imgur gifv
     if (strpos($this->url, "imgur") && strpos($this->url, "gifv")) {
@@ -390,8 +383,6 @@ abstract class Post {
       remote_file_exists($livememe_image_to_try)
     ) {
       $this->livememe_image_url = $livememe_image_to_try;
-      // $this->livememe_image_url = "<img src='" . $livememe_image_to_try . "' alt='' />";
-      // $this->get_parsed_content = false;
     }
     // Secure media embed
     if (!empty($this->secure_media_embed["content"])) {
