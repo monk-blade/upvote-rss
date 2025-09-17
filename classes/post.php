@@ -328,26 +328,30 @@ abstract class Post {
       $poster_image_url = $this->thumbnail_url ?? '';
       $poster_image_url = !empty($this->preview['images'][0]['source']['url']) ? $this->preview['images'][0]['source']['url'] : $poster_image_url;
       $poster_image_url = str_replace("amp;", "", $poster_image_url);
-      if (!remote_file_exists($poster_image_url)) {
-        $poster_image_url = '';
-      }
       if (BLUR_NSFW && $this->nsfw) {
         $poster_image_url = $this->image_obfuscated_url ?? '';
       }
       $video_url = !empty($this->secure_media['reddit_video']['hls_url']) ? $this->secure_media['reddit_video']['hls_url'] : '';
-      if (empty($video_url) && remote_file_exists($this->url . '/HLSPlaylist.m3u8')) {
-        $video_url = $this->url . '/HLSPlaylist.m3u8';
-      }
       if (!empty($video_url)) {
-        $reddit_video = "<video controls ";
+        // Determine proper MIME type (HLS vs MP4)
+        $mime_type = 'video/mp4';
+        if (stripos($video_url, '.m3u8') !== false) {
+          $mime_type = 'application/x-mpegURL';
+        }
+        $reddit_video = "<video controls preload='metadata' ";
         if ($poster_image_url) {
           $reddit_video .= "poster='$poster_image_url' ";
         }
-        $reddit_video .= "preload='auto' autoplay='false'><source src='" . $video_url . "' type='video/mp4'";
+        $reddit_video .= "playsinline>";
+        $reddit_video .= "<source src='" . $video_url . "' type='" . $mime_type . "'";
         if (!empty($this->secure_media['reddit_video']['width']) && !empty($this->secure_media['reddit_video']['height'])) {
           $reddit_video .= " width='" . $this->secure_media['reddit_video']['width'] . "' height='" . $this->secure_media['reddit_video']['height'] . "'";
         }
-        $reddit_video .= "><img src='$poster_image_url' alt='' /></video>";
+        $reddit_video .= ">";
+        if ($poster_image_url) {
+          $reddit_video .= "<img src='$poster_image_url' alt='' />";
+        }
+        $reddit_video .= "</video>";
       }
       if (!empty($reddit_video)) {
         $this->embedded_media_html = $reddit_video;
@@ -358,7 +362,7 @@ abstract class Post {
       strpos($this->url, "video.twimg.com") !== false &&
       strpos($this->url, ".mp4") !== false
     ) {
-      $this->embedded_media_html = "<video controls preload='auto' autoplay='false'><source src='" . $this->url . "' type='video/mp4'></video>";
+      $this->embedded_media_html = "<video controls preload='metadata' playsinline><source src='" . $this->url . "' type='video/mp4'></video>";
     }
     // Bluesky posts
     if (
