@@ -221,6 +221,9 @@ class Reddit extends Post {
         $community = new \Community\Reddit($community);
         $thumbnail_url = $community->icon ?? null;
       }
+      if ($thumbnail_url == 'self' || $thumbnail_url == 'default' || $thumbnail_url == 'image' || $thumbnail_url == 'spoiler') {
+        $thumbnail_url = '';
+      }
       $this->thumbnail_url = $thumbnail_url;
     }
   }
