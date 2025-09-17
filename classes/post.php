@@ -233,7 +233,7 @@ abstract class Post {
         $preview_image_url = $this->thumbnail_url;
         $preview_image_html = "<img src='$preview_image_url' alt='' />";
       }
-      $imgur_gifv = "<video controls preload='auto' autoplay='false'";
+      $imgur_gifv = "<video controls preload='metadata' playsinline";
       if ($preview_image_url) {
         $imgur_gifv .= " poster='" . $preview_image_url . "'";
       }
