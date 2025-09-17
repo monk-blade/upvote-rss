@@ -11,7 +11,7 @@ class Lemmy extends Community
   public $needs_authentication  = false;
   public $instance              = '';
   public $slug                  = '';
-  public $platform_icon         = 'https://join-lemmy.org/static/assets/icons/favicon.svg';
+  public $platform_icon         = UPVOTE_RSS_URI . 'img/platforms/lemmy.png';
   public $max_items_per_request = 50;
 
 

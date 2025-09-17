@@ -11,7 +11,7 @@ class PieFed extends Community
   public $needs_authentication  = false;
   public $instance              = '';
   public $slug                  = '';
-  public $platform_icon         = 'https://piefed.social/static/media/logo_8p7en.svg';
+  public $platform_icon         = UPVOTE_RSS_URI . 'img/platforms/piefed.png';
   public $max_items_per_request = 50;
 
 

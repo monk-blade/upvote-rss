@@ -12,7 +12,7 @@ class Mbin extends Community
   public $instance              = '';
   public $slug                  = '';
   public $magazine_id           = 0;
-  public $platform_icon         = 'https://docs.joinmbin.org/img/logo.svg';
+  public $platform_icon         = UPVOTE_RSS_URI . 'img/platforms/mbin.png';
   public $max_items_per_request = 50;
 
 

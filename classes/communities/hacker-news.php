@@ -9,7 +9,7 @@ class HackerNews extends Community
 	public  $platform              = 'hacker-news';
 	public  $instance              = 'news.ycombinator.com';
 	public  $is_instance_valid     = true;
-	public  $platform_icon         = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/256px-Y_Combinator_logo.svg.png';
+	public  $platform_icon         = UPVOTE_RSS_URI . 'img/platforms/hacker-news.png';
 	public  $slug_title;
 	public  $max_items_per_request = 1000;
 	private $top_posts_timeframe   = 60 * 60 * 24 * 30; // 30 days
@@ -59,13 +59,24 @@ class HackerNews extends Community
 		$this->slug_title           = $api_slug_map[$this->slug][0];
 		$this->description          = "A social news website focusing on computer science and entrepreneurship.";
 		$this->url                  = $api_slug_map[$this->slug][1];
-		$this->icon                 = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/480px-Y_Combinator_logo.svg.png';
+		$this->icon                 = $this->platform_icon;
 		$this->created              = '2007-10-09T18:21:51.000Z';
 		$this->nsfw                 = false;
 		$this->feed_title           = $this->title;
 		$this->feed_description     = "\"" . $this->slug_title . "\" posts at Hacker News";
 		$this->needs_authentication = false;
 		$this->is_community_valid   = true;
+	}
+
+
+	public static function getCommunityTypes(): array {
+		return [
+			'frontpage'   => 'Front page',
+			'beststories' => 'Best',
+			'newstories'  => 'New',
+			'askstories'  => 'Ask',
+			'showstories' => 'Show'
+		];
 	}
 
 

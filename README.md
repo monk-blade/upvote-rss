@@ -306,7 +306,6 @@ This project is released with the intention of it being pretty low-maintenance. 
 ## Attribution
 
 I'm using the following great projects in Upvote RSS:
-- [Vue.js](https://github.com/vuejs/vue/) - [MIT License](https://github.com/vuejs/vue/blob/dev/LICENSE)
 - [Material Symbols / Material Icons](https://github.com/google/material-design-icons/) - [Apache 2 License](https://github.com/google/material-design-icons/blob/master/LICENSE)
 - [Readability.php](https://github.com/fivefilters/readability.php) - [Apache License 2.0](https://github.com/fivefilters/readability.php/blob/master/LICENSE)
 - [Predis](https://github.com/predis/predis/) - [MIT License](https://github.com/predis/predis/blob/v2.x/LICENSE)

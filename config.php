@@ -31,6 +31,7 @@ const DEFAULT_LOBSTERS_SCORE        = 50;
 const DEFAULT_MBIN_INSTANCE         = 'kbin.earth';
 const DEFAULT_MBIN_COMMUNITY        = 'technology@lemmy.world';
 const DEFAULT_MBIN_SCORE            = 100;
+const DEFAULT_REDDIT_INSTANCE       = 'reddit.com';
 const DEFAULT_SUBREDDIT             = 'technology';
 const DEFAULT_REDDIT_SCORE          = 100;
 
@@ -57,6 +58,12 @@ if (
 // Timezone
 $timezone = $_SERVER["TZ"] ?? $_ENV["TZ"] ?? 'Europe/London';
 date_default_timezone_set($timezone);
+
+
+// Upvote RSS URI
+$upvote_rss_uri = 'http' . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/';
+define('UPVOTE_RSS_URI', $upvote_rss_uri);
+
 
 
 // Variables
@@ -194,6 +201,8 @@ define('COMMUNITY_TYPE', $community_type);
 $category = null;
 if (!empty($_GET["category"])) {
   $category = strip_tags(trim($_GET["category"]));
+} elseif (PLATFORM == 'lobsters' && COMMUNITY_TYPE == 'category' && !empty($_GET["community"])) {
+  $category = strip_tags(trim($_GET["community"]));
 }
 define('CATEGORY', $category);
 
@@ -202,6 +211,8 @@ define('CATEGORY', $category);
 $tag = null;
 if (!empty($_GET["tag"])) {
   $tag = strip_tags(trim($_GET["tag"]));
+} elseif (PLATFORM == 'lobsters' && COMMUNITY_TYPE == 'tag' && !empty($_GET["community"])) {
+  $tag = strip_tags(trim($_GET["community"]));
 }
 define('TAG', $tag);
 
@@ -216,8 +227,11 @@ define('QUERY', $query);
 
 // Filters Available
 define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'piefed', 'reddit']);
+define('SCORE_FILTER_AVAILABLE', in_array(PLATFORM, SCORE_FILTER_AVAILABLE_PLATFORMS));
 define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
+define('THRESHOLD_FILTER_AVAILABLE', in_array(PLATFORM, THRESHOLD_FILTER_AVAILABLE_PLATFORMS));
 define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
+define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE', in_array(PLATFORM, AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS));
 
 
 // Score
@@ -372,8 +386,9 @@ if (!empty($_GET["comments"])) {
 define('INCLUDE_COMMENTS', $include_comments);
 define('COMMENTS', $comments);
 define('PINNED_COMMENTS_AVAILABLE_PLATFORMS', ['lemmy', 'piefed', 'reddit']);
+define('PINNED_COMMENTS_FILTER_AVAILABLE', in_array(PLATFORM, PINNED_COMMENTS_AVAILABLE_PLATFORMS));
 $filter_pinned_comments = false;
-if (isset($_GET["filterPinnedComments"])) $filter_pinned_comments = true;
+if (isset($_GET["filterPinnedComments"]) && INCLUDE_COMMENTS) $filter_pinned_comments = true;
 define('FILTER_PINNED_COMMENTS', $filter_pinned_comments);
 
 

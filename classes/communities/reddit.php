@@ -8,9 +8,9 @@ class Reddit extends Community
 
   // Properties
   public  $platform              = 'reddit';
-  public  $platform_icon         = 'https://www.redditstatic.com/mweb2x/favicon/76x76.png';
+  public  $platform_icon         = UPVOTE_RSS_URI . 'img/platforms/reddit.png';
   public  $needs_authentication  = true;
-  public  $instance              = 'reddit.com';
+  public  $instance              = DEFAULT_REDDIT_INSTANCE;
   public  $is_instance_valid     = true;
   public  $is_private            = false;
   public  $max_items_per_request = 100;

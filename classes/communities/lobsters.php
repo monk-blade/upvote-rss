@@ -7,9 +7,9 @@ class Lobsters extends Community
 
 	// Properties
 	public $platform = 'lobsters';
-	public $instance = 'lobste.rs';
+	public $instance = DEFAULT_LOBSTERS_INSTANCE;
 	public $is_instance_valid = true;
-	public $platform_icon = 'https://lobste.rs/touch-icon-192.png';
+	public $platform_icon = UPVOTE_RSS_URI . 'img/platforms/lobsters.png';
   public $community_type = '';
 	public $slug_title;
 	public $max_items_per_request = 25;
@@ -102,6 +102,15 @@ class Lobsters extends Community
 		$this->feed_description     = $info['feed_description'];
 		$this->needs_authentication = false;
 		$this->is_community_valid   = true;
+	}
+
+
+  public static function getCommunityTypes(): array {
+    return [
+			'all'      => 'All posts',
+			'category' => 'Category',
+			'tag'      => 'Tag'
+		];
 	}
 
 
