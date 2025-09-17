@@ -236,8 +236,10 @@ class Cache {
 
 		if (!is_dir($cache_directory)) {
 			try {
-				mkdir($cache_directory, 0755, true);
-			} catch (\Exception $e) {
+				if (!@mkdir($cache_directory, 0755, true) && !is_dir($cache_directory)) {
+					throw new \RuntimeException("Failed to create cache directory: $cache_directory");
+				}
+			} catch (\Throwable $e) {
 				logger()->error("Failed to create cache directory: " . $e->getMessage());
 				return false;
 			}
@@ -412,7 +414,7 @@ class Cache {
 	 */
 	private function cleanUpFileCache(array $directory_expirations): void {
 		if (!is_dir(UPVOTE_RSS_CACHE_ROOT)) {
-			mkdir(UPVOTE_RSS_CACHE_ROOT, 0755, true);
+			@mkdir(UPVOTE_RSS_CACHE_ROOT, 0755, true);
 		}
 
 		// Wait for directory creation with timeout
