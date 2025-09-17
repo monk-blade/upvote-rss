@@ -47,7 +47,7 @@ class Mbin extends Community
 
   protected function getInstanceInfo() {
     $url = "https://$this->instance/api/instance";
-    $curl_response = curlURL($url);
+    $curl_response = curlURL($url, [CURLOPT_TIMEOUT => 20]);
     if (empty($curl_response)) {
       $message = "The Mbin instance $this->instance is not reachable";
       logger()->error($message);
@@ -87,7 +87,7 @@ class Mbin extends Community
       // Get community info
       $this->instance = rtrim(preg_replace('/^https?:\/\//', '', $this->instance), '/');
       $url = "https://$this->instance/api/magazine/name/$this->slug";
-      $curl_response = curlURL($url);
+      $curl_response = curlURL($url, [CURLOPT_TIMEOUT => 20]);
       if (empty($curl_response)) {
         logger()->error("Failed to get data for the requested Mbin magazine $this->slug at the $this->instance instance");
         return;
@@ -194,7 +194,7 @@ class Mbin extends Community
       if (cache()->get($page_cache_object_key, $cache_directory)) {
         $top_posts = array_merge($top_posts, cache()->get($page_cache_object_key, $cache_directory));
       } else {
-        $curl_response = curlURL($url);
+        $curl_response = curlURL($url, [CURLOPT_TIMEOUT => 20]);
         if (empty($curl_response)) {
           $message = "Failed to get top posts for Mbin community $this->slug at the $this->instance instance";
           logger()->error($message);
@@ -245,7 +245,7 @@ class Mbin extends Community
     if (cache()->get($cache_object_key, $cache_directory)) {
       return cache()->get($cache_object_key, $cache_directory);
     }
-    $curl_response = curlURL($url);
+    $curl_response = curlURL($url, [CURLOPT_TIMEOUT => 20]);
     $curl_data = json_decode($curl_response, true) ?? [];
     if (empty($curl_data) || !empty($curl_data['error'])) {
       $message = "Error communicating with the $this->instance instance: " . ($curl_data['error'] ?? 'Unknown error');
