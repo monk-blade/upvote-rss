@@ -41,6 +41,7 @@ $debug = $_SERVER["DEBUG"] ?? $_ENV["DEBUG"] ?? false;
 if ($debug) {
   ini_set('display_errors', '0');
 }
+define('DEBUG', $debug);
 
 
 // Maximum execution time

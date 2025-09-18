@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+<?php
+
+// Set versions for cache busting in debug mode
+$css_version = DEBUG ? filemtime(__DIR__ . '/../styles/style.css') : UPVOTE_RSS_VERSION;
+$script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_VERSION;
+
+?><!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,7 +13,7 @@
 	<title>Upvote RSS</title>
 	<meta name="description" content="Generate RSS feeds from social aggregation websites." />
 	<meta name="color-scheme" content="light dark">
-	<link rel="stylesheet" href="styles/style.css?v=<?php echo UPVOTE_RSS_VERSION; ?>" />
+	<link rel="stylesheet" href="styles/style.css?v=<?php echo $css_version; ?>" />
 	<link rel="icon" type="image/png" href="img/favicons/favicon-96x96.png" sizes="96x96" />
 	<link rel="icon" type="image/svg+xml" href="img/favicons/favicon.svg" />
 	<link rel="shortcut icon" href="img/favicons/favicon.ico" />
@@ -378,7 +384,7 @@
 
 	</main>
 
-	<script src="js/script.js?v=<?php echo UPVOTE_RSS_VERSION; ?>" defer></script>
+	<script src="js/script.js?v=<?php echo $script_version; ?>" defer></script>
 
 	<!-- SVGs -->
 	<?php include 'inc/svgs.php'; ?>
