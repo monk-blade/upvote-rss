@@ -421,6 +421,9 @@ customElements.define('upvote-rss', class extends HTMLElement {
 					this.querySelector('.piefed [name="community"]').focus();
 				});
 			}
+			if(oldValue !== null && newValue !== 'reddit') {
+				this.setAttribute('override-reddit-domain', false);
+			}
 			if(oldValue !== null && newValue === 'reddit') {
 				this.setAttribute('instance', this.attr('instance-reddit-default'));
 				this.setAttribute('subreddit', this.attr('subreddit') || this.attr('community-reddit-default'));
