@@ -1206,6 +1206,9 @@ customElements.define('upvote-rss', class extends HTMLElement {
 			}
 			a.appendChild(figure);
 		} else if (this.community_icon) {
+			a.target = '_blank';
+			a.rel = 'noopener noreferrer';
+			a.title = (this.community_title || 'Community') + ' (opens in a new tab)';
 			const figure = document.createElement('figure');
 			figure.className = 'community-image';
 			const img = document.createElement('img');
