@@ -1,6 +1,6 @@
 # Upvote RSS
 
-Generate rich RSS feeds for popular posts from various social aggregation websites like Reddit, Hacker News, Lemmy, and more.
+Generate rich RSS feeds for popular posts from social aggregation websites Reddit, Lemmy, Hacker News, Lobsters, PieFed, and Mbin.
 
 ![Application Screenshot](img/screenshot.png)
 
@@ -19,13 +19,13 @@ Generate rich RSS feeds for popular posts from various social aggregation websit
 
 ## Features
 
-- Supports subreddits, Hacker News, Lemmy communities, and more to come
+- Supports subreddits, Hacker News, Lemmy communities, Lobste.rs, PieFed communities, and Mbin magazines
 - Configurable filtering to dial in the right number of posts per day in your feed reader
-- Embedded post media: videos, galleries, images
+- Embedded post media (videos, galleries, and images)
 - Parsers to extract clean content and add featured images
-- AI article summaries
+- AI article summaries with multiple provider support (Ollama, OpenAI, Google Gemini, Anthropic, Mistral, DeepSeek, and OpenAI-compatible providers)
 - Estimated reading time, score, and permalinks to the original post
-- Top comments
+- Top comments with optional filtering of pinned moderator comments
 - NSFW filtering/blurring (Reddit only)
 - Custom Reddit domain
 - Light/dark mode for feed previews
@@ -79,7 +79,7 @@ docker build -f docker/Dockerfile .
 
 1. Clone this repository somewhere with PHP >= 8.1 installed.
 1. Open `index.php` in a browser to view the front end.
-1. Create an `.env` file in the root directory to override application defaults or to integrate with [Redis](#caching), [Ollama](#ai-summaries), [OpenAI](#ai-summaries), [Readability](#parsers), etc.
+1. Create an `.env` file in the root directory to override application defaults or to integrate with [Redis](#caching), [Ollama](#ai-summaries), [OpenAI](#ai-summaries), [Readability](#parsers), etc. (see supported [environment variables](#environment-variables))
 
 ## Usage
 
@@ -88,22 +88,23 @@ docker build -f docker/Dockerfile .
     - Basic options are selected by default, but if you want to get fancy with summaries and comments and such you can view those options in the `Fiddly bits` section.
 1. Preview the posts that will show up in your RSS feed according to those options.
 1. Click the `Copy RSS URL` button to copy the URL to your clipboard.
-    - A Reddit feed URL with all the bells and whistles might look something like this: `https://www.upvote-rss.com/?platform=reddit&subreddit=technology&redditDomain=old.reddit.com&averagePostsPerDay=3&showScore&content&summary&comments=5&blurNSFW&filterOldPosts=7`
+    - A Reddit feed URL with all the bells and whistles might look something like this: `https://www.upvote-rss.com/?platform=reddit&subreddit=technology&redditDomain=old.reddit.com&averagePostsPerDay=3&showScore&content&summary&comments=5&filterPinnedComments&blurNSFW&filterOldPosts=7`
 1. Paste the resulting URL into your feed reader.
     - Sometimes the feed generation can take a bit, especially when both the `Include article content` and `Include summary` options are checked.
 
 ## Feed options
 | Option | Description |
 |-|-|
-| **Platform** | Upvote RSS currently supports Reddit, Hacker News, and Lemmy instances. |
-| **Instance** | The fully qualified domain name to a Lemmy instance (shown when Lemmy is selected as the platform). |
-| **Subreddit/Community/Type** | `Subreddit` field is available when Reddit is selected as the platform and your Reddit API credentials are set through environment variable. Available subreddits should populate in a datalist as you type.<br><br>`Community` field is available when Lemmy is selected as the platform.<br><br>`Type` field is available when Hacker News is selected as the platform. Available options are [Best](https://news.ycombinator.com/best), [Top](https://news.ycombinator.com/), [New](https://news.ycombinator.com/newest), [Ask](https://news.ycombinator.com/ask), and [Show](https://news.ycombinator.com/show). |
-| **Filter type** | `Score`: Items below the desired score will be filtered out.<br><br>`Threshold`: This parameter will get the average score for the past month's hot posts and will filter out items that fall below this percentage. This is helpful for volatile communities when more people are using the service and causing posts to be scored higher and higher. Since this is a percentage, the number of items in the outputted feed should be more consistent than when using the `score` parameter. Not available for Hacker News.<br><br>`Posts Per Day`: Upvote RSS will attempt to output an average number of posts per day by looking at a community's recent history to determine the score below which posts will be filtered out. This is the filter I find most useful most of the time. |
+| **Platform** | Upvote RSS currently supports Reddit, Hacker News, Lemmy instances, Lobste.rs, PieFed communities, and Mbin magazines. |
+| **Instance** | The fully qualified domain name to a Lemmy, Mbin, or PieFed instance (shown when Lemmy, Mbin, or PieFed is selected as the platform). |
+| **Subreddit/Community/Type** | `Subreddit` field is available when Reddit is selected as the platform and your Reddit API credentials are set through environment variable. Available subreddits should populate in a datalist as you type.<br><br>`Community` field is available when Lemmy, PieFed, or Mbin is selected as the platform.<br><br>`Type` field is available when Hacker News or Lobsters is selected as the platform. Available options for Hacker News are [Front Page](https://news.ycombinator.com), [Best](https://news.ycombinator.com/best), [New](https://news.ycombinator.com/newest), [Ask](https://news.ycombinator.com/ask), and [Show](https://news.ycombinator.com/show). Available options for Lobsters are All posts, Category, and Tag. When either Category or Tag is chosen for Lobsters, the corresponding field is available. The list of categories and tags on the main Lobsters instance can be found here: [https://lobste.rs/tags](https://lobste.rs/tags). |
+| **Filter type** | `Score`: Items below the desired score will be filtered out.<br><br>`Threshold`: This parameter will get the average score for the past month's hot posts and will filter out items that fall below this percentage. This is helpful for volatile communities when more people are using the service and causing posts to be scored higher and higher. Since this is a percentage, the number of items in the outputted feed should be more consistent than when using the `score` parameter. Not available for Lobsters.<br><br>`Posts Per Day`: Upvote RSS will attempt to output an average number of posts per day by looking at a community's recent history to determine the score below which posts will be filtered out. This is the filter I find most useful most of the time. |
 | **Use custom Reddit domain** | Override the base domain that Reddit posts will link to from the RSS feeds, e.g. `old.reddit.com` instead of `www.reddit.com`, or a self-hosted Reddit front-end. |
 | **Show score in feed** | Includes the score of the post in the feed. |
 | **Include article content**| Includes the parsed content of the article in the feed. |
-| **Include summary** | Includes a summary of the article in the feed. Only available when Ollama and/or OpenAI credentials are set. |
+| **Include summary** | Includes a summary of the article in the feed. Only available an AI summarizer is set through [environment variables](#environment-variables). |
 | **Include comments** | Includes top-voted comments in the feed. When checked, you can specify the number of comments to include at the end of each post. |
+| **Filter pinned comments** | Filter out pinned moderator comments (available for Lemmy, PieFed, and Reddit). |
 | **Filter old posts** | Filters out old posts from the feed. You can specify the cutoff in days. This is helpful for communities that don't have a lot of posts or engagement since older posts can show up in the feed when the monthly average scores drop. |
 | **Filter NSFW posts** | Filters out NSFW posts from the feed. Only available for Reddit. |
 | **Blur NSFW Reddit media** | Blurs NSFW media from Reddit in the feed. |
@@ -112,7 +113,7 @@ docker build -f docker/Dockerfile .
 
 ### Reddit app setup
 
-Due to Reddit's updated API policies it is required to first set up an app in your Reddit account that Upvote RSS will authenticate through.
+Due to Reddit's API policies it is required to first set up an app in your Reddit account that Upvote RSS will authenticate through.
 
 1. First, log into your Reddit account.
 1. Navigate to the Reddit app preferences page: [https://www.reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
@@ -126,13 +127,19 @@ Due to Reddit's updated API policies it is required to first set up an app in yo
 
 ### Caching
 
-By default, Upvote RSS caches API responses, RSS feeds, and webpages on the filesystem in the `/cache/` directory which you can clear by clicking the "Refresh cache" link. Alternatively, you can configure Upvote RSS to use Redis for caching by setting the `REDIS_HOST` and `REDIS_PORT` environment variables. If you don't use Redis, I'd advise bind-mounting the `/cache/` directory (as in the Docker compose example) since updates to the image/container will otherwise remove the cache directory, including parsed webpages and their optional summaries.
+Upvote RSS supports multiple caching backends to improve performance:
+
+- **Filesystem caching** (default): Caches API responses, RSS feeds, webpages, and resized feed images in the `/cache/` directory which you can clear by clicking the "Refresh cache" link.
+- **Redis caching**: Configure by setting the `REDIS_HOST` and `REDIS_PORT` environment variables for distributed caching.
+- **APCu caching**: Automatically used when available for faster access to authentication tokens and progress tracking data.
+
+The application intelligently uses the best available caching method for different types of data. If you don't use Redis, I'd advise bind-mounting the `/cache/` directory (as in the Docker compose example) since updates to the image/container will otherwise remove the cache directory, including parsed webpages and their optional summaries.
 
 You can also control whether cached webpages/summaries should be cleared with the `Refresh cache` link by setting the `CLEAR_WEBPAGES_WITH_CACHE` environment variable. Setting it to `false` will prevent them from being cleared, which is useful if you've got a lot of AI-generated summaries that you'd rather not run again, a potentially expensive operation depending on the service and model you use.
 
 ### Parsers
 
-Both [Readability.js](https://github.com/phpdocker-io/readability-js-server) and [Mercury](https://github.com/HenryQW/mercury-parser-api) can do a better job pulling and parsing a webpage's main content and featured images than the built-in [Readability.php](https://github.com/fivefilters/readability.php) parser, so it's worth trying them out alongside Upvote RSS to see if they perform better. Environment variables for them can be found below.
+Both [Readability.js](https://github.com/phpdocker-io/readability-js-server) and [Mercury](https://github.com/HenryQW/mercury-parser-api) can do a better job pulling and parsing a webpage's main content and featured images than the built-in [Readability.php](https://github.com/fivefilters/readability.php) parser, so it's worth trying them out alongside Upvote RSS to see if they perform better. [Environment variables](#environment-variables) for them can be found below.
 
 Additionally, you can configure an optional [Browserless](https://github.com/browserless/browserless) instance that the parsers will use as an intermediary. Some websites don't surface article content without first loading JavaScript, which is one of the things Browserless can help with.
 
@@ -205,7 +212,7 @@ MISTRAL_API_KEY=your_mistral_api_key
 # Mistral API model
 # Model used for article summaries
 # Default value: mistral-small-latest
-MISTRAL_API_MODEL=specified_deepseek_model
+MISTRAL_API_MODEL=specified_mistral_model
 
 # DeepSeek API key
 # Used to connect to DeepSeek for article summaries when the "Include summary" checkbox is checked
@@ -301,7 +308,7 @@ TZ=America/Denver
 
 ## Disclaimer
 
-This project is released with the intention of it being pretty low-maintenance. I'm planning on adding more platforms and AI summarizer options in the future, but it might take a bit as I have limited free time. Please feel free to submit bug reports with the expectation that I'll address them as I can.
+This project is released with the intention of it being pretty low-maintenance. I'm planning on adding more platforms and features in the future, but it might take a bit as I have limited free time. Please feel free to submit bug reports with the expectation that I'll address them as I can.
 
 ## Attribution
 
