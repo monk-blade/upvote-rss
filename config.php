@@ -61,10 +61,33 @@ $timezone = $_SERVER["TZ"] ?? $_ENV["TZ"] ?? 'Europe/London';
 date_default_timezone_set($timezone);
 
 
-// Upvote RSS URI
-$upvote_rss_uri = 'http' . (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/';
-define('UPVOTE_RSS_URI', $upvote_rss_uri);
+// Upvote RSS URI (proxy aware)
+$scheme = 'http';
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+  $scheme_parts = explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO']);
+  $scheme_candidate = strtolower(trim($scheme_parts[0]));
+  if (in_array($scheme_candidate, ['http', 'https'])) $scheme = $scheme_candidate;
+} elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
+  $scheme_candidate = strtolower($_SERVER['REQUEST_SCHEME']);
+  if (in_array($scheme_candidate, ['http', 'https'])) $scheme = $scheme_candidate;
+} elseif (
+  (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] == 1))
+  || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+) {
+  $scheme = 'https';
+}
 
+$host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+if (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+  $host_parts = explode(',', $_SERVER['HTTP_X_FORWARDED_HOST']);
+  $host = trim($host_parts[0]);
+}
+
+$script_dir = rtrim(dirname($_SERVER['PHP_SELF'] ?? ''), '/\\');
+$script_dir = $script_dir ? $script_dir . '/' : '/';
+
+$upvote_rss_uri = $scheme . '://' . $host . $script_dir;
+define('UPVOTE_RSS_URI', $upvote_rss_uri);
 
 
 // Variables
