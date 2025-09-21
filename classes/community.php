@@ -130,7 +130,7 @@ abstract class Community
     $hot_posts_filtered = array();
     foreach ($hot_posts as $post) {
       $return_post = true;
-      if (empty($post->score) || $post->score < $score) {
+      if (!isset($post->score) || is_numeric($post->score) && $post->score < $score) {
         $return_post = false;
       }
       if ($filter_nsfw && $post->nsfw) {

@@ -84,7 +84,13 @@ class HackerNews extends Post {
 
 	// Set Score
 	private function setScore() {
-		$this->score = $this->post_data['points'] ?? 0;
+		$score = $this->post_data['points'];
+		if (is_numeric($score)) {
+			$score = (int)$score;
+		} else {
+			$score = 0;
+		}
+		$this->score = $score;
 		$this->score_formatted = $this->formatScore($this->score);
 	}
 

@@ -109,7 +109,13 @@ class Mbin extends Post {
 
   // Set Score
   private function setScore() {
-    $this->score = $this->post_data['favourites'] ?? null;
+    $score = $this->post_data['favourites'];
+		if (is_numeric($score)) {
+			$score = (int)$score;
+		} else {
+			$score = 0;
+		}
+		$this->score = $score;
     $this->score_formatted = $this->formatScore($this->score);
   }
 

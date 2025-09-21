@@ -239,7 +239,7 @@ if ($data['getPosts'] ?? false) {
 		$filtered_posts = [];
 		if (!empty($posts)) {
 			foreach ($posts as $post) {
-				if (!empty($post->score)) {
+				if (isset($post->score) && is_int($post->score)) {
 					$time_unix             = !empty($post->time) ? timeElapsedString(normalizeTimestamp($post->time)) : null;
 					$post->relative_date   = $time_unix;
 					$post->time_rfc_822    = !empty($post->time) ? gmdate(DATE_RFC2822, normalizeTimestamp($post->time)) : null;

@@ -236,9 +236,11 @@ define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE', in_array(PLATFORM, AVERAGE_POST
 
 
 // Score
-if (!empty($_GET["score"])) {
+if (isset($_GET["score"])) {
   $filter_type = 'score';
   $score = strip_tags(trim($_GET["score"]));
+  $score = (int)$score;
+  if (!is_numeric($score)) $score = 0;
   $filter_value = $score;
 }
 define('SCORE', $score);
