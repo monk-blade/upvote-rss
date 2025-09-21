@@ -440,10 +440,13 @@ abstract class Post {
   // Get preview image
   private function getPreviewImage() {
     $preview_image_html = '';
-    $preview_image_html = $this->thumbnail_url ? "<img src='$this->thumbnail_url' />" : $preview_image_html;
-    $preview_image_html = $this->reddit_preview_image_html ?? $preview_image_html;
-    $preview_image_html = $this->livememe_image_url ? "<img src='$this->livememe_image_url' />" : $preview_image_html;
-    $preview_image_html = $this->imgur_image_url ? "<img src='$this->imgur_image_url' />" : $preview_image_html;
+    $preview_image_html = match (true) {
+      (bool)$this->imgur_image_url           => "<img src='$this->imgur_image_url' />",
+      (bool)$this->livememe_image_url        => "<img src='$this->livememe_image_url' />",
+      (bool)$this->reddit_preview_image_html => $this->reddit_preview_image_html,
+      (bool)$this->thumbnail_url             => "<img src='$this->thumbnail_url' />",
+      default                                => '',
+    };
     if (
       $this->parsed_content &&
       $this->parsed_image_url &&
