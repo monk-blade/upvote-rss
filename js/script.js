@@ -329,6 +329,9 @@ customElements.define('upvote-rss', class extends HTMLElement {
 				this.postListPosts.removeAttribute('aria-busy');
 				this.stopProgressSSE();
 				this.clearCacheButton.disabled = false;
+				if (this.attr('demo-mode')) {
+					this.clearCacheButton.hidden = true;
+				}
 				// Cancel skeleton debounce and reset
 				clearTimeout(this.skeletonDelayTimer);
 				this.allowSkeletons = false;
@@ -1271,6 +1274,9 @@ customElements.define('upvote-rss', class extends HTMLElement {
 	 * @returns {void}
 	 * */
 	async clearCache() {
+		if (this.attr('demo-mode')) {
+			return;
+		}
 		this.postList.scrollTo(0, 0);
 		if(window.innerWidth < 992) {
 			window.scrollTo({

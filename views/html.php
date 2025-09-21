@@ -126,7 +126,14 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 									<option value="lobsters" <?php echo $isSelected('lobsters') ?>>Lobsters</option>
 									<option value="piefed" <?php echo $isSelected('piefed') ?>>PieFed</option>
 									<option value="mbin" <?php echo $isSelected('mbin') ?>>Mbin</option>
-									<option value="reddit" <?php echo $isSelected('reddit') ?>>Reddit<?php if(DEMO_MODE) : ?> (available only self-hosted)<?php endif; ?></option>
+									<option value="reddit" <?php echo $isSelected('reddit') ?> <?php if(DEMO_MODE || !REDDIT_USER || !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET) : ?>disabled<?php endif; ?>>
+										Reddit
+										<?php if(DEMO_MODE) : ?>
+											(available only self-hosted)
+										<?php elseif(!REDDIT_USER || !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET) : ?>
+											(not configured)
+										<?php endif; ?>
+									</option>
 								</select>
 							</div>
 							<div class="form-group conditional reddit">
@@ -334,7 +341,7 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 									</svg> Copy RSS URL
 								</span>
 							</button>
-							<button type="button" class="clear-cache" title="Refresh cache" aria-label="Refresh cache">
+							<button type="button" class="clear-cache" title="Refresh cache" aria-label="Refresh cache" <?php echo DEMO_MODE ? 'hidden' : ''; ?>>
 								<svg class="icon icon-cycle" aria-hidden="true">
 									<use xlink:href="#icon-cycle"></use>
 								</svg>
