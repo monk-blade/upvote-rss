@@ -23,35 +23,6 @@ if ($data['clearCache'] ?? false) {
 	exit;
 }
 
-// Run getProgress if requested
-if ($data['getProgress'] ?? false) {
-	$platform  = $data['platform'] ? str_replace('-', '', $data['platform']) : null;
-	$instance  = $data['instance'] ?? null;
-	$community = $data['community'] ?? null;
-	$subreddit = $data['subreddit'] ?? null;
-	if ($platform == 'reddit') {
-		$community = $subreddit;
-	}
-	$progress_cache_object_key = "progress_" . $platform . "_" . $community;
-	$progress_cache_directory  = "progress";
-	$progress                  = cache()->get($progress_cache_object_key, $progress_cache_directory);
-	if (empty($progress)) {
-		$progress = [
-			"current" => 1,
-			"total"   => 100,
-		];
-	}
-	$progress = $progress['current'] / $progress['total'];
-	$progress = floor($progress * 100);
-	$progress = min($progress, 99);
-	header('Content-Type: application/json');
-	echo json_encode(array(
-		"progress" => $progress,
-		"cacheSize" => cache()->getTotalCacheSize(),
-	));
-	exit;
-}
-
 // Run cleanupProgress if requested
 if ($data['cleanupProgress'] ?? false) {
 	// Get parameters from request
