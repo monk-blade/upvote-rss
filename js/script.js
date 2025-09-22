@@ -8,6 +8,15 @@ customElements.define('upvote-rss', class extends HTMLElement {
 		'average-posts-per-day', 'comments', 'threshold-percentage', 'post-cutoff-days', 'score', 'score-default-hacker-news', 'score-default-lemmy', 'score-default-lobsters', 'score-default-mbin', 'score-default-piefed', 'score-default-reddit'
 	]);
 
+	// Constructor
+	constructor () {
+		super();
+
+		// Set initial attributes
+		this.setAttribute('dark-mode', localStorage.getItem('dark-mode') || this.attr('dark-mode') || 'auto');
+		this.setAttribute('show-rss-url', navigator.clipboard ? false : true);
+	}
+
 
 	/**
 	 * Called when the element is added to the DOM
@@ -36,15 +45,8 @@ customElements.define('upvote-rss', class extends HTMLElement {
 		this.allowSkeletons = false;
 		this.skeletonDelay = 150;
 
-		// Get dark mode preference
-		this.getDarkMode();
-
 		// Initial data fetching
 		this.debouncedSearch();
-
-		// Set initial attributes
-		this.setAttribute('dark-mode', localStorage.getItem('dark-mode') || 'auto');
-		this.setAttribute('show-rss-url', navigator.clipboard ? false : true);
 
 		// Set up event listeners
 		this.setupEventListeners();
@@ -695,19 +697,6 @@ customElements.define('upvote-rss', class extends HTMLElement {
 			);
 		}
 		return this._availablePlatformSets[attribute];
-	}
-
-
-	/**
-	 * Get the dark mode setting from local storage and apply it
-	 * @returns {void}
-	 * */
-	getDarkMode () {
-		const darkMode = localStorage.getItem('dark-mode');
-		if (darkMode) {
-			this.setAttribute('dark-mode', darkMode);
-		}
-		document.documentElement.dataset.colorScheme = this.attr('dark-mode');
 	}
 
 

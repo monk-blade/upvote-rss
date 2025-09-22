@@ -107,7 +107,7 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 			post-cutoff-days='<?php echo POST_CUTOFF_DAYS; ?>'
 			cache-size='<?php $cache_size = cache()->getTotalCacheSize(); echo $cache_size; ?>'
 			show-rss-url='true'
-			dark-mode='true'
+			dark-mode=''
 			>
 
 			<div class="columns">
