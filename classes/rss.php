@@ -67,6 +67,7 @@ class RSS {
 		}
 
 		$this->community = match (PLATFORM) {
+			'github'      => new Community\GitHub(COMMUNITY, LANGUAGE, TOPIC),
 			'hacker-news' => new Community\HackerNews(COMMUNITY),
 			'lemmy'       => new Community\Lemmy(COMMUNITY, INSTANCE, FILTER_NSFW, BLUR_NSFW),
 			'lobsters'    => new Community\Lobsters(COMMUNITY, COMMUNITY_TYPE),

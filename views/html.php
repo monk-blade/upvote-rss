@@ -24,7 +24,7 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 	<meta name="theme-color" content="#003040" media="(prefers-color-scheme: dark)">
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Upvote RSS" />
-	<meta property="og:description" content="Generate rich RSS feeds from Reddit, Lemmy, Hacker News, Lobsters, PieFed, and Mbin" />
+	<meta property="og:description" content="Generate rich RSS feeds from Reddit, Lemmy, Hacker News, Lobsters, PieFed, Mbin, and GitHub" />
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:image" content="https://www.upvote-rss.com/img/screenshot.png" />
 	<meta property="og:image:width" content="1400" />
@@ -40,7 +40,7 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 		<a href=".">
 			<img src="img/logo.svg" alt="Upvote RSS" class="logo" height="140" width="803" fetchpriority="high">
 		</a>
-		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, Hacker News, Lobsters, PieFed, and Mbin</h1>
+		<h1><span class="sr-only">Upvote RSS </span>Generate rich RSS feeds from Reddit, Lemmy, Hacker News, Lobsters, PieFed, Mbin, and GitHub</h1>
 		<?php if(DEMO_MODE) : ?>
 			<p><a href="https://github.com/johnwarne/upvote-rss/" target="_blank" rel="noopener noreferrer">Self-host your own instance<svg class="icon icon-link" aria-hidden="true" focusable="false"><use xlink:href="#icon-link"></use></svg></a></p>
 		<?php endif; ?>
@@ -60,6 +60,7 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 			override-reddit-domain='<?php echo REDDIT_DEFAULT_DOMAIN === REDDIT_DOMAIN ? "false" : "true"; ?>'
 			subreddit='<?php echo SUBREDDIT; ?>'
 			instance='<?php echo INSTANCE; ?>'
+			instance-github-default='<?php echo DEFAULT_GITHUB_INSTANCE; ?>'
 			instance-hacker-news-default='<?php echo DEFAULT_HACKER_NEWS_INSTANCE; ?>'
 			instance-lemmy-default='<?php echo DEFAULT_LEMMY_INSTANCE; ?>'
 			instance-lobsters-default='<?php echo DEFAULT_LOBSTERS_INSTANCE; ?>'
@@ -68,6 +69,7 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 			instance-reddit-default='<?php echo DEFAULT_REDDIT_INSTANCE; ?>'
 			community='<?php echo COMMUNITY; ?>'
 			community-type='<?php echo COMMUNITY_TYPE; ?>'
+			community-github-default='<?php echo DEFAULT_GITHUB_COMMUNITY; ?>'
 			community-hacker-news-default='<?php echo DEFAULT_HACKER_NEWS_COMMUNITY; ?>'
 			community-lemmy-default='<?php echo DEFAULT_LEMMY_COMMUNITY; ?>'
 			community-lobsters-default='<?php echo DEFAULT_LOBSTERS_COMMUNITY; ?>'
@@ -76,6 +78,8 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 			community-mbin-default='<?php echo DEFAULT_MBIN_COMMUNITY; ?>'
 			community-piefed-default='<?php echo DEFAULT_PIEFED_COMMUNITY; ?>'
 			community-reddit-default='<?php echo DEFAULT_SUBREDDIT; ?>'
+			language='<?php echo LANGUAGE; ?>'
+			topic='<?php echo TOPIC; ?>'
 			score-filter-available=<?php echo SCORE_FILTER_AVAILABLE ? "true" : "false"; ?>
 			score-filter-available-platforms='<?php echo htmlspecialchars(json_encode(SCORE_FILTER_AVAILABLE_PLATFORMS), ENT_QUOTES); ?>'
 			threshold-filter-available='<?php echo THRESHOLD_FILTER_AVAILABLE ? "true" : "false"; ?>'
@@ -84,8 +88,9 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 			average-posts-per-day-filter-available-platforms='<?php echo htmlspecialchars(json_encode(AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS), ENT_QUOTES); ?>'
 			filter-type='<?php echo FILTER_TYPE; ?>'
 			score='<?php echo SCORE; ?>'
-			score-default-lemmy='<?php echo DEFAULT_LEMMY_SCORE; ?>'
+			score-default-github='<?php echo DEFAULT_GITHUB_SCORE; ?>'
 			score-default-hacker-news='<?php echo DEFAULT_HACKER_NEWS_SCORE; ?>'
+			score-default-lemmy='<?php echo DEFAULT_LEMMY_SCORE; ?>'
 			score-default-lobsters='<?php echo DEFAULT_LOBSTERS_SCORE; ?>'
 			score-default-mbin='<?php echo DEFAULT_MBIN_SCORE; ?>'
 			score-default-piefed='<?php echo DEFAULT_PIEFED_SCORE; ?>'
@@ -98,6 +103,8 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 			include-summary='<?php echo INCLUDE_SUMMARY ? "true" : "false"; ?>'
 			include-comments='<?php echo INCLUDE_COMMENTS ? "true" : "false"; ?>'
 			comments='<?php echo COMMENTS; ?>'
+			comments-available-platforms='<?php echo htmlspecialchars(json_encode(COMMENTS_AVAILABLE_PLATFORMS), ENT_QUOTES); ?>'
+			comments-available='<?php echo COMMENTS_AVAILABLE ? "true" : "false"; ?>'
 			pinned-comments-filter-available='<?php echo PINNED_COMMENTS_FILTER_AVAILABLE ? "true" : "false"; ?>'
 			pinned-comments-filter-available-platforms='<?php echo htmlspecialchars(json_encode(PINNED_COMMENTS_AVAILABLE_PLATFORMS), ENT_QUOTES); ?>'
 			filter-pinned-comments='<?php echo FILTER_PINNED_COMMENTS ? "true" : "false"; ?>'
@@ -121,11 +128,12 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 								<label for="platform">Platform</label>
 								<select name="platform" id="platform">
 									<?php $isSelected = fn($platform) => PLATFORM === $platform ? 'selected' : ''; ?>
+									<option value="github" <?php echo $isSelected('github') ?>>GitHub</option>
 									<option value="hacker-news" <?php echo $isSelected('hacker-news') ?>>Hacker News</option>
 									<option value="lemmy" <?php echo $isSelected('lemmy') ?>>Lemmy</option>
 									<option value="lobsters" <?php echo $isSelected('lobsters') ?>>Lobsters</option>
-									<option value="piefed" <?php echo $isSelected('piefed') ?>>PieFed</option>
 									<option value="mbin" <?php echo $isSelected('mbin') ?>>Mbin</option>
+									<option value="piefed" <?php echo $isSelected('piefed') ?>>PieFed</option>
 									<option value="reddit" <?php echo $isSelected('reddit') ?> <?php if(DEMO_MODE || !REDDIT_USER || !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET) : ?>disabled<?php endif; ?>>
 										Reddit
 										<?php if(DEMO_MODE) : ?>
@@ -158,6 +166,14 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 										<option value="<?php echo $value; ?>" <?= $isSelected($value) ?>><?php echo $label; ?></option>
 									<?php endforeach; ?>
 								</select>
+							</div>
+							<div class="form-group conditional github">
+								<label for="language">Language</label>
+								<input type="text" id="language" name="language" placeholder="javascript, python, etc." value="<?php echo PLATFORM === 'github' ? LANGUAGE : ''; ?>" />
+							</div>
+							<div class="form-group conditional github">
+								<label for="topic">Topic</label>
+								<input type="text" id="topic" name="topic" placeholder="rss, self-hosted, etc." value="<?php echo PLATFORM === 'github' ? TOPIC : ''; ?>" />
 							</div>
 							<div class="form-group conditional category">
 								<label for="category">Category</label>
@@ -231,7 +247,13 @@ $script_version = DEBUG ? filemtime(__DIR__ . '/../js/script.js') : UPVOTE_RSS_V
 									</div>
 									<div class="form-group checkbox">
 										<input type="checkbox" name="include-content" id="include-content" <?php echo INCLUDE_CONTENT ? 'checked' : ''; ?> />
-										<label for="include-content">Include article content</label>
+										<label for="include-content">
+											<?php if(PLATFORM === 'github') : ?>
+												Include README content
+											<?php else: ?>
+												Include article content
+											<?php endif; ?>
+										</label>
 									</div>
 									<?php if(SUMMARY_ENABLED) : ?>
 										<div class="form-group checkbox">

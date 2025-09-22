@@ -114,6 +114,8 @@ if ($data['getPosts'] ?? false) {
 	$instance              = $data['instance'] ?? null;
 	$community             = $data['community'] ?? null;
 	$community_type        = $data['communityType'] ?? null;
+	$language              = $data['language'] ?? null;
+	$topic                 = $data['topic'] ?? null;
 	$filter_nsfw           = $data['filterNSFW'] ?? false;
 	$blur_nsfw             = $data['blurNSFW'] ?? false;
 	$filter_old_posts 		 = $data['filterOldPosts'] ?? false;
@@ -133,6 +135,10 @@ if ($data['getPosts'] ?? false) {
 	switch ($platform) {
 		case 'reddit':
 			$community = new Community\Reddit($subreddit);
+			break;
+		case 'github':
+			$community = new Community\GitHub($community, $language, $topic);
+			$instance  = 'github.com';
 			break;
 		case 'hacker-news':
 			$community = new Community\HackerNews($community);

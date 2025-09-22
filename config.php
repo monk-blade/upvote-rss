@@ -14,6 +14,9 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 const UPVOTE_RSS_VERSION            = '1.7';
 const UPVOTE_RSS_CACHE_ROOT         = __DIR__ . '/cache/';
 const DEFAULT_PLATFORM              = 'lemmy';
+const DEFAULT_GITHUB_INSTANCE       = 'github.com';
+const DEFAULT_GITHUB_COMMUNITY      = 'all';
+const DEFAULT_GITHUB_SCORE          = 10;
 const DEFAULT_HACKER_NEWS_INSTANCE  = 'news.ycombinator.com';
 const DEFAULT_HACKER_NEWS_COMMUNITY = 'beststories';
 const DEFAULT_HACKER_NEWS_SCORE     = 100;
@@ -209,6 +212,14 @@ if (PLATFORM == 'mbin') {
 }
 
 
+// GitHub
+if (PLATFORM == 'github') {
+  $instance = DEFAULT_GITHUB_INSTANCE;
+  $community = DEFAULT_GITHUB_COMMUNITY;
+  $score = DEFAULT_GITHUB_SCORE;
+}
+
+
 // Instance
 define('INSTANCE', $instance);
 
@@ -241,6 +252,16 @@ if (!empty($_GET["tag"])) {
 define('TAG', $tag);
 
 
+// Language
+$language = !empty($_GET["language"]) ? strip_tags(trim($_GET["language"])) : '';
+define('LANGUAGE', $language);
+
+
+// Topic
+$topic = !empty($_GET["topic"]) ? strip_tags(trim($_GET["topic"])) : '';
+define('TOPIC', $topic);
+
+
 // Query
 $query = null;
 if (!empty($_GET["query"])) {
@@ -250,11 +271,11 @@ define('QUERY', $query);
 
 
 // Filters Available
-define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'piefed', 'reddit']);
+define('SCORE_FILTER_AVAILABLE_PLATFORMS', ['github', 'hacker-news', 'lemmy', 'lobsters', 'mbin', 'piefed', 'reddit']);
 define('SCORE_FILTER_AVAILABLE', in_array(PLATFORM, SCORE_FILTER_AVAILABLE_PLATFORMS));
-define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
+define('THRESHOLD_FILTER_AVAILABLE_PLATFORMS', ['github', 'hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
 define('THRESHOLD_FILTER_AVAILABLE', in_array(PLATFORM, THRESHOLD_FILTER_AVAILABLE_PLATFORMS));
-define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
+define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS', ['github', 'hacker-news', 'lemmy', 'mbin', 'piefed', 'reddit']);
 define('AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE', in_array(PLATFORM, AVERAGE_POSTS_PER_DAY_FILTER_AVAILABLE_PLATFORMS));
 
 
@@ -411,6 +432,8 @@ if (!empty($_GET["comments"])) {
 }
 define('INCLUDE_COMMENTS', $include_comments);
 define('COMMENTS', $comments);
+define('COMMENTS_AVAILABLE_PLATFORMS', ['hacker-news', 'lemmy', 'lobsters', 'mbin', 'piefed', 'reddit']);
+define('COMMENTS_AVAILABLE', in_array(PLATFORM, COMMENTS_AVAILABLE_PLATFORMS));
 define('PINNED_COMMENTS_AVAILABLE_PLATFORMS', ['lemmy', 'piefed', 'reddit']);
 define('PINNED_COMMENTS_FILTER_AVAILABLE', in_array(PLATFORM, PINNED_COMMENTS_AVAILABLE_PLATFORMS));
 $filter_pinned_comments = false;

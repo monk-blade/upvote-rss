@@ -2,10 +2,10 @@ customElements.define('upvote-rss', class extends HTMLElement {
 
 	// Add static property sets for efficient lookups
 	static booleanAttributes = new Set([
-		'blur-nsfw', 'demo-mode', 'filter-nsfw', 'filter-old-posts', 'filter-pinned-comments', 'include-comments', 'include-content', 'include-summary', 'loading', 'override-reddit-domain', 'reddit-enabled', 'score-filter-available', 'show-score', 'show-rss-url', 'summary-enabled', 'pinned-comments-filter-available', 'threshold-filter-available', 'average-posts-per-day-filter-available'
+		'average-posts-per-day-filter-available', 'blur-nsfw', 'comments-available', 'demo-mode', 'filter-nsfw', 'filter-old-posts', 'filter-pinned-comments', 'include-comments', 'include-content', 'include-summary', 'loading', 'override-reddit-domain', 'pinned-comments-filter-available', 'reddit-enabled', 'score-filter-available', 'show-rss-url', 'show-score', 'summary-enabled', 'threshold-filter-available'
 	]);
 	static integerAttributes = new Set([
-		'average-posts-per-day', 'comments', 'threshold-percentage', 'post-cutoff-days', 'score', 'score-default-hacker-news', 'score-default-lemmy', 'score-default-lobsters', 'score-default-mbin', 'score-default-piefed', 'score-default-reddit'
+		'average-posts-per-day', 'comments', 'post-cutoff-days', 'score', 'score-default-github', 'score-default-hacker-news', 'score-default-lemmy', 'score-default-lobsters', 'score-default-mbin', 'score-default-piefed', 'score-default-reddit', 'threshold-percentage'
 	]);
 
 	// Constructor
@@ -92,6 +92,12 @@ customElements.define('upvote-rss', class extends HTMLElement {
 	}
 	get typeInput() {
 		return this._typeInput ??= this.querySelector('[name="type"]');
+	}
+	get languageInput() {
+		return this._languageInput ??= this.querySelector('[name="language"]');
+	}
+	get topicInput() {
+		return this._topicInput ??= this.querySelector('[name="topic"]');
 	}
 	get categoryInput() {
 		return this._categoryInput ??= this.querySelector('[name="category"]');
@@ -205,6 +211,8 @@ customElements.define('upvote-rss', class extends HTMLElement {
 			this.setAttribute(name === 'subreddit' ? 'subreddit' :
 											 name === 'instance' ? 'instance' :
 											 name === 'community' ? 'community' :
+											 name === 'language' ? 'language' :
+											 name === 'topic' ? 'topic' :
 											 name === 'category' ? 'community' :
 											 name === 'tag' ? 'community' :
 											 name === 'reddit-domain' ? 'reddit-domain' :
@@ -301,15 +309,10 @@ customElements.define('upvote-rss', class extends HTMLElement {
 	 * @param  {String} newValue The new attribute value
 	 */
 	static observedAttributes = [
-		'loading', 'platform', 'instance', 'community', 'community-type', 'score',
-		'subreddit', 'filter-type', 'threshold-percentage', 'average-posts-per-day', 'comments',
-		'override-reddit-domain', 'reddit-domain', 'show-score', 'include-content',
-		'include-summary', 'include-comments', 'filter-pinned-comments', 'filter-old-posts',
-		'post-cutoff-days', 'filter-nsfw', 'blur-nsfw', 'dark-mode',
-		'cache-size', 'rss-url'
+		'average-posts-per-day', 'blur-nsfw', 'cache-size', 'comments', 'comments-available', 'community', 'community-type', 'dark-mode', 'filter-nsfw', 'filter-old-posts', 'filter-pinned-comments', 'filter-type', 'include-comments', 'include-content', 'include-summary', 'instance', 'language', 'loading', 'override-reddit-domain', 'platform', 'post-cutoff-days', 'reddit-domain', 'rss-url', 'score', 'show-score', 'subreddit', 'threshold-percentage', 'topic'
 	];
 	attributeChangedCallback (name, oldValue, newValue) {
-		if (oldValue === null || oldValue === '') return;
+		// if (oldValue === null || oldValue === '') return;
 		// console.log(`Attribute changed: ${name}, Old value: ${oldValue}, New value: ${newValue}`);
 
 		// Loading
@@ -367,6 +370,12 @@ customElements.define('upvote-rss', class extends HTMLElement {
 				this.setAttribute('average-posts-per-day-filter-available', false);
 				this.filterTypeAveragePostsPerDayOption.hidden = true;
 			}
+			const commentsSet = this.availablePlatformSet('comments-available-platforms');
+			if (commentsSet.has(newValue)) {
+				this.setAttribute('comments-available', true);
+			} else {
+				this.setAttribute('comments-available', false);
+			}
 			const pinnedSet = this.availablePlatformSet('pinned-comments-filter-available-platforms');
 			if (pinnedSet.has(newValue)) {
 				this.setAttribute('pinned-comments-filter-available', true);
@@ -374,6 +383,19 @@ customElements.define('upvote-rss', class extends HTMLElement {
 				this.setAttribute('pinned-comments-filter-available', false);
 			}
 			this.setAttribute('community-type', '');
+			if(newValue === 'github') {
+				this.setAttribute('community', this.attr('community-github-default'));
+				this.querySelector('label[for="include-content"]').textContent = "Include README content";
+				if (this._language) {
+					this.setAttribute('language', this._language);
+				}
+				if (this._topic) {
+					this.setAttribute('topic', this._topic);
+				}
+				this.setAttribute('score', this.attr('score-default-github'));
+			} else {
+				this.querySelector('label[for="include-content"]').textContent = "Include article content";
+			}
 			if(oldValue !== null && newValue === 'hacker-news') {
 				this.setAttribute('instance', this.attr('instance-hacker-news-default'));
 				this.setAttribute('community', this.attr('community-hacker-news-default'));
@@ -490,6 +512,18 @@ customElements.define('upvote-rss', class extends HTMLElement {
 			}
 		}
 
+		// Language
+		if (name === 'language' && this.attr('platform') === 'github') {
+			this._language = newValue;
+			this.scheduleSearchAfterAttributeBatch();
+		}
+
+		// Topic
+		if (name === 'topic' && this.attr('platform') === 'github') {
+			this._topic = newValue;
+			this.scheduleSearchAfterAttributeBatch();
+		}
+
 		// Filter type
 		if (name === 'filter-type') {
 			this.filterTypeInput.value = this.attr('filter-type');
@@ -558,6 +592,15 @@ customElements.define('upvote-rss', class extends HTMLElement {
 		if (name === 'include-summary') {
 			this.querySelector('[name="include-summary"]').checked = this.attr('include-summary');
 			this.updateURL();
+			return;
+		}
+
+		// Comments available
+		if (name === 'comments-available') {
+			if (!this.attr('comments-available')) {
+				this.setAttribute('comments', 0);
+				this.setAttribute('include-comments', false);
+			}
 			return;
 		}
 
@@ -776,6 +819,12 @@ customElements.define('upvote-rss', class extends HTMLElement {
 					newURL.searchParams.set('redditDomain', this.attr('reddit-domain'));
 				}
 			}
+			if(this.attr('platform') === 'github' && this.attr('language') !== '') {
+				newURL.searchParams.set('language', this.attr('language'));
+			}
+			if(this.attr('platform') === 'github' && this.attr('topic') !== '') {
+				newURL.searchParams.set('topic', this.attr('topic'));
+			}
 			if(this.attr('platform') === 'hacker-news') {
 				newURL.searchParams.set('community', this.attr('community'));
 			}
@@ -872,6 +921,8 @@ customElements.define('upvote-rss', class extends HTMLElement {
 					instance: this.attr('instance'),
 					community: this.attr('community'),
 					communityType: this.attr('community-type'),
+					language: this.attr('language'),
+					topic: this.attr('topic'),
 					filterType: this.attr('filter-type'),
 					score: this.attr('score'),
 					threshold: this.attr('threshold-percentage'),
@@ -982,7 +1033,7 @@ customElements.define('upvote-rss', class extends HTMLElement {
 				posts.forEach(post => {
 					post.classList.add("loading");
 					post.setAttribute("aria-hidden", "true");
-					post.querySelectorAll('.thumbnail, h3, time, .score').forEach(el => el.classList.add('skeleton'));
+					post.querySelectorAll('.thumbnail, h3, p, time, .score').forEach(el => el.classList.add('skeleton'));
 				});
 				return;
 			}
@@ -1077,6 +1128,15 @@ customElements.define('upvote-rss', class extends HTMLElement {
 			score.appendChild(spanArrow);
 			score.appendChild(document.createTextNode(post.score_formatted));
 			content.appendChild(h3);
+			if (this.attr('platform') === 'github' && post.selftext_html) {
+				const selftext = createEl('p', 'selftext');
+				const tmpDiv = document.createElement('div');
+				tmpDiv.innerHTML = post.selftext_html;
+				let text = tmpDiv.textContent || tmpDiv.innerText || '';
+				text = text.replace(/<br\s*\/?>/gi, ' ').replace(/<\/?[^>]+(>|$)/g, '').replace(/\s+/g, ' ').trim();
+				selftext.innerText = text;
+				content.appendChild(selftext);
+			}
 			content.appendChild(time);
 			content.appendChild(score);
 			a.appendChild(content);

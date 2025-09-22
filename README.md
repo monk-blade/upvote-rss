@@ -1,6 +1,6 @@
 # Upvote RSS
 
-Generate rich RSS feeds for popular posts from social aggregation websites Reddit, Lemmy, Hacker News, Lobsters, PieFed, and Mbin.
+Generate rich RSS feeds for popular posts from social aggregation websites Reddit, Lemmy, Hacker News, Lobsters, PieFed, Mbin, and git forge GitHub.
 
 ![Application Screenshot](img/screenshot.png)
 
@@ -19,7 +19,7 @@ Generate rich RSS feeds for popular posts from social aggregation websites Reddi
 
 ## Features
 
-- Supports subreddits, Hacker News, Lemmy communities, Lobste.rs, PieFed communities, and Mbin magazines
+- Supports subreddits, Hacker News, Lemmy communities, Lobste.rs, PieFed communities, Mbin magazines, and GitHub
 - Configurable filtering to dial in the right number of posts per day in your feed reader
 - Embedded post media (videos, galleries, and images)
 - Parsers to extract clean content and add featured images
@@ -95,15 +95,15 @@ docker build -f docker/Dockerfile .
 ## Feed options
 | Option | Description |
 |-|-|
-| **Platform** | Upvote RSS currently supports Reddit, Hacker News, Lemmy instances, Lobste.rs, PieFed communities, and Mbin magazines. |
+| **Platform** | Upvote RSS currently supports Reddit, Hacker News, Lemmy instances, Lobste.rs, PieFed communities, Mbin magazines, and GitHub. |
 | **Instance** | The fully qualified domain name to a Lemmy, Mbin, or PieFed instance (shown when Lemmy, Mbin, or PieFed is selected as the platform). |
-| **Subreddit/Community/Type** | `Subreddit` field is available when Reddit is selected as the platform and your Reddit API credentials are set through environment variable. Available subreddits should populate in a datalist as you type.<br><br>`Community` field is available when Lemmy, PieFed, or Mbin is selected as the platform.<br><br>`Type` field is available when Hacker News or Lobsters is selected as the platform. Available options for Hacker News are [Front Page](https://news.ycombinator.com), [Best](https://news.ycombinator.com/best), [New](https://news.ycombinator.com/newest), [Ask](https://news.ycombinator.com/ask), and [Show](https://news.ycombinator.com/show). Available options for Lobsters are All posts, Category, and Tag. When either Category or Tag is chosen for Lobsters, the corresponding field is available. The list of categories and tags on the main Lobsters instance can be found here: [https://lobste.rs/tags](https://lobste.rs/tags). |
+| **Subreddit/Community/Type** | `Subreddit` field is available when Reddit is selected as the platform and your Reddit API credentials are set through environment variable. Available subreddits should populate in a datalist as you type.<br><br>`Community` field is available when Lemmy, PieFed, or Mbin is selected as the platform.<br><br>`Type` field is available when Hacker News or Lobsters is selected as the platform. Available options for Hacker News are [Front Page](https://news.ycombinator.com), [Best](https://news.ycombinator.com/best), [New](https://news.ycombinator.com/newest), [Ask](https://news.ycombinator.com/ask), and [Show](https://news.ycombinator.com/show). Available options for Lobsters are All posts, Category, and Tag.<br><br>When either Category or Tag is chosen for Lobsters, the corresponding `Category` or `Tag` field is available. The list of categories and tags on the main Lobsters instance can be found here: [https://lobste.rs/tags](https://lobste.rs/tags).<br><br>When GitHub is selected as the platform, a `Language` and `Topic` field will be available. Multiple languages and topics can be specified in each field; a `+` between search terms denotes an `and` operator, while a `comma` denotes an `or` operator. For example, entering `python+typescript` in the `Language` field will return repositories that use both Python and TypeScript, while entering `python,typescript` will return repositories that use either Python or TypeScript. The same logic applies to the `Topic` field.<br>|
 | **Filter type** | `Score`: Items below the desired score will be filtered out.<br><br>`Threshold`: This parameter will get the average score for the past month's hot posts and will filter out items that fall below this percentage. This is helpful for volatile communities when more people are using the service and causing posts to be scored higher and higher. Since this is a percentage, the number of items in the outputted feed should be more consistent than when using the `score` parameter. Not available for Lobsters.<br><br>`Posts Per Day`: Upvote RSS will attempt to output an average number of posts per day by looking at a community's recent history to determine the score below which posts will be filtered out. This is the filter I find most useful most of the time. |
 | **Use custom Reddit domain** | Override the base domain that Reddit posts will link to from the RSS feeds, e.g. `old.reddit.com` instead of `www.reddit.com`, or a self-hosted Reddit front-end. |
 | **Show score in feed** | Includes the score of the post in the feed. |
 | **Include article content**| Includes the parsed content of the article in the feed. |
 | **Include summary** | Includes a summary of the article in the feed. Only available an AI summarizer is set through [environment variables](#environment-variables). |
-| **Include comments** | Includes top-voted comments in the feed. When checked, you can specify the number of comments to include at the end of each post. |
+| **Include comments** | Includes top-voted comments in the feed. When checked, you can specify the number of comments to include at the end of each post. Not available for GitHub. |
 | **Filter pinned comments** | Filter out pinned moderator comments (available for Lemmy, PieFed, and Reddit). |
 | **Filter old posts** | Filters out old posts from the feed. You can specify the cutoff in days. This is helpful for communities that don't have a lot of posts or engagement since older posts can show up in the feed when the monthly average scores drop. |
 | **Filter NSFW posts** | Filters out NSFW posts from the feed. Only available for Reddit. |
